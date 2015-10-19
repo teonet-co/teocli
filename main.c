@@ -1,6 +1,6 @@
 /* 
- * File:   main.cpp
- * Author: ka_scherba
+ * File:   main.c
+ * Author: Kirill Scherba <kirill@scherba.ru>
  *
  * Created on October 19, 2015, 3:51 PM
  */
@@ -9,10 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifdef HAVE_MINGW
-#include <winsock.h>
-#endif
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -30,11 +26,8 @@ int main(int argc, char** argv) {
     
     printf("Teol0cli_n example ver " TL0CN_VERSION " (native client)\n\n");
     
-    #ifdef HAVE_MINGW
-    // Startup socket library
-    WSADATA wsaData;
-    WSAStartup(0x0202, &wsaData);
-    #endif          
+    // Initialize L0 Client library
+    teoLNullInitClient();
 
     // Teonet L0 server parameters
     const char *peer_name = "teostream";
@@ -86,10 +79,8 @@ int main(int argc, char** argv) {
         close(fd);
     }
     
-    #ifdef HAVE_MINGW
-    // Cleanup socket library
-    WSACleanup();
-    #endif    
+    // Cleanup L0 Client library
+    teoLNullCleanupClient();
     
     return (EXIT_SUCCESS);
 }

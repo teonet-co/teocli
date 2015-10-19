@@ -32,6 +32,7 @@ typedef struct teoLNullCPacket {
 extern "C" {
 #endif
 
+void teoLNullInitClient();    
 int teoLNullClientCreate(int port, const char *server);
 size_t teoLNullInit(char* buffer, size_t buffer_length, const char* host_name);
 size_t teoLNullPacketCreate(char* buffer, size_t buffer_length, uint8_t command, 

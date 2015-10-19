@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <fcntl.h>
-#ifdef HAVE_MINGW
+#ifdef HAVE_MINGW || _WINDOWS
 #include <winsock2.h>
 #else
 #include <netdb.h>
@@ -20,6 +20,34 @@
 #endif
 
 #include "teonet_l0_client.h"
+
+/**
+ * Initialize L0 client library.
+ * 
+ * Calls once per application to initialize this client library.
+ */
+void teoLNullInitClient() {
+    
+    // Startup windows socket library
+    #ifdef HAVE_MINGW
+    WSADATA wsaData;
+    WSAStartup(0x0202, &wsaData);
+    #endif     
+}
+
+
+/**
+ * Cleanup L0 client library.
+ * 
+ * Calls once per application to cleanup this client library.
+ */
+void teoLNullCleanupClient() {
+    
+    // Cleanup socket library
+    #ifdef HAVE_MINGW
+    WSACleanup();
+    #endif    
+}
 
 /**
  * Create L0 client packet

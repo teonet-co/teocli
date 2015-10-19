@@ -44,20 +44,12 @@
       <compileType>
         <cTool>
           <developmentMode>0</developmentMode>
-          <preprocessorList>
-            <Elem>HAVE_MINGW</Elem>
-          </preprocessorList>
         </cTool>
         <ccTool>
           <preprocessorList>
             <Elem>HAVE_MINGW</Elem>
           </preprocessorList>
         </ccTool>
-        <linkerTool>
-          <linkerLibItems>
-            <linkerLibLibItem>ws2_32</linkerLibLibItem>
-          </linkerLibItems>
-        </linkerTool>
       </compileType>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -101,7 +93,7 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="main.c" ex="false" tool="1" flavor2="0"> 
+      <item path="main.c" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>
