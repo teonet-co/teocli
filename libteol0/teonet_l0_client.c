@@ -10,10 +10,14 @@
 #include <string.h>
 
 #include <fcntl.h>
+#ifdef HAVE_MINGW
+#include <winsock2.h>
+#else
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#endif
 
 #include "teonet_l0_client.h"
 
@@ -93,10 +97,12 @@ uint8_t teoByteChecksum(void *data, size_t data_length) {
  */
 void set_nonblock(int fd) {
 
+    #ifndef HAVE_MINGW
     int flags;
 
     flags = fcntl(fd, F_GETFL, 0);
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    #endif
 }
 
 /**
@@ -108,8 +114,11 @@ void set_nonblock(int fd) {
  */
 int set_tcp_nodelay(int fd) {
 
+    int result = 0;
+    
+    #ifndef HAVE_MINGW
     int flag = 1;
-    int result = setsockopt(fd,           // socket affected
+    result = setsockopt(fd,           // socket affected
                          IPPROTO_TCP,     // set option at TCP level
                          TCP_NODELAY,     // name of option
                          (char *) &flag,  // the cast is historical cruft
@@ -118,7 +127,8 @@ int set_tcp_nodelay(int fd) {
         
         printf("Set TCP_NODELAY of fd %d error\n", fd);
     }
-    
+    #endif
+
     return result;
 }
 
@@ -133,7 +143,12 @@ int set_tcp_nodelay(int fd) {
 int teoLNullClientCreate(int port, const char *server) {
 
     /* Variable and structure definitions. */
-    int sd, rc;
+    #ifndef HAVE_MINGW
+    int sd;
+    #else
+    SOCKET sd;
+    #endif
+    int rc;
     struct sockaddr_in serveraddr;
     struct hostent *hostp;
 

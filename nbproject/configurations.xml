@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <logicalFolder name="examples" displayName="examples" projectFiles="true">
-      <logicalFolder name="examples" displayName="examples" projectFiles="true">
-        <itemPath>examples/teol0cli_n</itemPath>
-        <itemPath>examples/teol0cli_n.make.sh</itemPath>
-      </logicalFolder>
-      <itemPath>examples/teol0cli_n.c</itemPath>
-    </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="libteol0" displayName="libteol0" projectFiles="true">
+      <itemPath>libteol0/teonet_l0_client.c</itemPath>
+      <itemPath>libteol0/teonet_l0_client.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -20,10 +17,6 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
-    </logicalFolder>
-    <logicalFolder name="src" displayName="src" projectFiles="true">
-      <itemPath>src/teonet_l0_client.c</itemPath>
-      <itemPath>src/teonet_l0_client.h</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -38,8 +31,7 @@
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
-    <Elem>src</Elem>
-    <Elem>examples</Elem>
+    <Elem>libteol0</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -50,18 +42,28 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <developmentMode>0</developmentMode>
+          <preprocessorList>
+            <Elem>HAVE_MINGW</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>HAVE_MINGW</Elem>
+          </preprocessorList>
+        </ccTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibLibItem>ws2_32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
-      <item path="examples/teol0cli_n" ex="false" tool="3" flavor2="0">
+      <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="examples/teol0cli_n.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="examples/teol0cli_n.make.sh" ex="false" tool="3" flavor2="0">
+      <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -72,10 +74,16 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
+          <developmentMode>0</developmentMode>
+          <preprocessorList>
+            <Elem>HAVE_MINGW</Elem>
+          </preprocessorList>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <preprocessorList>
+            <Elem>HAVE_MINGW</Elem>
+          </preprocessorList>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -83,18 +91,17 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibLibItem>ws2_32</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
-      <item path="examples/teol0cli_n" ex="false" tool="3" flavor2="0">
+      <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="examples/teol0cli_n.c" ex="false" tool="0" flavor2="0">
+      <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="examples/teol0cli_n.make.sh" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
+      <item path="main.c" ex="false" tool="1" flavor2="0"> 
       </item>
     </conf>
   </confs>

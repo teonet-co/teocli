@@ -3,15 +3,14 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>teocli</name>
+            <name>teocli_w</name>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>src</sourceRootElem>
-                <sourceRootElem>examples</sourceRootElem>
+                <sourceRootElem>libteol0</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
