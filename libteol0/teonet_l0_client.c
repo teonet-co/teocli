@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <fcntl.h>
-#ifdef HAVE_MINGW || _WINDOWS
+#ifdef HAVE_MINGW
 #include <winsock2.h>
 #else
 #include <netdb.h>
