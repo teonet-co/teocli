@@ -9,6 +9,18 @@
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
     </logicalFolder>
+    <logicalFolder name="linux" displayName="linux" projectFiles="true">
+      <itemPath>linux/Makefile.am</itemPath>
+    </logicalFolder>
+    <logicalFolder name="python" displayName="python" projectFiles="true">
+      <itemPath>python/_teonet_l0_client.so</itemPath>
+      <itemPath>python/teonet_l0_client.i</itemPath>
+      <itemPath>python/teonet_l0_client.make.sh</itemPath>
+      <itemPath>python/teonet_l0_client.o</itemPath>
+      <itemPath>python/teonet_l0_client.py</itemPath>
+      <itemPath>python/teonet_l0_client_wrap.c</itemPath>
+      <itemPath>python/teonet_l0_client_wrap.o</itemPath>
+    </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
@@ -32,6 +44,8 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>libteol0</Elem>
+    <Elem>python</Elem>
+    <Elem>linux</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -55,7 +69,21 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="python/_teonet_l0_client.so" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.make.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.o" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.py" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client_wrap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client_wrap.o" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -93,7 +121,23 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="python/_teonet_l0_client.so" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.i" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.make.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.o" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client.py" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client_wrap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="python/teonet_l0_client_wrap.o" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

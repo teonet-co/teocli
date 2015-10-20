@@ -4,13 +4,15 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>teocli</name>
-            <c-extensions>c</c-extensions>
+            <c-extensions>c,i</c-extensions>
             <cpp-extensions/>
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>libteol0</sourceRootElem>
+                <sourceRootElem>python</sourceRootElem>
+                <sourceRootElem>linux</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
