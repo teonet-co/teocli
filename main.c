@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
         printf("\nSend %d bytes of %d buffer initialize packet to L0 server\n", 
                 (int)snd, (int)pkg_length);
         
-        // Send get peers request to peer
+        // Send peer list request to peer
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, 
                 CMD_PEERS, peer_name, NULL, 0);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
@@ -97,13 +97,12 @@ int main(int argc, char** argv) {
         if(rc > 0) {
 
             char *data = cp->peer_name + cp->peer_name_length;
-
             printf("Receive %d bytes: %d bytes data from L0 server, "
                     "from peer %s, data: %s\n\n", 
                     (int)rc, cp->data_length, cp->peer_name, data);
         }
 
-        // Send command message
+        // Send command echo
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_ECHO, 
                 peer_name, msg, strlen(msg) + 1);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
@@ -118,7 +117,6 @@ int main(int argc, char** argv) {
         if(rc > 0) {
 
             char *data = cp->peer_name + cp->peer_name_length;
-
             printf("Receive %d bytes: %d bytes data from L0 server, "
                     "from peer %s, data: %s\n\n", 
                     (int)rc, cp->data_length, cp->peer_name, data);
