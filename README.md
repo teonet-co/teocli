@@ -1,3 +1,13 @@
 # Teonet L0 client library
 
-* *To compile for Windows using MinGW add HAVE_MINGW define and add library ws2_32*
+Clone git repository to get code:
+
+git clone git@gitlab.ksproject.org:teonet/teocli.git
+
+## Sources folder
+
+## Linux
+
+## Python
+
+## Windows with MinGw-64
