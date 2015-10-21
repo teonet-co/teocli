@@ -61,7 +61,7 @@ void teoLNullCleanupClient() {
  * 
  * @return Length of packet
  */
-size_t teoLNullPacketCreate(char* buffer, size_t buffer_length, 
+size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, 
         uint8_t command, const char * peer, const void* data, size_t data_length) {
     
     // \todo Check buffer length
@@ -81,6 +81,20 @@ size_t teoLNullPacketCreate(char* buffer, size_t buffer_length,
     return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
 }
 
+
+size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
+    
+    int snd;
+    
+    #ifdef HAVE_MINGW
+    if((snd = send(fd, pkg, pkg_length, 0)) >= 0);                
+    #else
+    if((snd = write(fd, pkg, pkg_length)) >= 0);                
+    #endif
+
+    return snd;
+}
+
 /**
  * Create initialize L0 client packet
  * 
@@ -90,7 +104,7 @@ size_t teoLNullPacketCreate(char* buffer, size_t buffer_length,
  * 
  * @return Pointer to teoLNullCPacket
  */
-size_t teoLNullInit(char* buffer, size_t buffer_length, const char* host_name) {
+size_t teoLNullInit(void* buffer, size_t buffer_length, const char* host_name) {
     
     return teoLNullPacketCreate(buffer, buffer_length, 0, "", host_name, 
             strlen(host_name) + 1);

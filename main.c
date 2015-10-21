@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -32,7 +33,7 @@ int main(int argc, char** argv) {
     // Teonet L0 server parameters
     const char *peer_name = "teostream";
     const char *host_name = "C3";
-    const char *TCP_IP = "127.0.0.1";
+    const char *TCP_IP = "10.12.35.53"; // "127.0.0.1";
     const int TCP_PORT = 9000;
     #define CMD_ECHO 65
     
@@ -48,16 +49,19 @@ int main(int argc, char** argv) {
         // Initialize L0 connection
         size_t snd;
         size_t pkg_length = teoLNullInit(packet, BUFFER_SIZE, host_name);
-        if((snd = write(fd, pkg, pkg_length)) >= 0);                
-        printf("\nSend %d bytes initialize packet to L0 server\n", (int)snd);
+        if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
+        if(snd == -1) perror(strerror(errno));
+        printf("\nSend %d bytes of %d buffer initialize packet to L0 server\n", 
+                (int)snd, (int)pkg_length);
 
         // Send command message
         const char *msg = "Hello";
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_ECHO, 
                 peer_name, msg, strlen(msg) + 1);
-        if((snd = write(fd, pkg, pkg_length)) >= 0);
-        printf("Send %d bytes packet to L0 server to peer %s, data: %s\n", 
-               (int)snd, peer_name, msg);
+        if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
+        if(snd == -1) perror(strerror(errno));
+        printf("Send %d bytes packet of %d buffer to L0 server to peer %s, data: %s\n", 
+               (int)snd, (int)pkg_length, peer_name, msg);
 
         // Receive answer from server
         char buf[BUFFER_SIZE];

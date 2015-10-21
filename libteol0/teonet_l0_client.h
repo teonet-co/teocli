@@ -34,8 +34,8 @@ extern "C" {
 
 void teoLNullInitClient();    
 int teoLNullClientCreate(int port, const char *server);
-size_t teoLNullInit(char* buffer, size_t buffer_length, const char* host_name);
-size_t teoLNullPacketCreate(char* buffer, size_t buffer_length, uint8_t command, 
+size_t teoLNullInit(void* buffer, size_t buffer_length, const char* host_name);
+size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command, 
         const char * peer, const void* data, size_t data_length);
 uint8_t teoByteChecksum(void *data, size_t data_length);
 

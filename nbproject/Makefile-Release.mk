@@ -37,8 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
 	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/python/teonet_l0_client.o \
-	${OBJECTDIR}/python/teonet_l0_client_wrap.o
+	${OBJECTDIR}/python/teonet_l0_client.o
 
 
 # C Compiler Flags
@@ -79,11 +78,6 @@ ${OBJECTDIR}/python/teonet_l0_client.o: python/teonet_l0_client.i
 	${MKDIR} -p ${OBJECTDIR}/python
 	${RM} "$@.d"
 	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/python/teonet_l0_client.o python/teonet_l0_client.i
-
-${OBJECTDIR}/python/teonet_l0_client_wrap.o: python/teonet_l0_client_wrap.c 
-	${MKDIR} -p ${OBJECTDIR}/python
-	${RM} "$@.d"
-	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/python/teonet_l0_client_wrap.o python/teonet_l0_client_wrap.c
 
 # Subprojects
 .build-subprojects:
