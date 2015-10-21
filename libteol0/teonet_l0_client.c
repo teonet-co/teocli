@@ -81,7 +81,15 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
     return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
 }
 
-
+/**
+ * Send packet to L0 server
+ * 
+ * @param fd L0 server socket
+ * @param pkg Buffer to send
+ * @param pkg_length Buffer length
+ * 
+ * @return Length of send data
+ */
 size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
     
     int snd;
