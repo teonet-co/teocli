@@ -147,7 +147,22 @@ uint8_t teoByteChecksum(void *data, size_t data_length) {
  */
 void set_nonblock(int fd) {
 
-    #ifndef HAVE_MINGW
+    #ifdef HAVE_MINGW
+    //-------------------------
+    // Set the socket I/O mode: In this case FIONBIO
+    // enables or disables the blocking mode for the 
+    // socket based on the numerical value of iMode.
+    // If iMode = 0, blocking is enabled; 
+    // If iMode != 0, non-blocking mode is enabled.
+
+    int iResult;
+    u_long iMode = 1;
+
+    iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
+    if (iResult != NO_ERROR)
+      printf("ioctlsocket failed with error: %ld\n", iResult);
+    
+    #else
     int flags;
 
     flags = fcntl(fd, F_GETFL, 0);
