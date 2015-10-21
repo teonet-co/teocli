@@ -29,6 +29,7 @@
             </formatting>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>Linux</word>
             <word>teostream</word>
         </spellchecker-wordlist>
     </configuration>
