@@ -13,6 +13,7 @@
                 <sourceRootElem>libteol0</sourceRootElem>
                 <sourceRootElem>python</sourceRootElem>
                 <sourceRootElem>linux</sourceRootElem>
+                <sourceRootElem>win_mingw</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
