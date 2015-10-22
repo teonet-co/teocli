@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm teonet_l0_client.py teonet_l0_client_wrap.c
+rm teocli.py teonet_l0_client_wrap.c
 
 swig -python teonet_l0_client.i
 

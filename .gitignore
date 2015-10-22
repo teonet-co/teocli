@@ -10,3 +10,4 @@
 /linux/Makefile.in
 /linux/.libs/
 /linux/teocli
+/python/teocli.py

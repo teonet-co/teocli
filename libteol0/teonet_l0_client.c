@@ -26,7 +26,7 @@
  * 
  * Calls once per application to initialize this client library.
  */
-void teoLNullInitClient() {
+void teoLNullInit() {
     
     // Startup windows socket library
     #ifdef HAVE_MINGW
@@ -41,7 +41,7 @@ void teoLNullInitClient() {
  * 
  * Calls once per application to cleanup this client library.
  */
-void teoLNullCleanupClient() {
+void teoLNullCleanup() {
     
     // Cleanup socket library
     #ifdef HAVE_MINGW
@@ -134,7 +134,7 @@ size_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
  * 
  * @return Pointer to teoLNullCPacket
  */
-size_t teoLNullInit(void* buffer, size_t buffer_length, const char* host_name) {
+size_t teoLNullClientLogin(void* buffer, size_t buffer_length, const char* host_name) {
     
     return teoLNullPacketCreate(buffer, buffer_length, 0, "", host_name, 
             strlen(host_name) + 1);
@@ -227,7 +227,7 @@ int set_tcp_nodelay(int fd) {
  * 
  * @return Socket description: > 0 - success connection
  */
-int teoLNullClientCreate(int port, const char *server) {
+int teoLNullClientConnect(int port, const char *server) {
 
     /* Variable and structure definitions. */
     #ifndef HAVE_MINGW

@@ -66,14 +66,14 @@ int main(int argc, char** argv) {
     teoLNullCPacket *cp = (teoLNullCPacket*)buf;
     
     // Initialize L0 Client library
-    teoLNullInitClient();
+    teoLNullInit();
 
     // Connect to L0 server
-    int fd = teoLNullClientCreate(TCP_PORT, TCP_IP);
+    int fd = teoLNullClientConnect(TCP_PORT, TCP_IP);
     if(fd > 0) {
         
         // Initialize L0 connection
-        size_t pkg_length = teoLNullInit(packet, BUFFER_SIZE, host_name);
+        size_t pkg_length = teoLNullClientLogin(packet, BUFFER_SIZE, host_name);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
         printf("\nSend %d bytes of %d buffer initialize packet to L0 server\n", 
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     }
     
     // Cleanup L0 Client library
-    teoLNullCleanupClient();
+    teoLNullCleanup();
     
     return (EXIT_SUCCESS);
 }

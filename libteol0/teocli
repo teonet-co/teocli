@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 1996-2015 Kirill Scherba <kirill@scherba.ru>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef TEOCLI_CPP_H
+#define	TEOCLI_CPP_H
+
+#include "libteol0/teonet_l0_client.h"
+
+class teocli {
+
+public:
+
+    /**
+     * Teonet client simple constructor
+     */
+    teocli() {}    
+    
+    /**
+     * Teonet client simple destructor
+     */
+    virtual ~teocli() {}
+    
+    /**
+     * Initialize L0 client library.
+     * 
+     * Calls once per application to initialize this client library.
+     */
+    inline void init() { teoLNullInit(); }
+    
+    /**
+     * Cleanup L0 client library.
+     * 
+     * Calls once per application to cleanup this client library.
+     */
+    inline void cleanup() { teoLNullCleanup(); }
+    
+    /**
+     * Create TCP client and connect to server
+     * 
+     * @param server Server IP or name
+     * @param port Server port
+     * 
+     * @return Socket description: > 0 - success connection
+     */
+    inline int connect(int port, const char *server) {
+        return teoLNullClientConnect(port, server);
+    }
+    
+    /**
+     * Create initialize L0 client packet
+     * 
+     * @param buffer Buffer to create packet in
+     * @param buffer_length Buffer length
+     * @param host_name Name of this L0 client
+     * 
+     * @return Pointer to teoLNullCPacket
+     */
+    inline size_t login(void* buffer, size_t buffer_length, 
+        const char* host_name) { 
+        
+        return teoLNullClientLogin(buffer, buffer_length, host_name);
+    }   
+    
+    /**
+     * Create L0 client packet
+     *  
+     * @param buffer Buffer to create packet in
+     * @param buffer_length Buffer length
+     * @param command Command to peer
+     * @param peer Teonet peer
+     * @param data Command data
+     * @param data_length Command data length
+     * 
+     * @return Length of packet
+     */    
+    inline size_t packetCreate(void* buffer, size_t buffer_length, 
+        uint8_t command, const char * peer, const void* data, 
+        size_t data_length) {
+        
+        return teoLNullPacketCreate(buffer, buffer_length, command, peer, data, 
+                data_length);
+    }
+    
+    /**
+     * Send packet to L0 server
+     * 
+     * @param fd L0 server socket
+     * @param pkg Package to send
+     * @param pkg_length Package length
+     * 
+     * @return Length of send data
+     */
+    inline size_t packetSend(int fd, void* pkg, size_t pkg_length) {
+        
+        return teoLNullPacketSend(fd, pkg, pkg_length);
+    }
+    
+    /**
+     * Receive packet from L0 server
+     * 
+     * @param fd L0 server socket
+     * @param pkg Buffer to receive
+     * @param pkg_length Buffer length
+     * 
+     * @return Length of send data
+     */
+    inline size_t packetRecv(int fd, void* buf, size_t buf_length) {
+        
+        return teoLNullPacketRecv(fd, buf, buf_length);
+    }    
+    
+    /**
+     * Calculate checksum
+     * 
+     * Calculate byte checksum in data buffer
+     * 
+     * @param data Pointer to data buffer
+     * @param data_length Length of the data buffer to calculate checksum
+     * 
+     * @return Byte checksum of the input buffer
+     */
+    inline uint8_t teoByteChecksum(void *data, size_t data_length) {
+        
+        return teoByteChecksum(data, data_length);
+    }    
+    
+};
+
+#endif	/* TEOCLI_CPP_H */
