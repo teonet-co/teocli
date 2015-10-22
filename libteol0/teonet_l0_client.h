@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 
+// System commands
+#define CMD_L_ECHO 65
+#define CMD_L_PEERS 72
+    
 /**
  * L0 client packet data structure
  * 
@@ -38,6 +42,7 @@ size_t teoLNullInit(void* buffer, size_t buffer_length, const char* host_name);
 size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command, 
         const char * peer, const void* data, size_t data_length);
 size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
+size_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
 uint8_t teoByteChecksum(void *data, size_t data_length);
 
 #ifdef	__cplusplus

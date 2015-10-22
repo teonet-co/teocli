@@ -45,9 +45,6 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
     
-    // Initialize L0 Client library
-    teoLNullInitClient();
-
     // Teonet L0 server parameters
     const char *host_name = argv[1]; //"C3";
     const char *TCP_IP = argv[2]; //"127.0.0.1"; //"10.12.35.53"; // 
@@ -56,10 +53,6 @@ int main(int argc, char** argv) {
     const char *msg;
     if(argc > 5) msg = argv[5];
     else msg = "Hello";
-    
-    // System commands
-    #define CMD_ECHO 65
-    #define CMD_PEERS 72
     
     // Send packet buffer
     size_t snd;
@@ -72,6 +65,9 @@ int main(int argc, char** argv) {
     char buf[BUFFER_SIZE];
     teoLNullCPacket *cp = (teoLNullCPacket*)buf;
     
+    // Initialize L0 Client library
+    teoLNullInitClient();
+
     // Connect to L0 server
     int fd = teoLNullClientCreate(TCP_PORT, TCP_IP);
     if(fd > 0) {
@@ -85,13 +81,13 @@ int main(int argc, char** argv) {
         
         // Send peer list request to peer
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, 
-                CMD_PEERS, peer_name, NULL, 0);
+                CMD_L_PEERS, peer_name, NULL, 0);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
         printf("Send %d bytes of %d buffer packet to L0 server to peer %s, cmd = %d\n", 
-                (int)snd, (int)pkg_length, peer_name, CMD_PEERS);
+                (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
         
         // Receive answer from server
-        while((rc = read(fd, buf, BUFFER_SIZE)) == -1);
+        while((rc = teoLNullPacketRecv(fd, buf, BUFFER_SIZE)) == -1);
         
         // Process received data
         if(rc > 0) {
@@ -103,7 +99,7 @@ int main(int argc, char** argv) {
         }
 
         // Send command echo
-        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_ECHO, 
+        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_ECHO, 
                 peer_name, msg, strlen(msg) + 1);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
@@ -111,7 +107,7 @@ int main(int argc, char** argv) {
                (int)snd, (int)pkg_length, peer_name, msg);
 
         // Receive answer from server        
-        while((rc = read(fd, buf, BUFFER_SIZE)) == -1);
+        while((rc = teoLNullPacketRecv(fd, buf, BUFFER_SIZE)) == -1);
 
         // Process received data
         if(rc > 0) {

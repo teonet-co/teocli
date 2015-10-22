@@ -85,8 +85,8 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  * Send packet to L0 server
  * 
  * @param fd L0 server socket
- * @param pkg Buffer to send
- * @param pkg_length Buffer length
+ * @param pkg Package to send
+ * @param pkg_length Package length
  * 
  * @return Length of send data
  */
@@ -101,6 +101,28 @@ size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
     #endif
 
     return snd;
+}
+
+/**
+ * Receive packet from L0 server
+ * 
+ * @param fd L0 server socket
+ * @param pkg Buffer to receive
+ * @param pkg_length Buffer length
+ * 
+ * @return Length of send data
+ */
+size_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
+    
+    int rc;
+    
+    #ifdef HAVE_MINGW
+    while((rc = recv(fd, buf, buf_length, 0)) == -1);
+    #else
+    while((rc = read(fd, buf, buf_length)) == -1);
+    #endif
+
+    return rc;
 }
 
 /**
@@ -158,7 +180,7 @@ void set_nonblock(int fd) {
     int iResult;
     u_long iMode = 1;
 
-    iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
+    iResult = ioctlsocket(fd, FIONBIO, &iMode);
     if (iResult != NO_ERROR)
       printf("ioctlsocket failed with error: %ld\n", iResult);
     
