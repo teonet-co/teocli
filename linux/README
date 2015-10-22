@@ -1,7 +1,15 @@
-To make this application and library under Linux use command line:
+To make example application and Teonet L0 client library under Linux use command line:
 
 make
 
-To run "teocli" application use command line:
+To run "teocli" example application use command line:
 
 ./teocli C5 10.12.35.53 9000 teostream "Hello world!"
+
+where:
+
+  C5 - client name
+  10.12.35.53 - IP address of L0 Teonet server to connect to
+  9000 - servers port
+  teostream - name of teonet application to send message to
+  "Hello world!" - message to send
