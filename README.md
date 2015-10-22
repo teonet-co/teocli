@@ -17,10 +17,10 @@ application. See [README](linux/README) in that folder to additional information
 ## Windows with MinGw-64
 
 The ```win_mingw``` folder contain make_exe.sh file to make Windows DLL and test 
-application under Linux. See README in that folder to additional information.
+application under Linux. See [README](win_mingw) in that folder to additional information.
 
 
 ## Python
 
 The ```python``` folder contain make_python.sh file to make python module. See 
-README in that folder to additional information.
+[README](python) in that folder to additional information.
