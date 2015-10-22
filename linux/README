@@ -1,7 +1,7 @@
 To make this application and library under Linux use command line:
 
-./make_exe.sh
+make
 
 To run "teocli" application use command line:
 
-teocli.exe C5 10.12.35.53 9000 teostream "Hello world!"
+./teocli C5 10.12.35.53 9000 teostream "Hello world!"

@@ -30,7 +30,10 @@
             </formatting>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>DLL</word>
             <word>Linux</word>
+            <word>README</word>
+            <word>teocli</word>
             <word>teostream</word>
         </spellchecker-wordlist>
     </configuration>

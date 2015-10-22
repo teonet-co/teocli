@@ -6,3 +6,7 @@
 /python/teonet_l0_client.py
 /win_mingw/teocli.exe
 /win_mingw/teocli_exe.zip
+/linux/Makefile
+/linux/Makefile.in
+/linux/.libs/
+/linux/teocli

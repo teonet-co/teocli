@@ -1,5 +1,5 @@
 /* teonet_l0_client.i */
-%module teonet_l0_client
+%module teocli
 %{
 /* Put header files here or function declarations like below */
 #include "../libteol0/teonet_l0_client.h"    
