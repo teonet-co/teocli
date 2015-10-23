@@ -1,13 +1,30 @@
-/* 
- * File:   main.c
- * Author: Kirill Scherba <kirill@scherba.ru>
+/** 
+ * \file   main.c
+ * \author Kirill Scherba <kirill@scherba.ru>
  * 
- * See server example parameters at: 
- * https://gitlab.ksproject.org/teonet/teonet/wikis/l0-server
+ * \example main.c
  * 
- * This application parameters:
- * Usage:   ./teocli <client_name> <server_address> <server_port> <peer_name>
- * example: ./teocli C3 127.0.0.1 9000 teostream "Story about this world!"
+ * This is basic example of Teocli library. This application connect to network 
+ * L0 server, initialize (login) at the L0 server, and send and receive data to from network peer.  
+ *
+ * See server example parameters at:  
+ *   https://gitlab.ksproject.org/teonet/teocli/blob/master/README.md#basic-teocli-example
+ * 
+ * ### This application parameters:  
+ * 
+ * **Usage:**   ./teocli <client_name> <server_address> <server_port> <peer_name> [message]  
+ * 
+ * **Example:** ./teocli C3 127.0.0.1 9000 teostream "Story about this world!"  
+ * 
+ * ### This application algorithm:
+ *  
+ * *  Connect to L0 server with server_address and server_port parameters
+ * *  Send ClientLogin request with client_name parameter
+ * *  Send CMD_L_PEERS request to peer_name server
+ * *  Receive peers data from peer_name server
+ * *  Send CMD_L_ECHO request to peer_name server
+ * *  Receive peers data from peer_name server
+ * *  Close connection
  *
  * Created on October 19, 2015, 3:51 PM
  */
@@ -83,8 +100,9 @@ int main(int argc, char** argv) {
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, 
                 CMD_L_PEERS, peer_name, NULL, 0);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
-        printf("Send %d bytes of %d buffer packet to L0 server to peer %s, cmd = %d\n", 
-                (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
+        printf("Send %d bytes of %d buffer packet to L0 server to peer %s, "
+               "cmd = %d\n", 
+               (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
         
         // Receive answer from server
         while((rc = teoLNullPacketRecv(fd, buf, BUFFER_SIZE)) == -1);
@@ -103,7 +121,8 @@ int main(int argc, char** argv) {
                 peer_name, msg, strlen(msg) + 1);
         if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
-        printf("Send %d bytes packet of %d buffer to L0 server to peer %s, data: %s\n", 
+        printf("Send %d bytes packet of %d buffer to L0 server to peer %s, "
+               "data: %s\n", 
                (int)snd, (int)pkg_length, peer_name, msg);
 
         // Receive answer from server        
