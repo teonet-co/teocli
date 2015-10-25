@@ -36,5 +36,4 @@ L0 client: ```examples/teol0cli C1 127.0.0.1 9000 teo-str "Hello world!"```
   
 ### L0 Client packet structure:  
   
-![l0-client-packet__1_](http://gitlab.ksproject.org/teonet/teonet/uploads/3db51c37f422e8dd91912a0de9122a0a/l0-client-packet__1_.png)
-
+![l0-client-packet__1_](https://gitlab.ksproject.org/teonet/teonet/uploads/3db51c37f422e8dd91912a0de9122a0a/l0-client-packet__1_.png)
