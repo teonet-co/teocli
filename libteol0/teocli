@@ -108,7 +108,7 @@ public:
      * 
      * @return Length of send data
      */
-    inline size_t packetSend(int fd, void* pkg, size_t pkg_length) {
+    inline ssize_t packetSend(int fd, void* pkg, size_t pkg_length) {
         
         return teoLNullPacketSend(fd, pkg, pkg_length);
     }
@@ -122,25 +122,39 @@ public:
      * 
      * @return Length of send data
      */
-    inline size_t packetRecv(int fd, void* buf, size_t buf_length) {
+    inline ssize_t packetRecv(int fd, void* buf, size_t buf_length) {
         
         return teoLNullPacketRecv(fd, buf, buf_length);
     }    
     
     /**
-     * Calculate checksum
+     * Receive packet from L0 server and split or combine it
      * 
-     * Calculate byte checksum in data buffer
+     * @param con Pointer to teoLNullConnectData
      * 
-     * @param data Pointer to data buffer
-     * @param data_length Length of the data buffer to calculate checksum
-     * 
-     * @return Byte checksum of the input buffer
+     * @return Size of packet or Packet state code
+     * @retval >0 Packet received
+     * @retval -1 Packet not receiving yet (got part of packet)
+     * @retval -2 Wrong packet received (dropped)
      */
-    inline uint8_t teoByteChecksum(void *data, size_t data_length) {
-        
-        return teoByteChecksum(data, data_length);
-    }    
+    inline ssize_t packetRecvS(teoLNullConnectData *con) {
+        return teoLNullPacketRecvS(teoLNullConnectData *con);
+    }
+    
+//    /**
+//     * Calculate checksum
+//     * 
+//     * Calculate byte checksum in data buffer
+//     * 
+//     * @param data Pointer to data buffer
+//     * @param data_length Length of the data buffer to calculate checksum
+//     * 
+//     * @return Byte checksum of the input buffer
+//     */
+//    inline uint8_t teoByteChecksum(void *data, size_t data_length) {
+//        
+//        return teoByteChecksum(data, data_length);
+//    }    
     
 };
 

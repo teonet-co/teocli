@@ -73,72 +73,74 @@ int main(int argc, char** argv) {
     
     // Send packet buffer
     size_t snd;
-    #define BUFFER_SIZE 2048
+    #define BUFFER_SIZE L0_BUFFER_SIZE
     char packet[BUFFER_SIZE];
     teoLNullCPacket *pkg = (teoLNullCPacket*) packet;
     
     // Receive packet buffer
-    size_t rc;
-    char buf[BUFFER_SIZE];
-    teoLNullCPacket *cp = (teoLNullCPacket*)buf;
+    ssize_t rc;
+    //char buf[BUFFER_SIZE];
+    //teoLNullCPacket *cp = (teoLNullCPacket*)buf;
     
     // Initialize L0 Client library
     teoLNullInit();
 
     // Connect to L0 server
-    int fd = teoLNullClientConnect(TCP_PORT, TCP_IP);
-    if(fd > 0) {
+    teoLNullConnectData *con = teoLNullClientConnect(TCP_PORT, TCP_IP);    
+    if(con->fd > 0) {
         
-        // Initialize L0 connection
+        // Send (1) Initialize L0 connection
         size_t pkg_length = teoLNullClientLogin(packet, BUFFER_SIZE, host_name);
-        if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
+        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
-        printf("\nSend %d bytes of %d buffer initialize packet to L0 server\n", 
+        printf("\nSend %d bytes packet of %d bytes buffer initialize packet to L0 server\n", 
                 (int)snd, (int)pkg_length);
         
-        // Send peer list request to peer
-        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, 
-                CMD_L_PEERS, peer_name, NULL, 0);
-        if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
-        printf("Send %d bytes of %d buffer packet to L0 server to peer %s, "
+        // Send (2) peer list request to peer
+        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_PEERS, 
+                peer_name, NULL, 0);
+        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
+        printf("Send %d bytes packet of %d bytes buffer packet to L0 server to peer %s, "
                "cmd = %d\n", 
                (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
         
-        // Receive answer from server
-        while((rc = teoLNullPacketRecv(fd, buf, BUFFER_SIZE)) == -1);
+        // Send (3) command echo
+        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_ECHO, 
+                peer_name, msg, strlen(msg) + 1);
+        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
+        if(snd == -1) perror(strerror(errno));
+        printf("Send %d bytes packet of %d bytes buffer to L0 server to peer %s, "
+               "data: %s\n", 
+               (int)snd, (int)pkg_length, peer_name, msg);
+
+        // Receive (1) answer from server      
+        while((rc = teoLNullPacketRecvS(con)) == -1);  
+        
+        // Process received data
+        if(rc > 0) {
+            
+            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
+            char *data = cp->peer_name + cp->peer_name_length;
+            printf("Receive %d bytes: %d bytes data from L0 server, "
+                    "from peer %s, data: %s\n\n", 
+                    (int)rc, cp->data_length, cp->peer_name, data);
+        }
+        
+        // Receive (2) answer from server
+        while((rc = teoLNullPacketRecvS(con)) == -1);
         
         // Process received data
         if(rc > 0) {
 
+            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
             char *data = cp->peer_name + cp->peer_name_length;
             printf("Receive %d bytes: %d bytes data from L0 server, "
                     "from peer %s, data: %s\n\n", 
                     (int)rc, cp->data_length, cp->peer_name, data);
         }
-
-        // Send command echo
-        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_ECHO, 
-                peer_name, msg, strlen(msg) + 1);
-        if((snd = teoLNullPacketSend(fd, pkg, pkg_length)) >= 0);
-        if(snd == -1) perror(strerror(errno));
-        printf("Send %d bytes packet of %d buffer to L0 server to peer %s, "
-               "data: %s\n", 
-               (int)snd, (int)pkg_length, peer_name, msg);
-
-        // Receive answer from server        
-        while((rc = teoLNullPacketRecv(fd, buf, BUFFER_SIZE)) == -1);
-
-        // Process received data
-        if(rc > 0) {
-
-            char *data = cp->peer_name + cp->peer_name_length;
-            printf("Receive %d bytes: %d bytes data from L0 server, "
-                    "from peer %s, data: %s\n\n", 
-                    (int)rc, cp->data_length, cp->peer_name, data);
-        }
-
+        
         // Close connection
-        close(fd);
+        teoLNullClientDisconnect(con);
     }
     
     // Cleanup L0 Client library

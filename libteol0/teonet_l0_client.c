@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include <fcntl.h>
 #ifdef HAVE_MINGW
-#include <winsock2.h>
+//#include <winsock2.h>
 #else
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -90,7 +93,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  * 
  * @return Length of send data
  */
-size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
+ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
     
     int snd;
     
@@ -104,6 +107,133 @@ size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
 }
 
 /**
+ * Split or Combine input buffer
+ * 
+ * @param kld Pointer to input buffer
+ * @param data Received data buffer
+ * @param data_len Received data buffer length
+ * @param received Received data length
+ * 
+ * @return Size of packet or Packet state code
+ * @retval >0 Packet received
+ * @retval -1 Packet not receiving yet (got part of packet)
+ * @retval -2 Wrong packet received (dropped)
+ */
+ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
+        size_t data_len, ssize_t received) {
+    
+    //#define DEBUG_MSG
+    
+    size_t retval = -1;
+    
+    #ifdef DEBUG_MSG
+    printf("L0 Client: "
+       "Got %d bytes of packet...\n", 
+       (int)received);        
+    #endif
+    
+    // Check end of previous buffer
+    if(kld->last_packet_ptr > 0) {
+
+        kld->read_buffer_ptr = kld->read_buffer_ptr - kld->last_packet_ptr;
+        if(kld->read_buffer_ptr > 0) {
+            
+            #ifdef DEBUG_MSG
+            printf("L0 Client: "
+                   "Use %d bytes from previously received data...\n", 
+                   (int)(kld->read_buffer_ptr));
+            #endif
+                    
+            memmove(kld->read_buffer, kld->read_buffer + kld->last_packet_ptr, 
+                    kld->read_buffer_ptr);
+        }        
+        kld->last_packet_ptr = 0;
+    }    
+                
+    // Increase buffer size
+    if(received > kld->read_buffer_size - kld->read_buffer_ptr) {
+
+        // Increase read buffer size
+        kld->read_buffer_size += data_len; //received;
+        if(kld->read_buffer != NULL) 
+            kld->read_buffer = realloc(kld->read_buffer, 
+                    kld->read_buffer_size);
+        else 
+            kld->read_buffer = malloc(kld->read_buffer_size);     
+
+        #ifdef DEBUG_MSG
+        printf("L0 Client: "
+               "Increase read buffer to new size: %d bytes ...\n", 
+               (int)kld->read_buffer_size);        
+        #endif
+    }
+    
+    // Add received data to the read buffer
+    if(received > 0) {
+        memmove(kld->read_buffer + kld->read_buffer_ptr, data, received);
+        kld->read_buffer_ptr += received;
+    }
+
+    teoLNullCPacket *packet = (teoLNullCPacket *)kld->read_buffer;
+    size_t len;
+
+    // \todo Check packet
+
+    // Process read buffer
+    if(kld->read_buffer_ptr - kld->last_packet_ptr > sizeof(teoLNullCPacket) && 
+       kld->read_buffer_ptr - kld->last_packet_ptr >= (len = sizeof(teoLNullCPacket) + 
+            packet->peer_name_length + packet->data_length)) {
+
+        // Check checksum
+        uint8_t header_checksum = teoByteChecksum(packet, 
+                sizeof(teoLNullCPacket) - 
+                sizeof(packet->header_checksum));
+        uint8_t checksum = teoByteChecksum(packet->peer_name, 
+                packet->peer_name_length + packet->data_length);
+        if(packet->header_checksum == header_checksum &&
+           packet->checksum == checksum) {
+
+            // Packet has received - return packet size
+            retval = len; 
+            kld->last_packet_ptr += len;                    
+
+            #ifdef DEBUG_MSG
+            printf("L0 Server: "
+                "Identify packet %d bytes length ...\n", 
+                (int)retval);
+            #endif
+        }
+
+        // Wrong checksum - drop this packet
+        else {
+
+            // Wrong packet received - return -2
+            kld->read_buffer_ptr = 0;
+            kld->last_packet_ptr = 0;
+            retval = -2;
+
+            #ifdef DEBUG_MSG
+            printf("L0 Client: "
+                "Wrong packet %d bytes length; dropped ...\n", 
+                (int)len);
+            #endif
+        }
+    }
+    else {
+        
+        #ifdef DEBUG_MSG
+        printf("L0 Client: "
+               "Wait next part of packet, now it has %d bytes ...\n", 
+               (int)kld->read_buffer_ptr);        
+        #endif
+    }
+
+    return retval;
+    
+    #undef DEBUG_MSG
+}
+
+/**
  * Receive packet from L0 server
  * 
  * @param fd L0 server socket
@@ -112,16 +242,36 @@ size_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
  * 
  * @return Length of send data
  */
-size_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
+ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
     
     int rc;
     
     #ifdef HAVE_MINGW
-    while((rc = recv(fd, buf, buf_length, 0)) == -1);
+    rc = recv(fd, buf, buf_length, 0);
     #else
-    while((rc = read(fd, buf, buf_length)) == -1);
+    rc = read(fd, buf, buf_length);
     #endif
 
+    return rc;
+}
+
+/**
+ * Receive packet from L0 server and split or combine it
+ * 
+ * @param con Pointer to teoLNullConnectData
+ * 
+ * @return Size of packet or Packet state code
+ * @retval >0 Packet received
+ * @retval -1 Packet not receiving yet (got part of packet)
+ * @retval -2 Wrong packet received (dropped)
+ */
+ssize_t teoLNullPacketRecvS(teoLNullConnectData *con) {
+    
+    char buf[L0_BUFFER_SIZE];
+    
+    ssize_t rc = teoLNullPacketRecv(con->fd, buf, L0_BUFFER_SIZE);
+    rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
+    
     return rc;
 }
 
@@ -225,19 +375,23 @@ int set_tcp_nodelay(int fd) {
  * @param server Server IP or name
  * @param port Server port
  * 
- * @return Socket description: > 0 - success connection
+ * @return Pointer to teoLNullConnectData. Null if no memory error
+ * @retval teoLNullConnectData::fd>0   - Success connection
+ * @retval teoLNullConnectData::fd==-1 - Create socket error
+ * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
+ * @retval teoLNullConnectData::fd==-3 - Client-connect() error
  */
-int teoLNullClientConnect(int port, const char *server) {
+teoLNullConnectData* teoLNullClientConnect(int port, const char *server) {
 
-    /* Variable and structure definitions. */
-    #ifndef HAVE_MINGW
-    int sd;
-    #else
-    SOCKET sd;
-    #endif
+    // Variable and structure definitions.
     int rc;
-    struct sockaddr_in serveraddr;
     struct hostent *hostp;
+    struct sockaddr_in serveraddr;
+    teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    con->last_packet_ptr = 0;
+    con->read_buffer = NULL;
+    con->read_buffer_ptr = 0;
+    con->read_buffer_size = 0;
 
     /* The socket() function returns a socket */
     /* descriptor representing an endpoint. */
@@ -247,10 +401,11 @@ int teoLNullClientConnect(int port, const char *server) {
     /* will be used for this socket. */
     /******************************************/
     /* get a socket descriptor */
-    if((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if((con->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     
         printf("Client-socket() error\n");
-        return(-1);
+        con->fd = -1;
+        return con;
     }
     else {
         printf("Client-socket() OK\n");
@@ -273,8 +428,9 @@ int teoLNullClientConnect(int port, const char *server) {
         if(hostp == (struct hostent *)NULL) {
         
             printf("HOST NOT FOUND --> h_errno = %d\n", h_errno);
-            close(sd);
-            return(-2);
+            close(con->fd);
+            con->fd = -2;
+            return con;
         }
         memcpy(&serveraddr.sin_addr, hostp->h_addr, sizeof(serveraddr.sin_addr));
     }
@@ -284,21 +440,36 @@ int teoLNullClientConnect(int port, const char *server) {
     /* connection to the server. */
     /***********************************************/
     /* connect() to server. */
-    if((rc = connect(sd, (struct sockaddr *)&serveraddr, sizeof(serveraddr))) < 0) {
+    if((rc = connect(con->fd, (struct sockaddr *)&serveraddr, sizeof(serveraddr))) < 0) {
     
         printf("Client-connect() error\n");
-        close(sd);
-        return(-3);
+        close(con->fd);
+        con->fd = -3;
+        return con;
     }
     else {
         printf("Connection established...\n");
     }
 
     // Set non block mode
-    set_nonblock(sd);
+    set_nonblock(con->fd);
     
     // Set TCP_NODELAY option
-    set_tcp_nodelay(sd);
+    set_tcp_nodelay(con->fd);
 
-    return sd;
+    return con;
+}
+
+/**
+ * Disconnect from server and free teoLNullConnectData
+ * 
+ * @param con Pointer to teoLNullConnectData
+ */
+void teoLNullClientDisconnect(teoLNullConnectData *con) {
+    
+    if(con != NULL) {
+        
+        if(con->fd > 0) close(con->fd);
+        if(con->read_buffer != NULL) free(con->read_buffer);
+    }
 }
