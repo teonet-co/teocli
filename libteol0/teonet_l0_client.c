@@ -24,6 +24,9 @@
 
 #include "teonet_l0_client.h"
 
+// Uncomment next line to show debug message
+//#define DEBUG_MSG
+
 /**
  * Initialize L0 client library.
  * 
@@ -121,8 +124,6 @@ ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
  */
 ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
         size_t data_len, ssize_t received) {
-    
-    //#define DEBUG_MSG
     
     size_t retval = -1;
     
@@ -228,9 +229,7 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
         #endif
     }
 
-    return retval;
-    
-    #undef DEBUG_MSG
+    return retval;    
 }
 
 /**
@@ -284,7 +283,7 @@ ssize_t teoLNullPacketRecvS(teoLNullConnectData *con) {
  * 
  * @return Pointer to teoLNullCPacket
  */
-size_t teoLNullClientLogin(void* buffer, size_t buffer_length, const char* host_name) {
+size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, const char* host_name) {
     
     return teoLNullPacketCreate(buffer, buffer_length, 0, "", host_name, 
             strlen(host_name) + 1);
@@ -351,20 +350,18 @@ void set_nonblock(int fd) {
  */
 int set_tcp_nodelay(int fd) {
 
-    int result = 0;
-    
-    #ifndef HAVE_MINGW
+    int result = 0;    
     int flag = 1;
+    
     result = setsockopt(fd,           // socket affected
                          IPPROTO_TCP,     // set option at TCP level
                          TCP_NODELAY,     // name of option
                          (char *) &flag,  // the cast is historical cruft
-                         sizeof(int));    // length of option value
+                         sizeof(flag));   // length of option value
     if (result < 0) {
         
         printf("Set TCP_NODELAY of fd %d error\n", fd);
     }
-    #endif
 
     return result;
 }
@@ -473,3 +470,5 @@ void teoLNullClientDisconnect(teoLNullConnectData *con) {
         if(con->read_buffer != NULL) free(con->read_buffer);
     }
 }
+
+#undef DEBUG_MSG

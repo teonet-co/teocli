@@ -58,10 +58,23 @@ public:
      * @param server Server IP or name
      * @param port Server port
      * 
-     * @return Socket description: > 0 - success connection
+     * @return Pointer to teoLNullConnectData. Null if no memory error
+     * @retval teoLNullConnectData::fd>0   - Success connection
+     * @retval teoLNullConnectData::fd==-1 - Create socket error
+     * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
+     * @retval teoLNullConnectData::fd==-3 - Client-connect() error
      */
-    inline int connect(int port, const char *server) {
+    inline teoLNullConnectData *connect(int port, const char *server) {
         return teoLNullClientConnect(port, server);
+    }
+    
+    /**
+     * Disconnect from server and free teoLNullConnectData
+     * 
+     * @param con Pointer to teoLNullConnectData
+     */
+    inline void disconnect(teoLNullConnectData *con) {
+        teoLNullClientDisconnect(con);
     }
     
     /**
@@ -73,10 +86,10 @@ public:
      * 
      * @return Pointer to teoLNullCPacket
      */
-    inline size_t login(void* buffer, size_t buffer_length, 
+    inline size_t packetCreateLogin(void* buffer, size_t buffer_length, 
         const char* host_name) { 
         
-        return teoLNullClientLogin(buffer, buffer_length, host_name);
+        return teoLNullPacketCreateLogin(buffer, buffer_length, host_name);
     }   
     
     /**
@@ -140,21 +153,6 @@ public:
     inline ssize_t packetRecvS(teoLNullConnectData *con) {
         return teoLNullPacketRecvS(teoLNullConnectData *con);
     }
-    
-//    /**
-//     * Calculate checksum
-//     * 
-//     * Calculate byte checksum in data buffer
-//     * 
-//     * @param data Pointer to data buffer
-//     * @param data_length Length of the data buffer to calculate checksum
-//     * 
-//     * @return Byte checksum of the input buffer
-//     */
-//    inline uint8_t teoByteChecksum(void *data, size_t data_length) {
-//        
-//        return teoByteChecksum(data, data_length);
-//    }    
     
 };
 

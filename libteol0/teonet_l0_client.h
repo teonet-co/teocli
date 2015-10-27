@@ -70,6 +70,41 @@ typedef struct teoLNullCPacket {
 
 } teoLNullCPacket;
 
+/**
+ * KSNet ARP table data structure
+ */
+typedef struct ksnet_arp_data {
+
+    int16_t mode;       ///< Peers mode: -1 - This host, -2 undefined host, 0 - peer , 1 - r-host, 2 - TCP Proxy peer
+    char addr[40];      ///< Peer IP address
+    int16_t port;       ///< Peer port
+
+    double last_acrivity;           ///< Last time receved data from peer
+    double last_triptime_send;      ///< Last time when triptime request send
+    double last_triptime_got;       ///< Last time when triptime received
+
+    double last_triptime;           ///< Last triptime
+    double triptime;                ///< Middle triptime
+
+    double monitor_time;            ///< Monitor ping time
+
+} ksnet_arp_data;
+
+/**
+ * KSNet ARP table whole data array
+ */
+typedef struct ksnet_arp_data_ar {
+    
+    uint32_t length;
+    struct _arp_data {
+        
+        char name[40];
+        ksnet_arp_data data;
+        
+    } arp_data[];
+    
+} ksnet_arp_data_ar;
+
 
 #ifdef	__cplusplus
 extern "C" {
@@ -80,13 +115,16 @@ void teoLNullCleanup();
 
 teoLNullConnectData *teoLNullClientConnect(int port, const char *server);
 void teoLNullClientDisconnect(teoLNullConnectData *con);
-size_t teoLNullClientLogin(void* buffer, size_t buffer_length, const char* host_name);
 
+size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, 
+        const char* host_name);
 size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command, 
         const char * peer, const void* data, size_t data_length);
+
 ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
 ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
-ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
+
+ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data, 
         size_t data_len, ssize_t received);
 ssize_t teoLNullPacketRecvS(teoLNullConnectData *con);
 
