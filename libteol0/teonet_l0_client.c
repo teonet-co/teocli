@@ -405,10 +405,12 @@ teoLNullConnectData* teoLNullClientConnect(int port, const char *server) {
         return con;
     }
     else {
+        #ifdef DEBUG_MSG
         printf("Client-socket() OK\n");
+        #endif
     }
 
-    printf("Connecting to the f***ing %s at port %d ...\n", server, port);
+    printf("Connecting to the server %s at port %d ...\n", server, port);
 
     memset(&serveraddr, 0x00, sizeof(struct sockaddr_in));
     serveraddr.sin_family = AF_INET;
@@ -445,7 +447,7 @@ teoLNullConnectData* teoLNullClientConnect(int port, const char *server) {
         return con;
     }
     else {
-        printf("Connection established...\n");
+        printf("Connection established ...\n");
     }
 
     // Set non block mode

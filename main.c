@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/timeb.h> 
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -81,6 +82,10 @@ int main(int argc, char** argv) {
     ssize_t rc;
     char *data = NULL;
     
+    // Define time structure for echo command
+    struct timeb time_start, time_end;
+    const size_t time_length = sizeof(struct timeb);
+    
     // Initialize L0 Client library
     teoLNullInit();
 
@@ -104,30 +109,55 @@ int main(int argc, char** argv) {
                (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
         
         // Send (3) echo request to peer, command CMD_L_ECHO
+        // Add current time to the end of message (it should be return back by server)
+        ftime(&time_start);
+        const size_t msg_len = strlen(msg) + 1;
+        char *msg_buf = malloc(msg_len + time_length); 
+        memcpy(msg_buf, msg, msg_len);
+        memcpy(msg_buf + msg_len, &time_start, time_length);
+        // Send message with time
         pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_ECHO, 
-                peer_name, msg, strlen(msg) + 1);
+                peer_name, msg_buf, msg_len + time_length);
         if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
         printf("Send %d bytes packet of %d bytes buffer to L0 server to peer %s, "
                "cmd = %d (CMD_L_ECHO), " 
                "data: %s\n", 
                (int)snd, (int)pkg_length, peer_name, CMD_L_ECHO, msg);
+        free(msg_buf);
         
         // Show empty line
         printf("\n");
-
-        // Receive (1) answer from server      
+        
+        // Receive (1) answer from server, CMD_L_PEERS_ANSWER      
         while((rc = teoLNullPacketRecvS(con)) == -1);  
         
         // Process received data
         if(rc > 0) {
             
-            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
-            //char *data = cp->peer_name + cp->peer_name_length;
+            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;            
             printf("Receive %d bytes: %d bytes data from L0 server, "
                     "from peer %s, cmd = %d\n", 
                     (int)rc, cp->data_length, cp->peer_name, cp->cmd);
+            
+            // Process CMD_L_PEERS_ANSWER
+            if(cp->cmd == CMD_L_PEERS_ANSWER) {
+                
+                // Answers data
+                ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)(cp->peer_name + cp->peer_name_length);
+                const char *ln = "--------------------------\n";
+                printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
+                int i;
+                for(i = 0; i < arp_data_ar->length; i++) {
+                    
+                    printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, arp_data_ar->arp_data[i].data.last_triptime);
+                }
+                printf("%s", ln);
+            }
         }
+        
+        // Show empty line
+        printf("\n");
         
         // Receive (2) answer from server
         while((rc = teoLNullPacketRecvS(con)) == -1);
@@ -140,6 +170,23 @@ int main(int argc, char** argv) {
             printf("Receive %d bytes: %d bytes data from L0 server, "
                     "from peer %s, cmd = %d, data: %s\n", 
                     (int)rc, cp->data_length, cp->peer_name, cp->cmd, data);
+            
+            // Process CMD_L_PEERS_ANSWER
+            if(cp->cmd == CMD_L_ECHO_ANSWER) {
+                
+                // Get time from answers data
+                ftime(&time_end);
+                size_t time_ptr = strlen(data) + 1;
+                memcpy(&time_start, data + time_ptr, time_length);
+                
+                // Calculate trip time
+                int trip_time = 
+                        (int) (1000.0 * (time_end.time - time_start.time)
+                        + (time_end.millitm - time_start.millitm));
+                
+                // Show trip time
+                printf("Trip time: %d ms\n", trip_time);
+            }
         }
         
         // Show empty line
