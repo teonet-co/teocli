@@ -17,8 +17,17 @@
 #define	TEONET_L0_CLIENT_H
 
 #include <stdint.h>
-#ifdef HAVE_MINGW
+
+#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
 #include <winsock2.h>
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+	#ifdef MS_WIN64
+	typedef __int64 ssize_t;
+	#else
+	typedef _W64 int ssize_t;
+	#endif
 #endif
 
 /**
@@ -40,7 +49,7 @@ enum CMD_L {
  */
 typedef struct teoLNullConnectData {
 
-    #ifndef HAVE_MINGW
+	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     int fd;             ///< Connection socket
     #else
     SOCKET fd;          ///< Connection socket
@@ -105,30 +114,35 @@ typedef struct ksnet_arp_data_ar {
     
 } ksnet_arp_data_ar;
 
+#ifdef _WINDLL
+#define TEOCLI_API __declspec(dllexport)
+#else
+#define TEOCLI_API 
+#endif
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-void teoLNullInit();  
-void teoLNullCleanup();
+TEOCLI_API void teoLNullInit();
+TEOCLI_API void teoLNullCleanup();
 
-teoLNullConnectData *teoLNullClientConnect(int port, const char *server);
-void teoLNullClientDisconnect(teoLNullConnectData *con);
+TEOCLI_API teoLNullConnectData *teoLNullClientConnect(int port, const char *server);
+TEOCLI_API void teoLNullClientDisconnect(teoLNullConnectData *con);
 
-size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, 
+TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
         const char* host_name);
-size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command, 
+TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
 
-ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
-ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
+TEOCLI_API ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
+TEOCLI_API ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
 
-ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data, 
+TEOCLI_API ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
         size_t data_len, ssize_t received);
-ssize_t teoLNullPacketRecvS(teoLNullConnectData *con);
+TEOCLI_API ssize_t teoLNullPacketRecvS(teoLNullConnectData *con);
 
-uint8_t teoByteChecksum(void *data, size_t data_length);
+TEOCLI_API uint8_t teoByteChecksum(void *data, size_t data_length);
 
 #ifdef	__cplusplus
 }

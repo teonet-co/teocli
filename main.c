@@ -29,10 +29,15 @@
  * Created on October 19, 2015, 3:51 PM
  */
 
+#if defined(_WIN32) || defined(_WIN64)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !(defined(_WIN32) || defined(_WIN64))
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <sys/timeb.h> 
 
@@ -74,8 +79,8 @@ int main(int argc, char** argv) {
     
     // Define send packet buffer
     size_t snd;
-    const size_t BUFFER_SIZE = L0_BUFFER_SIZE;
-    char packet[BUFFER_SIZE];
+	#define BUFFER_SIZE L0_BUFFER_SIZE
+	char packet[BUFFER_SIZE];
     teoLNullCPacket *pkg = (teoLNullCPacket*) packet;
     
     // Define receive packet size and data pointer   
@@ -97,6 +102,7 @@ int main(int argc, char** argv) {
         size_t pkg_length = teoLNullPacketCreateLogin(packet, BUFFER_SIZE, host_name);
         if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
         if(snd == -1) perror(strerror(errno));
+//		Error	1	error C4996 : 'strerror' : This function or variable may be unsafe.Consider using strerror_s instead.To disable deprecation, use _CRT_SECURE_NO_WARNINGS.See online help for details.c : \users\ka_scherba\documents\projects\teonet\embedded\teocli\main.c	124	1	teocli
         printf("\nSend %d bytes packet of %d bytes buffer to L0 server, Initialize packet\n", 
                 (int)snd, (int)pkg_length);
         
@@ -148,7 +154,7 @@ int main(int argc, char** argv) {
                 const char *ln = "--------------------------\n";
                 printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
                 int i;
-                for(i = 0; i < arp_data_ar->length; i++) {
+                for(i = 0; i < (int)arp_data_ar->length; i++) {
                     
                     printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, arp_data_ar->arp_data[i].data.last_triptime);
                 }
