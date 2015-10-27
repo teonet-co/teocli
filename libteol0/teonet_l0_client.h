@@ -22,7 +22,7 @@
 #include <winsock2.h>
 #endif
 
-#if defined(_WIN32) || defined(_WIN64)
+#if !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
 	#ifdef MS_WIN64
 	typedef __int64 ssize_t;
 	#else
@@ -49,10 +49,10 @@ enum CMD_L {
  */
 typedef struct teoLNullConnectData {
 
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    int fd;             ///< Connection socket
-    #else
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     SOCKET fd;          ///< Connection socket
+    #else
+    int fd;             ///< Connection socket
     #endif
     
     void *read_buffer;      ///< Pointer to saved buffer
