@@ -30,9 +30,9 @@
 //#define DEBUG_MSG
 
 #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64) 
-	#define close_socket(fd) closesocket(fd)
+    #define close_socket(fd) closesocket(fd)
 #else
-	#define close_socket(fd) close(fd)
+    #define close_socket(fd) close(fd)
 #endif
 
 /**
@@ -67,7 +67,7 @@ void teoLNullInit() {
 void teoLNullCleanup() {
     
     // Cleanup socket library
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     WSACleanup();
     #endif    
 }
@@ -85,7 +85,8 @@ void teoLNullCleanup() {
  * @return Length of created packet or zero if buffer to less
  */
 size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, 
-        uint8_t command, const char * peer, const void* data, size_t data_length) {
+        uint8_t command, const char * peer, const void* data, 
+        size_t data_length) {
     
     size_t peer_name_length = strlen(peer) + 1;
     
@@ -198,8 +199,8 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
                    (int)(kld->read_buffer_ptr));
             #endif
                     
-            memmove(kld->read_buffer, (char*)kld->read_buffer + kld->last_packet_ptr, 
-                    kld->read_buffer_ptr);
+            memmove(kld->read_buffer, (char*)kld->read_buffer + 
+                    kld->last_packet_ptr, kld->read_buffer_ptr);
         }        
         kld->last_packet_ptr = 0;
     }    
@@ -210,8 +211,7 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
         // Increase read buffer size
         kld->read_buffer_size += data_len; //received;
         if(kld->read_buffer != NULL) 
-            kld->read_buffer = realloc(kld->read_buffer, 
-                    kld->read_buffer_size);
+            kld->read_buffer = realloc(kld->read_buffer, kld->read_buffer_size);
         else 
             kld->read_buffer = malloc(kld->read_buffer_size);     
 
@@ -224,7 +224,7 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
     
     // Add received data to the read buffer
     if(received > 0) {
-		memmove((char*)kld->read_buffer + kld->read_buffer_ptr, data, received);
+        memmove((char*)kld->read_buffer + kld->read_buffer_ptr, data, received);
         kld->read_buffer_ptr += received;
     }
 
@@ -235,8 +235,9 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
 
     // Process read buffer
     if(kld->read_buffer_ptr - kld->last_packet_ptr > sizeof(teoLNullCPacket) && 
-       kld->read_buffer_ptr - kld->last_packet_ptr >= (len = sizeof(teoLNullCPacket) + 
-            packet->peer_name_length + packet->data_length)) {
+       kld->read_buffer_ptr - kld->last_packet_ptr >= 
+            (len = sizeof(teoLNullCPacket) + packet->peer_name_length + 
+            packet->data_length)) {
 
         // Check checksum
         uint8_t header_checksum = teoByteChecksum(packet, 
@@ -298,7 +299,7 @@ ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
     
     int rc;
     
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     rc = recv(fd, buf, buf_length, 0);
     #else
     rc = read(fd, buf, buf_length);
@@ -336,7 +337,8 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
  * 
  * @return Length of created packet or zero if buffer to less
  */
-size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, const char* host_name) {
+size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, 
+        const char* host_name) {
     
     return teoLNullPacketCreate(buffer, buffer_length, 0, "", host_name, 
             strlen(host_name) + 1);
@@ -392,7 +394,8 @@ uint8_t teoByteChecksum(void *data, size_t data_length) {
     int i;
     uint8_t *ch, checksum = 0;
     for(i = 0; i < (int)data_length; i++) {
-		ch = (uint8_t*)((char*)data + i);
+        
+        ch = (uint8_t*)((char*)data + i);
         checksum += *ch;
     }
     
@@ -406,7 +409,7 @@ uint8_t teoByteChecksum(void *data, size_t data_length) {
  */
 void set_nonblock(int fd) {
 
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     //-------------------------
     // Set the socket I/O mode: In this case FIONBIO
     // enables or disables the blocking mode for the 
@@ -504,7 +507,8 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port = htons(port);
 
-	if((serveraddr.sin_addr.s_addr = inet_addr(server)) == (unsigned long)INADDR_NONE) {
+	if((serveraddr.sin_addr.s_addr = inet_addr(server)) == 
+                (unsigned long)INADDR_NONE) {
 
         /* When passing the host name of the server as a */
         /* parameter to this program, use the gethostbyname() */
@@ -519,7 +523,8 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
             con->fd = -2;
             return con;
         }
-        memcpy(&serveraddr.sin_addr, hostp->h_addr, sizeof(serveraddr.sin_addr));
+        memcpy(&serveraddr.sin_addr, hostp->h_addr, 
+                sizeof(serveraddr.sin_addr));
     }
 
     /* After the socket descriptor is received, the */
@@ -527,7 +532,8 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     /* connection to the server. */
     /***********************************************/
     /* connect() to server. */
-    if((rc = connect(con->fd, (struct sockaddr *)&serveraddr, sizeof(serveraddr))) < 0) {
+    if((rc = connect(con->fd, (struct sockaddr *)&serveraddr, 
+            sizeof(serveraddr))) < 0) {
     
         printf("Client-connect() error\n");
 		close_socket(con->fd);
@@ -556,7 +562,7 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
     
     if(con != NULL) {
         
-		if(con->fd > 0) close_socket(con->fd);
+        if(con->fd > 0) close_socket(con->fd);
         if(con->read_buffer != NULL) free(con->read_buffer);
     }
 }
