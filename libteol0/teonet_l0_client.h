@@ -124,25 +124,33 @@ typedef struct ksnet_arp_data_ar {
 extern "C" {
 #endif
 
+// Hight level functions    
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
 TEOCLI_API teoLNullConnectData *teoLNullClientConnect(int port, const char *server);
 TEOCLI_API void teoLNullClientDisconnect(teoLNullConnectData *con);
 
-TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
+TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
+TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, 
+        const char *peer_name, void *data, size_t data_length);
+TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
+
+
+
+// Low level functions
+size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
         const char* host_name);
-TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
+size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
 
-TEOCLI_API ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
-TEOCLI_API ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
+ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
+ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
 
-TEOCLI_API ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
+ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
         size_t data_len, ssize_t received);
-TEOCLI_API ssize_t teoLNullPacketRecvS(teoLNullConnectData *con);
 
-TEOCLI_API uint8_t teoByteChecksum(void *data, size_t data_length);
+uint8_t teoByteChecksum(void *data, size_t data_length);
 
 #ifdef	__cplusplus
 }

@@ -35,6 +35,14 @@
 	#define close_socket(fd) close(fd)
 #endif
 
+/**
+ * Get output buffer size
+ * @param peer_length
+ * @param data_length
+ */
+#define teoLNullBufferSize(peer_length, data_length) \
+    ( sizeof(teoLNullCPacket) + peer_length + data_length )
+
 
 /**
  * Initialize L0 client library.
@@ -44,7 +52,7 @@
 void teoLNullInit() {
     
     // Startup windows socket library
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     WSADATA wsaData;
     WSAStartup(0x0202, &wsaData);
     #endif     
@@ -74,18 +82,22 @@ void teoLNullCleanup() {
  * @param data Command data
  * @param data_length Command data length
  * 
- * @return Length of packet
+ * @return Length of created packet or zero if buffer to less
  */
 size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, 
         uint8_t command, const char * peer, const void* data, size_t data_length) {
     
-    // \todo Check buffer length
+    size_t peer_name_length = strlen(peer) + 1;
+    
+    // Check buffer length
+    if(buffer_length < sizeof(teoLNullCPacket) + peer_name_length + data_length)           
+        return 0;
     
     teoLNullCPacket* pkg = (teoLNullCPacket*) buffer;
     
     pkg->cmd = command;
     pkg->data_length = data_length;
-    pkg->peer_name_length = strlen(peer) + 1;
+    pkg->peer_name_length = peer_name_length;    
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
     pkg->checksum = teoByteChecksum(pkg->peer_name, pkg->peer_name_length + 
@@ -103,18 +115,50 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  * @param pkg Package to send
  * @param pkg_length Package length
  * 
- * @return Length of send data
+ * @return Length of send data or -1 at error
  */
 ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
     
     int snd;
     
-	#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     if((snd = send(fd, pkg, pkg_length, 0)) >= 0);                
     #else
     if((snd = write(fd, pkg, pkg_length)) >= 0);                
     #endif
 
+    return snd;
+}
+
+/**
+ * Send command to L0 server
+ * 
+ * Create L0 clients packet and send it to L0 server
+ * 
+ * @param con Pointer to teoLNullConnectData
+ * @param cmd Command
+ * @param peer_name Peer name to send to
+ * @param data Pointer to data
+ * @param data_length Length of data
+ * 
+ * @return Length of send data or -1 at error
+ */
+ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name, 
+        void *data, size_t data_length) {
+    
+    if(data == NULL) data_length = 0;
+    
+    const size_t peer_length = strlen(peer_name) + 1;
+    const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
+    char *buf = malloc(buf_length);
+    ssize_t snd;
+    
+    size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name, 
+            data, data_length);
+    if((snd = teoLNullPacketSend(con->fd, buf, pkg_length)) >= 0);
+    
+    free(buf);
+    
     return snd;
 }
 
@@ -273,7 +317,7 @@ ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
  * @retval -1 Packet not receiving yet (got part of packet)
  * @retval -2 Wrong packet received (dropped)
  */
-ssize_t teoLNullPacketRecvS(teoLNullConnectData *con) {
+ssize_t teoLNullRecv(teoLNullConnectData *con) {
     
     char buf[L0_BUFFER_SIZE];
     
@@ -284,18 +328,53 @@ ssize_t teoLNullPacketRecvS(teoLNullConnectData *con) {
 }
 
 /**
- * Create initialize L0 client packet
+ * Create L0 clients initialization packet
  * 
  * @param buffer Buffer to create packet in
  * @param buffer_length Buffer length
  * @param host_name Name of this L0 client
  * 
- * @return Pointer to teoLNullCPacket
+ * @return Length of created packet or zero if buffer to less
  */
 size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, const char* host_name) {
     
     return teoLNullPacketCreate(buffer, buffer_length, 0, "", host_name, 
             strlen(host_name) + 1);
+}
+
+/**
+ * Login to L0 server
+ * 
+ * Create and send L0 clients initialization packet
+ * 
+ * @param buffer Buffer to create packet in
+ * @param buffer_length Buffer length
+ * @param host_name Name of this L0 client
+ * 
+ * @return Length of send data or -1 at error
+ */
+ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name) {
+
+    ssize_t snd;
+    const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
+    
+    // Buffer
+    #if defined(_WIN32) || defined(_WIN64)
+    char *buf = malloc(buf_len);
+    #else
+    char buf[buf_len];
+    #endif
+    
+    size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
+    if(!pkg_length) return 0;
+    if((snd = teoLNullPacketSend(con->fd, buf, pkg_length)) >= 0);    
+    
+    // Free buffer
+    #if defined(_WIN32) || defined(_WIN64)
+    free(buf);
+    #endif
+    
+    return snd;
 }
 
 /**
