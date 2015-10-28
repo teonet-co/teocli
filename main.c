@@ -77,13 +77,7 @@ int main(int argc, char** argv) {
     if(argc > 5) msg = argv[5];
     else msg = "Hello";
     
-    // Define send packet buffer
-    size_t snd;
-	#define BUFFER_SIZE L0_BUFFER_SIZE
-	char packet[BUFFER_SIZE];
-    teoLNullCPacket *pkg = (teoLNullCPacket*) packet;
-    
-    // Define receive packet size and data pointer   
+    // Define receive packet size and data pointer variables  
     ssize_t rc;
     char *data = NULL;
     
@@ -98,45 +92,42 @@ int main(int argc, char** argv) {
     teoLNullConnectData *con = teoLNullClientConnect(TCP_PORT, TCP_IP);    
     if(con->fd > 0) {
         
-        // Send (1) Initialize L0 connection to L0 server
-        size_t pkg_length = teoLNullPacketCreateLogin(packet, BUFFER_SIZE, host_name);
-        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
+        // Send (1) Initialization packet to L0 server
+        size_t snd = teoLNullLogin(con, host_name);
         if(snd == -1) perror(strerror(errno));
-//		Error	1	error C4996 : 'strerror' : This function or variable may be unsafe.Consider using strerror_s instead.To disable deprecation, use _CRT_SECURE_NO_WARNINGS.See online help for details.c : \users\ka_scherba\documents\projects\teonet\embedded\teocli\main.c	124	1	teocli
-        printf("\nSend %d bytes packet of %d bytes buffer to L0 server, Initialize packet\n", 
-                (int)snd, (int)pkg_length);
+        printf("\nSend %d bytes packet to L0 server, Initialization packet\n", 
+                (int)snd);
         
         // Send (2) peer list request to peer, command CMD_L_PEERS
-        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_PEERS, 
-                peer_name, NULL, 0);
-        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
-        printf("Send %d bytes packet of %d bytes buffer to L0 server to peer %s, "
+        snd = teoLNullSend(con, CMD_L_PEERS, peer_name, NULL, 0);        
+        printf("Send %d bytes packet to L0 server to peer %s, "
                "cmd = %d (CMD_L_PEERS)\n", 
-               (int)snd, (int)pkg_length, peer_name, CMD_L_PEERS);
+               (int)snd,peer_name, CMD_L_PEERS);
         
         // Send (3) echo request to peer, command CMD_L_ECHO
+        //
         // Add current time to the end of message (it should be return back by server)
         ftime(&time_start);
         const size_t msg_len = strlen(msg) + 1;
-        char *msg_buf = malloc(msg_len + time_length); 
+        const size_t msg_buf_len = msg_len + time_length;
+        char *msg_buf = malloc(msg_buf_len); 
         memcpy(msg_buf, msg, msg_len);
         memcpy(msg_buf + msg_len, &time_start, time_length);
+        //
         // Send message with time
-        pkg_length = teoLNullPacketCreate(packet, BUFFER_SIZE, CMD_L_ECHO, 
-                peer_name, msg_buf, msg_len + time_length);
-        if((snd = teoLNullPacketSend(con->fd, pkg, pkg_length)) >= 0);
+        snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
         if(snd == -1) perror(strerror(errno));
-        printf("Send %d bytes packet of %d bytes buffer to L0 server to peer %s, "
+        printf("Send %d bytes packet to L0 server to peer %s, "
                "cmd = %d (CMD_L_ECHO), " 
                "data: %s\n", 
-               (int)snd, (int)pkg_length, peer_name, CMD_L_ECHO, msg);
+               (int)snd, peer_name, CMD_L_ECHO, msg);
         free(msg_buf);
         
         // Show empty line
         printf("\n");
         
         // Receive (1) answer from server, CMD_L_PEERS_ANSWER      
-        while((rc = teoLNullPacketRecvS(con)) == -1);  
+        while((rc = teoLNullRecv(con)) == -1);  
         
         // Process received data
         if(rc > 0) {
@@ -149,14 +140,16 @@ int main(int argc, char** argv) {
             // Process CMD_L_PEERS_ANSWER
             if(cp->cmd == CMD_L_PEERS_ANSWER) {
                 
-                // Answers data
-                ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)(cp->peer_name + cp->peer_name_length);
+                // Show peer list
+                ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
+                        (cp->peer_name + cp->peer_name_length);
                 const char *ln = "--------------------------\n";
                 printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
                 int i;
                 for(i = 0; i < (int)arp_data_ar->length; i++) {
                     
-                    printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, arp_data_ar->arp_data[i].data.last_triptime);
+                    printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, 
+                            arp_data_ar->arp_data[i].data.last_triptime);
                 }
                 printf("%s", ln);
             }
@@ -166,7 +159,7 @@ int main(int argc, char** argv) {
         printf("\n");
         
         // Receive (2) answer from server
-        while((rc = teoLNullPacketRecvS(con)) == -1);
+        while((rc = teoLNullRecv(con)) == -1);
         
         // Process received data
         if(rc > 0) {

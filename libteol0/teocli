@@ -77,68 +77,38 @@ public:
         teoLNullClientDisconnect(con);
     }
     
+    
     /**
      * Create initialize L0 client packet
      * 
-     * @param buffer Buffer to create packet in
-     * @param buffer_length Buffer length
+     * @param con Pointer to teoLNullConnectData
      * @param host_name Name of this L0 client
      * 
-     * @return Pointer to teoLNullCPacket
+     * @return Length of send data or -1 at error
      */
-    inline size_t packetCreateLogin(void* buffer, size_t buffer_length, 
-        const char* host_name) { 
+    inline size_t login(teoLNullConnectData *con, const char* host_name) { 
         
-        return teoLNullPacketCreateLogin(buffer, buffer_length, host_name);
+        return teoLNullLogin(con, host_name);
     }   
     
     /**
-     * Create L0 client packet
-     *  
-     * @param buffer Buffer to create packet in
-     * @param buffer_length Buffer length
-     * @param command Command to peer
-     * @param peer Teonet peer
-     * @param data Command data
-     * @param data_length Command data length
+     * Send command to L0 server
      * 
-     * @return Length of packet
-     */    
-    inline size_t packetCreate(void* buffer, size_t buffer_length, 
-        uint8_t command, const char * peer, const void* data, 
-        size_t data_length) {
-        
-        return teoLNullPacketCreate(buffer, buffer_length, command, peer, data, 
-                data_length);
-    }
-    
-    /**
-     * Send packet to L0 server
+     * Create L0 clients packet and send it to L0 server
      * 
-     * @param fd L0 server socket
-     * @param pkg Package to send
-     * @param pkg_length Package length
+     * @param con Pointer to teoLNullConnectData
+     * @param cmd Command
+     * @param peer_name Peer name to send to
+     * @param data Pointer to data
+     * @param data_length Length of data
      * 
-     * @return Length of send data
+     * @return Length of send data or -1 at error
      */
-    inline ssize_t packetSend(int fd, void* pkg, size_t pkg_length) {
+    inline ssize_t send(teoLNullConnectData *con, int cmd, 
+        const char *peer_name, void *data, size_t data_length) {
         
-        return teoLNullPacketSend(fd, pkg, pkg_length);
+        return teoLNullSend(con, cmd, peer_name, data, data_length);
     }
-    
-    /**
-     * Receive packet from L0 server
-     * 
-     * @param fd L0 server socket
-     * @param pkg Buffer to receive
-     * @param pkg_length Buffer length
-     * 
-     * @return Length of send data
-     */
-    inline ssize_t packetRecv(int fd, void* buf, size_t buf_length) {
-        
-        return teoLNullPacketRecv(fd, buf, buf_length);
-    }    
     
     /**
      * Receive packet from L0 server and split or combine it
@@ -150,9 +120,10 @@ public:
      * @retval -1 Packet not receiving yet (got part of packet)
      * @retval -2 Wrong packet received (dropped)
      */
-    inline ssize_t packetRecvS(teoLNullConnectData *con) {
-        return teoLNullPacketRecvS(teoLNullConnectData *con);
-    }
+    inline ssize_t recv(teoLNullConnectData *con) {
+        
+        return teoLNullRecv(con);
+    }    
     
 };
 
