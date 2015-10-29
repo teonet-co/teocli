@@ -466,7 +466,7 @@ int set_tcp_nodelay(int fd) {
  * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
  * @retval teoLNullConnectData::fd==-3 - Client-connect() error
  */
-teoLNullConnectData* teoLNullClientConnect(int port, const char *server) {
+teoLNullConnectData* teoLNullConnect(int port, const char *server) {
 
     // Variable and structure definitions.
     int rc;
@@ -552,7 +552,7 @@ teoLNullConnectData* teoLNullClientConnect(int port, const char *server) {
  * 
  * @param con Pointer to teoLNullConnectData
  */
-void teoLNullClientDisconnect(teoLNullConnectData *con) {
+void teoLNullDisconnect(teoLNullConnectData *con) {
     
     if(con != NULL) {
         
