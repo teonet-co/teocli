@@ -17,3 +17,5 @@
 /win_vcxproj/libteocli.sdf
 /win_vcxproj/libteocli/Debug/
 /win_vcxproj/teocli/Debug/
+/.deps/
+/libteol0/.libs/

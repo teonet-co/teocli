@@ -101,9 +101,9 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
     pkg->peer_name_length = peer_name_length;    
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
-    pkg->checksum = teoByteChecksum(pkg->peer_name, pkg->peer_name_length + 
+    pkg->checksum = get_byte_checksum(pkg->peer_name, pkg->peer_name_length + 
             pkg->data_length);
-    pkg->header_checksum = teoByteChecksum(pkg, sizeof(teoLNullCPacket) - 
+    pkg->header_checksum = get_byte_checksum(pkg, sizeof(teoLNullCPacket) - 
             sizeof(pkg->header_checksum));
     
     return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
@@ -240,10 +240,10 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
             packet->data_length)) {
 
         // Check checksum
-        uint8_t header_checksum = teoByteChecksum(packet, 
+        uint8_t header_checksum = get_byte_checksum(packet, 
                 sizeof(teoLNullCPacket) - 
                 sizeof(packet->header_checksum));
-        uint8_t checksum = teoByteChecksum(packet->peer_name, 
+        uint8_t checksum = get_byte_checksum(packet->peer_name, 
                 packet->peer_name_length + packet->data_length);
         if(packet->header_checksum == header_checksum &&
            packet->checksum == checksum) {
@@ -389,7 +389,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name) {
  * 
  * @return Byte checksum of the input buffer
  */
-uint8_t teoByteChecksum(void *data, size_t data_length) {
+uint8_t get_byte_checksum(void *data, size_t data_length) {
     
     int i;
     uint8_t *ch, checksum = 0;
@@ -507,7 +507,7 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port = htons(port);
 
-	if((serveraddr.sin_addr.s_addr = inet_addr(server)) == 
+    if((serveraddr.sin_addr.s_addr = inet_addr(server)) == 
                 (unsigned long)INADDR_NONE) {
 
         /* When passing the host name of the server as a */
@@ -523,8 +523,7 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
             con->fd = -2;
             return con;
         }
-        memcpy(&serveraddr.sin_addr, hostp->h_addr, 
-                sizeof(serveraddr.sin_addr));
+        memcpy(&serveraddr.sin_addr, hostp->h_addr, sizeof(serveraddr.sin_addr));
     }
 
     /* After the socket descriptor is received, the */
