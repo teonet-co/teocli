@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
     teoLNullInit();
 
     // Connect to L0 server
-    teoLNullConnectData *con = teoLNullClientConnect(TCP_PORT, TCP_IP);    
+    teoLNullConnectData *con = teoLNullConnect(TCP_PORT, TCP_IP);    
     if(con->fd > 0) {
         
         // Send (1) Initialization packet to L0 server
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
         printf("Test result: %s\n\n", ((!strcmp(msg, data)) ? "OK" : "ERROR"));
         
         // Close connection
-        teoLNullClientDisconnect(con);
+        teoLNullDisconnect(con);
     }
     
     // Cleanup L0 Client library

@@ -128,8 +128,8 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullClientConnect(int port, const char *server);
-TEOCLI_API void teoLNullClientDisconnect(teoLNullConnectData *con);
+TEOCLI_API teoLNullConnectData *teoLNullConnect(int port, const char *server);
+TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, 
