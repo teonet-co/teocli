@@ -150,7 +150,7 @@ ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
 ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
         size_t data_len, ssize_t received);
 
-uint8_t teoByteChecksum(void *data, size_t data_length);
+uint8_t get_byte_checksum(void *data, size_t data_length);
 
 #ifdef	__cplusplus
 }
