@@ -45,6 +45,20 @@ enum CMD_L {
 #define L0_BUFFER_SIZE 2048
 
 /**
+ * L0 client events
+ */
+typedef enum teoLNullEvents {
+    
+    EV_L_CONNECTED,
+    EV_L_DISCONNECTED,
+    EV_L_RECEIVED
+            
+} teoLNullEvents;
+
+typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data, 
+            size_t data_len, void *user_data) ;
+
+/**
  * L0 client connect data
  */
 typedef struct teoLNullConnectData {
@@ -59,6 +73,11 @@ typedef struct teoLNullConnectData {
     size_t read_buffer_ptr; ///< Pointer in read buffer
     size_t read_buffer_size;///< Read buffer size
     size_t last_packet_ptr; ///< Last recived packet pointer (length)
+    
+    teoLNullEventsCb event_cb;
+    void *user_data;
+//    void (*event_cb)(void *kc, teoLNullEvents event, void *data, 
+//            size_t data_len, void *user_data);
 
 } teoLNullConnectData;
         
@@ -143,7 +162,9 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullConnect(int port, const char *server);
+TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
+TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port, 
+        teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
