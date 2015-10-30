@@ -123,7 +123,22 @@ typedef struct ksnet_arp_data_ar {
 #ifdef	__cplusplus
 extern "C" {
 #endif
-
+    
+/**
+ * Get output buffer size
+ * @param peer_length
+ * @param data_length
+ */
+#define teoLNullBufferSize(peer_length, data_length) \
+    ( sizeof(teoLNullCPacket) + peer_length + data_length )
+    
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)   
+    #define teoLNullSleep(ms) Sleep(mv)
+#else
+    #define teoLNullSleep(ms) usleep(ms * 1000)    
+#endif
+    
+    
 // Hight level functions    
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();

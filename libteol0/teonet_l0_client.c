@@ -35,14 +35,6 @@
     #define close_socket(fd) close(fd)
 #endif
 
-/**
- * Get output buffer size
- * @param peer_length
- * @param data_length
- */
-#define teoLNullBufferSize(peer_length, data_length) \
-    ( sizeof(teoLNullCPacket) + peer_length + data_length )
-
 
 /**
  * Initialize L0 client library.
@@ -95,6 +87,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
         return 0;
     
     teoLNullCPacket* pkg = (teoLNullCPacket*) buffer;
+    memset(buffer, 0, sizeof(teoLNullCPacket));
     
     pkg->cmd = command;
     pkg->data_length = data_length;
@@ -315,6 +308,7 @@ ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
  * 
  * @return Size of packet or Packet state code
  * @retval >0 Packet received
+ * @retval  0 Disconnected
  * @retval -1 Packet not receiving yet (got part of packet)
  * @retval -2 Wrong packet received (dropped)
  */
@@ -323,7 +317,8 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
     char buf[L0_BUFFER_SIZE];
     
     ssize_t rc = teoLNullPacketRecv(con->fd, buf, L0_BUFFER_SIZE);
-    rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
+    if(rc != 0)
+        rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
     
     return rc;
 }
