@@ -1,7 +1,5 @@
-/win_mingw/teocli.exe
 /linux/Makefile
 /linux/Makefile.in
-/win_mingw/teocli_exe.zip
 /.deps/
 /.dirstamp
 /main.o
@@ -10,3 +8,7 @@
 /libteol0/.dirstamp
 /libteol0/teonet_l0_client.o
 /libteol0/teonet_l0_client.lo
+/win_mingw/libteocli.a
+/win_mingw/libteocli.dll
+/win_mingw/teocli.exe
+/win_mingw/teocli_exe.zip
