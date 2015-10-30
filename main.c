@@ -5,7 +5,8 @@
  * \example main.c
  * 
  * This is basic example of Teocli library. This application connect to network 
- * L0 server, initialize (login) at the L0 server, and send and receive data to from network peer.  
+ * L0 server, initialize (login) at the L0 server, and send and receive data to 
+ * from network peer.  
  *
  * See server example parameters at:  
  *   https://gitlab.ksproject.org/teonet/teocli/blob/master/README.md#basic-teocli-example
@@ -127,7 +128,7 @@ int main(int argc, char** argv) {
         printf("\n");
         
         // Receive (1) answer from server, CMD_L_PEERS_ANSWER      
-        while((rc = teoLNullRecv(con)) == -1);  
+        while((rc = teoLNullRecv(con)) == -1) teoLNullSleep(50);  
         
         // Process received data
         if(rc > 0) {
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
         printf("\n");
         
         // Receive (2) answer from server
-        while((rc = teoLNullRecv(con)) == -1);
+        while((rc = teoLNullRecv(con)) == -1) teoLNullSleep(50);
         
         // Process received data
         if(rc > 0) {
@@ -191,8 +192,29 @@ int main(int argc, char** argv) {
         // Show empty line
         printf("\n");
         
-        // Check received ECHO
-        printf("Test result: %s\n\n", ((!strcmp(msg, data)) ? "OK" : "ERROR"));
+        // Check received ECHO        
+        printf("Test result: %s\n", ((data != NULL && !strcmp(msg, data)) ? "OK" : "ERROR"));
+        printf("Press Ctrl+C to exit\n\n");
+        
+        // Receive other data
+        for(;;) {
+            
+            while((rc = teoLNullRecv(con)) == -1) teoLNullSleep(50);
+            if(rc > 0) {
+
+                teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
+                data = cp->peer_name + cp->peer_name_length;
+                printf("Receive %d bytes: %d bytes data from L0 server, "
+                        "from peer %s, cmd = %d, data: %s\n", 
+                        (int)rc, cp->data_length, cp->peer_name, cp->cmd, 
+                        cp->data_length ? data : "");
+            } 
+            else if(rc == 0) { 
+                
+                printf("Disconnected ...\n\n"); 
+                break; 
+            }
+        }
         
         // Close connection
         teoLNullDisconnect(con);
