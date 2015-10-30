@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     
     // Teonet L0 server parameters
     const char *host_name = argv[1]; //"C3";
-    const char *TCP_IP = argv[2]; //"127.0.0.1"; //"10.12.35.53"; // 
+    const char *TCP_SERVER = argv[2]; //"127.0.0.1"; //"10.12.35.53"; // 
     const int TCP_PORT = atoi(argv[3]); //9000;
     const char *peer_name = argv[4]; //"teostream";
     const char *msg;
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     teoLNullInit();
 
     // Connect to L0 server
-    teoLNullConnectData *con = teoLNullConnect(TCP_PORT, TCP_IP);    
+    teoLNullConnectData *con = teoLNullConnect(TCP_SERVER, TCP_PORT);    
     if(con->fd > 0) {
         
         // Send (1) Initialization packet to L0 server

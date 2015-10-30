@@ -35,6 +35,11 @@
     #define close_socket(fd) close(fd)
 #endif
 
+// Send connected event
+#define send_l0_event(con, event, data, data_length) \        
+    if(con->event_cb != NULL) { \
+        con->event_cb(con, event, data, data_length, con->user_data); \
+    }
 
 /**
  * Initialize L0 client library.
@@ -452,11 +457,39 @@ int set_tcp_nodelay(int fd) {
     return result;
 }
 
+teoLNullReadEventLoop(teoLNullConnectData *con) {
+    
+    int retval;
+    fd_set rfds;
+    struct timeval tv;
+
+    // Watch server_socket to see when it has input.
+    FD_ZERO(&rfds);
+    FD_SET(con->fd, &rfds);
+
+    // Wait up to 200 ms. */
+    tv.tv_sec = 0;
+    tv.tv_usec = 200000;
+
+    retval = select(con->fd + 1, &rfds, NULL, NULL, &tv);
+    
+    // Error
+    if (retval == -1) printf("select() handle error\n", 0);
+    
+    // Timeout
+    else if(!retval) ; // Tick
+
+    // There is a data in fd
+    else send_l0_event(con, EV_L_RECEIVED, &con->fd, sizeof(con->fd));
+}
+
 /**
- * Create TCP client and connect to server
+ * Create TCP client and connect to server with event callback
  * 
  * @param server Server IP or name
  * @param port Server port
+ * @param event_cb Pointer to event callback function
+ * @param user_data Pointer to user data which will be send to event callback
  * 
  * @return Pointer to teoLNullConnectData. Null if no memory error
  * @retval teoLNullConnectData::fd>0   - Success connection
@@ -464,8 +497,9 @@ int set_tcp_nodelay(int fd) {
  * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
  * @retval teoLNullConnectData::fd==-3 - Client-connect() error
  */
-teoLNullConnectData* teoLNullConnect(int port, const char *server) {
-
+teoLNullConnectData* teoLNullConnectE(const char *server, int port, 
+        teoLNullEventsCb event_cb, void *user_data) {
+    
     // Variable and structure definitions.
     int rc;
     struct hostent *hostp;
@@ -475,6 +509,8 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     con->read_buffer = NULL;
     con->read_buffer_ptr = 0;
     con->read_buffer_size = 0;
+    con->event_cb = event_cb;
+    con->user_data = user_data;
 
     /* The socket() function returns a socket */
     /* descriptor representing an endpoint. */
@@ -488,6 +524,7 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     
         printf("Client-socket() error\n");
         con->fd = -1;
+        send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
         return con;
     }
     else {
@@ -516,6 +553,7 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
             printf("HOST NOT FOUND --> h_errno = %d\n", h_errno);
 			close_socket(con->fd);
             con->fd = -2;
+            send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
             return con;
         }
         memcpy(&serveraddr.sin_addr, hostp->h_addr, sizeof(serveraddr.sin_addr));
@@ -531,7 +569,8 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     
         printf("Client-connect() error\n");
 		close_socket(con->fd);
-        con->fd = -3;
+        con->fd = -3;        
+        send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
         return con;
     }
     else {
@@ -543,8 +582,28 @@ teoLNullConnectData* teoLNullConnect(int port, const char *server) {
     
     // Set TCP_NODELAY option
     set_tcp_nodelay(con->fd);
+    
+    // Send connected event
+    send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
 
     return con;
+}
+
+/**
+ * Create TCP client and connect to server without event callback
+ * 
+ * @param server Server IP or name
+ * @param port Server port
+ * 
+ * @return Pointer to teoLNullConnectData. Null if no memory error
+ * @retval teoLNullConnectData::fd>0   - Success connection
+ * @retval teoLNullConnectData::fd==-1 - Create socket error
+ * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
+ * @retval teoLNullConnectData::fd==-3 - Client-connect() error
+ */
+teoLNullConnectData* teoLNullConnect(const char *server, int port) {
+    
+    teoLNullConnectE(server, port, NULL, NULL);
 }
 
 /**
