@@ -36,7 +36,7 @@
 #endif
 
 // Send connected event
-#define send_l0_event(con, event, data, data_length) \        
+#define send_l0_event(con, event, data, data_length) \
     if(con->event_cb != NULL) { \
         con->event_cb(con, event, data, data_length, con->user_data); \
     }
@@ -457,9 +457,15 @@ int set_tcp_nodelay(int fd) {
     return result;
 }
 
-teoLNullReadEventLoop(teoLNullConnectData *con) {
+/**
+ * Wait socket data during timeout and call callback if data received
+ * 
+ * @param con Pointer to teoLNullConnectData
+ * @param timeout Timeout of wait socket read event in ms
+ */
+int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     
-    int retval;
+    int rv, retval = 1;
     fd_set rfds;
     struct timeval tv;
 
@@ -467,20 +473,36 @@ teoLNullReadEventLoop(teoLNullConnectData *con) {
     FD_ZERO(&rfds);
     FD_SET(con->fd, &rfds);
 
-    // Wait up to 200 ms. */
+    // Wait up to 50 ms. */
     tv.tv_sec = 0;
-    tv.tv_usec = 200000;
+    tv.tv_usec = timeout * 1000;
 
-    retval = select(con->fd + 1, &rfds, NULL, NULL, &tv);
+    rv = select(con->fd + 1, &rfds, NULL, NULL, &tv);
     
     // Error
-    if (retval == -1) printf("select() handle error\n", 0);
+    if (rv == -1) printf("select() handle error\n");
     
     // Timeout
-    else if(!retval) ; // Tick
+    else if(!rv) ; // Tick
 
     // There is a data in fd
-    else send_l0_event(con, EV_L_RECEIVED, &con->fd, sizeof(con->fd));
+    else {
+        
+        //printf("Data in fd\n");
+        ssize_t rc;
+        while((rc = teoLNullRecv(con)) != -1) {
+            
+            if(rc > 0) {
+                send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
+            } else if(rc == 0) {
+                send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+                retval = 0;
+                break;
+            }
+        }
+    }
+    
+    return retval;
 }
 
 /**

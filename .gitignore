@@ -1,3 +1,4 @@
+/nbproject/private/
 /linux/Makefile
 /linux/Makefile.in
 /.deps/
@@ -12,3 +13,5 @@
 /win_mingw/libteocli.dll
 /win_mingw/teocli.exe
 /win_mingw/teocli_exe.zip
+/python/teonet_l0_client_wrap.c
+/python/teocli.py
