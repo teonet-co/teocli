@@ -234,7 +234,8 @@ int main(int argc, char** argv) {
         // Event loop
         while(teoLNullReadEventLoop(con, timeout)) {
 
-            if( !(num % (1000 / 50)) )
+            // Send Echo command every second
+            if( !(num % (1000 / timeout)) )
                 teoLNullSendEcho(con, param.peer_name, param.msg);
             
             num++;
