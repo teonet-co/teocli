@@ -168,6 +168,9 @@ TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, 
         const char *peer_name, void *data, size_t data_length);
+TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
+        const char *msg);
+TEOCLI_API int teoLNullProccessEchoAnswer(const char *msg);
 TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
 TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 

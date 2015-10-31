@@ -23,6 +23,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
+#include <sys/timeb.h> 
 
 #include "teonet_l0_client.h"
 
@@ -159,6 +160,66 @@ ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name,
     free(buf);
     
     return snd;
+}
+
+/**
+ * Send ECHO command to L0 server
+ * 
+ * Create L0 clients packet and send it to L0 server
+ * 
+ * @param con Pointer to teoLNullConnectData
+ * @param peer_name Peer name to send to
+ * @param msg Message
+ * 
+ * @return Length of send data or -1 at error
+ */
+ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
+        const char *msg) {
+    
+    // Add current time to the end of message (it should be return 
+    // back by server)
+    struct timeb time_start;
+    const size_t time_length = sizeof(struct timeb);
+    ftime(&time_start);
+    const size_t msg_len = strlen(msg) + 1;
+    const size_t msg_buf_len = msg_len + time_length;
+    char *msg_buf = malloc(msg_buf_len); 
+    //
+    // Fill message buffer
+    memcpy(msg_buf, msg, msg_len);
+    memcpy(msg_buf + msg_len, &time_start, time_length);
+    //
+    // Send message with time
+    ssize_t snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, 
+            msg_buf_len);
+    
+    free(msg_buf);
+    
+    return snd;
+}
+
+/**
+ * Process ECHO_ANSWER request
+ * 
+ * @param msg Echo answers command data
+ * @return Trip time in ms
+ */
+int teoLNullProccessEchoAnswer(const char *msg) {
+    
+    struct timeb time_start, time_end;
+    const size_t time_length = sizeof(struct timeb);
+    
+    // Get time from answers data
+    ftime(&time_end);
+    size_t time_ptr = strlen(msg) + 1;
+    memcpy(&time_start, msg + time_ptr, time_length);
+
+    // Calculate trip time
+    int trip_time = 
+            (int) (1000.0 * (time_end.time - time_start.time)
+            + (time_end.millitm - time_start.millitm));
+
+    return trip_time;
 }
 
 /**
