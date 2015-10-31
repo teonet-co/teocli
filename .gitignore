@@ -1,9 +1,12 @@
+/.deps/
+/.dirstamp
+/build/
+/dist/
+/main.o
+/main_select.o
 /nbproject/private/
 /linux/Makefile
 /linux/Makefile.in
-/.deps/
-/.dirstamp
-/main.o
 /libteol0/.deps/
 /libteol0/.libs/
 /libteol0/.dirstamp
