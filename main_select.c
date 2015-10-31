@@ -73,8 +73,6 @@ void event_cb(void *con, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) {
     
     const struct app_parameters *param = user_data;
-    struct timeb time_start, time_end;
-    const size_t time_length = sizeof(struct timeb);
        
     switch(event) {
                 
@@ -86,7 +84,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 printf("Successfully connect to server\n");
                 
                 // Send (1) Initialization packet to L0 server
-                size_t snd = teoLNullLogin(con, param->host_name);
+                ssize_t snd = teoLNullLogin(con, param->host_name);
                 if(snd == -1) perror(strerror(errno));
                 printf("\nSend %d bytes packet to L0 server, "
                        "Initialization packet\n", 
@@ -102,23 +100,13 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 //
                 // Add current time to the end of message (it should be return 
                 // back by server)
-                ftime(&time_start);
-                const size_t msg_len = strlen(param->msg) + 1;
-                const size_t msg_buf_len = msg_len + time_length;
-                char *msg_buf = malloc(msg_buf_len); 
-                memcpy(msg_buf, param->msg, msg_len);
-                memcpy(msg_buf + msg_len, &time_start, time_length);
-                //
-                // Send message with time
-                snd = teoLNullSend(con, CMD_L_ECHO, param->peer_name, msg_buf, 
-                        msg_buf_len);
+                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
                 if(snd == -1) perror(strerror(errno));
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_ECHO), " 
                        "data: %s\n", 
                        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
-                free(msg_buf);
-
+                
                 // Show empty line
                 printf("\n");         
                 
@@ -167,18 +155,10 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 case CMD_L_ECHO_ANSWER:
                 {
                     data = cp->peer_name + cp->peer_name_length;
-                    // Get time from answers data
-                    ftime(&time_end);
-                    size_t time_ptr = strlen(data) + 1;
-                    memcpy(&time_start, data + time_ptr, time_length);
+                    int trip_time = teoLNullProccessEchoAnswer(data);
 
                     // Show data
                     printf("Data: %s\n", (char*)data);
-
-                    // Calculate trip time
-                    int trip_time = 
-                            (int) (1000.0 * (time_end.time - time_start.time)
-                            + (time_end.millitm - time_start.millitm));
 
                     // Show trip time
                     printf("Trip time: %d ms\n", trip_time);
@@ -248,9 +228,16 @@ int main(int argc, char** argv) {
     
     if(con->fd > 0) {
         
+        unsigned long num = 0;
+        const int timeout = 50;
+        
         // Event loop
-        while(teoLNullReadEventLoop(con, 50)) {
+        while(teoLNullReadEventLoop(con, timeout)) {
 
+            if( !(num % (1000 / 50)) )
+                teoLNullSendEcho(con, param.peer_name, param.msg);
+            
+            num++;
         }
             
         // Close connection
