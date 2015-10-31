@@ -64,20 +64,18 @@ typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data,
 typedef struct teoLNullConnectData {
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    SOCKET fd;          ///< Connection socket
+    SOCKET fd;                  ///< Connection socket
     #else
-    int fd;             ///< Connection socket
+    int fd;                     ///< Connection socket
     #endif
     
-    void *read_buffer;      ///< Pointer to saved buffer
-    size_t read_buffer_ptr; ///< Pointer in read buffer
-    size_t read_buffer_size;///< Read buffer size
-    size_t last_packet_ptr; ///< Last recived packet pointer (length)
+    void *read_buffer;          ///< Pointer to saved buffer
+    size_t read_buffer_ptr;     ///< Pointer in read buffer
+    size_t read_buffer_size;    ///< Read buffer size
+    size_t last_packet_ptr;     ///< Last recived packet pointer (length)
     
-    teoLNullEventsCb event_cb;
-    void *user_data;
-//    void (*event_cb)(void *kc, teoLNullEvents event, void *data, 
-//            size_t data_len, void *user_data);
+    teoLNullEventsCb event_cb;  ///< Event callback function
+    void *user_data;            ///< User data
 
 } teoLNullConnectData;
         
@@ -171,7 +169,7 @@ TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, 
         const char *peer_name, void *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
-
+TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 
 // Low level functions

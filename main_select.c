@@ -63,12 +63,11 @@ struct app_parameters {
 /**
  * Teonet L0 client event callback
  * 
- * @param kc
+ * @param con
  * @param event
  * @param data
  * @param data_len
  * @param user_data
- * @return 
  */
 void event_cb(void *con, teoLNullEvents event, void *data, 
             size_t data_len, void *user_data) {
@@ -137,58 +136,69 @@ void event_cb(void *con, teoLNullEvents event, void *data,
         
         case EV_L_RECEIVED:
         {
-            // Receive (1) answer from server, CMD_L_PEERS_ANSWER   
-            ssize_t rc;
-            while((rc = teoLNullRecv(con)) != -1) {
-                
-                printf("Got a data ...\n");
-                if(rc > 0) {
+            // Receive answer from server 
+            const ssize_t rc = data_len;
+            teoLNullCPacket *cp = (teoLNullCPacket*) data;
+            
+            printf("Receive %d bytes: %d bytes data from L0 server, "
+                    "from peer %s, cmd = %d\n", 
+                    (int)rc, cp->data_length, cp->peer_name, cp->cmd);
 
-                    teoLNullCPacket *cp = (teoLNullCPacket*) ((teoLNullConnectData*)con)->read_buffer;            
-                    printf("Receive %d bytes: %d bytes data from L0 server, "
-                            "from peer %s, cmd = %d\n", 
-                            (int)rc, cp->data_length, cp->peer_name, cp->cmd);
+            // Process commands
+            switch(cp->cmd) {
 
-                    // Process commands
-                    switch(cp->cmd) {
+                case CMD_L_PEERS_ANSWER:
+                {
+                    // Show peer list
+                    ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
+                            (cp->peer_name + cp->peer_name_length);
+                    const char *ln = "--------------------------\n";
+                    printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
+                    int i;
+                    for(i = 0; i < (int)arp_data_ar->length; i++) {
 
-                        case CMD_L_PEERS_ANSWER:
-                        {
-                            // Show peer list
-                            ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
-                                    (cp->peer_name + cp->peer_name_length);
-                            const char *ln = "--------------------------\n";
-                            printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
-                            int i;
-                            for(i = 0; i < (int)arp_data_ar->length; i++) {
-
-                                printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, 
-                                        arp_data_ar->arp_data[i].data.last_triptime);
-                            }
-                            printf("%s", ln);
-
-                        } break;
-
-                        case CMD_L_ECHO_ANSWER:
-                        {
-                            data = cp->peer_name + cp->peer_name_length;
-                            // Get time from answers data
-                            ftime(&time_end);
-                            size_t time_ptr = strlen(data) + 1;
-                            memcpy(&time_start, data + time_ptr, time_length);
-
-                            // Calculate trip time
-                            int trip_time = 
-                                    (int) (1000.0 * (time_end.time - time_start.time)
-                                    + (time_end.millitm - time_start.millitm));
-
-                            // Show trip time
-                            printf("Trip time: %d ms\n", trip_time);
-
-                        } break;
+                        printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, 
+                                arp_data_ar->arp_data[i].data.last_triptime);
                     }
-                }
+                    printf("%s", ln);
+
+                } break;
+
+                case CMD_L_ECHO_ANSWER:
+                {
+                    data = cp->peer_name + cp->peer_name_length;
+                    // Get time from answers data
+                    ftime(&time_end);
+                    size_t time_ptr = strlen(data) + 1;
+                    memcpy(&time_start, data + time_ptr, time_length);
+
+                    // Show data
+                    printf("Data: %s\n", (char*)data);
+
+                    // Calculate trip time
+                    int trip_time = 
+                            (int) (1000.0 * (time_end.time - time_start.time)
+                            + (time_end.millitm - time_start.millitm));
+
+                    // Show trip time
+                    printf("Trip time: %d ms\n", trip_time);
+
+                } break;
+                
+                case CMD_L_ECHO:
+                {
+                    printf("Got echo command\n");
+                    data = cp->peer_name + cp->peer_name_length;
+                    teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, 
+                        cp->data_length);
+                    
+                } break;   
+                
+                default:
+                    printf("Got unknown command\n");
+                    break;
             }
+            
         } break;
             
         default:
@@ -229,10 +239,6 @@ int main(int argc, char** argv) {
     if(argc > 5) param.msg = argv[5];
     else param.msg = "Hello";
     
-    // Define receive packet size and data pointer variables  
-    ssize_t rc;
-    char *data = NULL;
-    
     // Initialize L0 Client library
     teoLNullInit();
 
@@ -242,10 +248,9 @@ int main(int argc, char** argv) {
     
     if(con->fd > 0) {
         
-        for(;;) { // teoLNullSleep(50); 
+        // Event loop
+        while(teoLNullReadEventLoop(con, 50)) {
 
-            // Start read event loop
-            teoLNullReadEventLoop(con);
         }
             
         // Close connection
