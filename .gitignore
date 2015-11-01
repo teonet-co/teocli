@@ -15,6 +15,7 @@
 /win_mingw/libteocli.a
 /win_mingw/libteocli.dll
 /win_mingw/teocli.exe
+/win_mingw/teocli_s.exe
 /win_mingw/teocli_exe.zip
 /python/teonet_l0_client_wrap.c
 /python/teocli.py
