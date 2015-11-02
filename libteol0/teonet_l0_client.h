@@ -105,7 +105,7 @@ typedef struct ksnet_arp_data {
     char addr[40];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
-    double last_acrivity;           ///< Last time receved data from peer
+    double last_activity;           ///< Last time receved data from peer
     double last_triptime_send;      ///< Last time when triptime request send
     double last_triptime_got;       ///< Last time when triptime received
 
