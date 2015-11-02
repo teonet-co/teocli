@@ -145,8 +145,11 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     int i;
                     for(i = 0; i < (int)arp_data_ar->length; i++) {
 
-                        printf("%s, %.3f ms\n", arp_data_ar->arp_data[i].name, 
-                                arp_data_ar->arp_data[i].data.last_triptime);
+                        printf("%-15s(%2d) %8.3f ms\n", 
+                            arp_data_ar->arp_data[i].name, 
+                            arp_data_ar->arp_data[i].data.mode,
+                            arp_data_ar->arp_data[i].data.last_triptime);
+
                     }
                     printf("%s", ln);
 
