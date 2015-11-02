@@ -144,14 +144,17 @@ int main(int argc, char** argv) {
                 // Show peer list
                 ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
                         (cp->peer_name + cp->peer_name_length);
-                const char *ln = "-------------------------------\n";
+                const char *ln = "--------------------------------------------"
+                                 "---------\n";
                 printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
                 int i;
                 for(i = 0; i < (int)arp_data_ar->length; i++) {
                     
-                    printf("%-15s(%2d) %8.3f ms\n", 
+                    printf("%-12s(%2d)   %-15s   %d %8.3f ms\n", 
                             arp_data_ar->arp_data[i].name, 
                             arp_data_ar->arp_data[i].data.mode,
+                            arp_data_ar->arp_data[i].data.addr,
+                            arp_data_ar->arp_data[i].data.port,
                             arp_data_ar->arp_data[i].data.last_triptime);
                 }
                 printf("%s", ln);
