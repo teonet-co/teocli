@@ -33,6 +33,7 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>README.md</itemPath>
+    <itemPath>win_vcxproj/README.md</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>libteol0</Elem>
@@ -73,6 +74,8 @@
       <item path="win_mingw/make_exe.bat" ex="false" tool="3" flavor2="0">
       </item>
       <item path="win_mingw/teocli.exe" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/README.md" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -123,6 +126,8 @@
       <item path="win_mingw/make_exe.bat" ex="false" tool="3" flavor2="0">
       </item>
       <item path="win_mingw/teocli.exe" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/README.md" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
