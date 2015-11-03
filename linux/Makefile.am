@@ -10,5 +10,9 @@ noinst_PROGRAMS = teocli
 teocli_SOURCES = ../main.c
 teocli_LDFLAGS = $(AM_LDFLAGS) -lteocli	
 
+noinst_PROGRAMS += teocli_s	
+teocli_s_SOURCES = ../main_select.c
+teocli_s_LDFLAGS = $(AM_LDFLAGS) -lteocli	
+
 uninstall-local:
 	-rm -r $(teocliincludedir)
