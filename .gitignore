@@ -2,6 +2,7 @@
 /.dirstamp
 /build/
 /dist/
+/docs/
 /main.o
 /main_select.o
 /nbproject/private/
