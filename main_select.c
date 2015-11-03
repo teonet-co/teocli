@@ -125,7 +125,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
         case EV_L_RECEIVED:
         {
             // Receive answer from server 
-            const ssize_t rc = data_len;
+            const size_t rc = data_len;
             teoLNullCPacket *cp = (teoLNullCPacket*) data;
             
             printf("Receive %d bytes: %d bytes data from L0 server, "
