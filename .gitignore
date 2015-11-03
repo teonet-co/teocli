@@ -22,3 +22,17 @@
 /linux/teocli
 /linux/teocli_s
 /linux/.libs/
+/win_vcxproj/libteocli.v12.suo
+/win_vcxproj/libteocli.sdf
+/win_vcxproj/libteocli.opensdf
+/win_vcxproj/Debug/
+/win_vcxproj/teocli/Debug/
+/win_vcxproj/libteocli/Debug/
+/win_vcxproj/teocli_s/teocli_s.vcxproj.filters
+/win_vcxproj/teocli_s/Debug/
+/win_vcxproj/libteocli/x64/
+/win_vcxproj/x64/
+/win_vcxproj/teocli/x64/
+/win_vcxproj/teocli_s/x64/
+/win_vcxproj/libteocli/libteocli.vcxproj.user
+/win_vcxproj/teocli/teocli.vcxproj.user

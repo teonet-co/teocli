@@ -150,7 +150,7 @@ extern "C" {
     ( sizeof(teoLNullCPacket) + peer_length + data_length )
     
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)   
-    #define teoLNullSleep(ms) Sleep(mv)
+    #define teoLNullSleep(ms) Sleep(ms)
 #else
     #define teoLNullSleep(ms) usleep(ms * 1000)    
 #endif

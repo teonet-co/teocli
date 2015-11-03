@@ -96,8 +96,8 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
     memset(buffer, 0, sizeof(teoLNullCPacket));
     
     pkg->cmd = command;
-    pkg->data_length = data_length;
-    pkg->peer_name_length = peer_name_length;    
+    pkg->data_length = (uint16_t)data_length;
+	pkg->peer_name_length = (uint8_t)peer_name_length;
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
     pkg->checksum = get_byte_checksum(pkg->peer_name, pkg->peer_name_length + 
@@ -119,10 +119,10 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  */
 ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
     
-    int snd;
+	ssize_t snd;
     
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    if((snd = send(fd, pkg, pkg_length, 0)) >= 0);                
+	if ((snd = send(fd, pkg, (int)pkg_length, 0)) >= 0);
     #else
     if((snd = write(fd, pkg, pkg_length)) >= 0);                
     #endif
@@ -238,7 +238,7 @@ int teoLNullProccessEchoAnswer(const char *msg) {
 ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
         size_t data_len, ssize_t received) {
     
-    size_t retval = -1;
+    ssize_t retval = -1;
     
     #ifdef DEBUG_MSG
     printf("L0 Client: "
@@ -288,14 +288,14 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
     }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)kld->read_buffer;
-    size_t len;
+    ssize_t len;
 
     // \todo Check packet
 
     // Process read buffer
     if(kld->read_buffer_ptr - kld->last_packet_ptr > sizeof(teoLNullCPacket) && 
        kld->read_buffer_ptr - kld->last_packet_ptr >= 
-            (len = sizeof(teoLNullCPacket) + packet->peer_name_length + 
+            (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length + 
             packet->data_length)) {
 
         // Check checksum
@@ -356,10 +356,10 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
  */
 ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
     
-    int rc;
+	ssize_t rc;
     
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    rc = recv(fd, buf, buf_length, 0);
+    rc = recv(fd, buf, (int)buf_length, 0);
     #else
     rc = read(fd, buf, buf_length);
     #endif
@@ -686,7 +686,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
  */
 teoLNullConnectData* teoLNullConnect(const char *server, int port) {
     
-    teoLNullConnectE(server, port, NULL, NULL);
+    return teoLNullConnectE(server, port, NULL, NULL);
 }
 
 /**
