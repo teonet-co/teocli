@@ -35,6 +35,7 @@
             <word>README</word>
             <word>teocli</word>
             <word>teostream</word>
+            <word>websocket</word>
         </spellchecker-wordlist>
     </configuration>
 </project>
