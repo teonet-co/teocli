@@ -700,6 +700,7 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
         
         if(con->fd > 0) close_socket(con->fd);
         if(con->read_buffer != NULL) free(con->read_buffer);
+        free(con);
     }
 }
 
