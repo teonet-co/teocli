@@ -138,24 +138,27 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 case CMD_L_PEERS_ANSWER:
                 {
                     // Show peer list
-                    ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
-                            (cp->peer_name + cp->peer_name_length);
-                    const char *ln = "--------------------------------------------"
-                                 "---------\n";
-                    printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
-                    int i;
-                    for(i = 0; i < (int)arp_data_ar->length; i++) {
+                    if(cp->data_length > 1) {
+                        
+                        ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
+                                (cp->peer_name + cp->peer_name_length);
+                        const char *ln = 
+                                "--------------------------------------------"
+                                "---------\n";
+                        printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
+                        int i;
+                        for(i = 0; i < (int)arp_data_ar->length; i++) {
 
-                        printf("%-12s(%2d)   %-15s   %d %8.3f ms\n", 
-                            arp_data_ar->arp_data[i].name, 
-                            arp_data_ar->arp_data[i].data.mode,
-                            arp_data_ar->arp_data[i].data.addr,
-                            arp_data_ar->arp_data[i].data.port,
-                            arp_data_ar->arp_data[i].data.last_triptime);
+                            printf("%-12s(%2d)   %-15s   %d %8.3f ms\n", 
+                                arp_data_ar->arp_data[i].name, 
+                                arp_data_ar->arp_data[i].data.mode,
+                                arp_data_ar->arp_data[i].data.addr,
+                                arp_data_ar->arp_data[i].data.port,
+                                arp_data_ar->arp_data[i].data.last_triptime);
 
+                        }
+                        printf("%s", ln);
                     }
-                    printf("%s", ln);
-
                 } break;
 
                 case CMD_L_ECHO_ANSWER:

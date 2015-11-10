@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
                     (int)rc, cp->data_length, cp->peer_name, cp->cmd);
             
             // Process CMD_L_PEERS_ANSWER
-            if(cp->cmd == CMD_L_PEERS_ANSWER) {
+            if(cp->cmd == CMD_L_PEERS_ANSWER && cp->data_length > 1) {
                 
                 // Show peer list
                 ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
