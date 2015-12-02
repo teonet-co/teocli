@@ -38,8 +38,11 @@ enum CMD_L {
     CMD_L_ECHO = 65,    ///< Echo command
     CMD_L_ECHO_ANSWER,  ///< Answer to echo command
     CMD_L_PEERS = 72,   ///< Get peers command
-    CMD_L_PEERS_ANSWER  ///< Answer to get peers command
-            
+    CMD_L_PEERS_ANSWER, ///< Answer to get peers command
+    CMD_L_AUTH = 77,    ///< Auth command
+    CMD_L_AUTH_ANSWER,  ///< Auth answer command
+    
+    CMD_L_END = 127
 };
 
 #define L0_BUFFER_SIZE 2048
