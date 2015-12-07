@@ -23,8 +23,12 @@ Call from Internet:
 
 Build in command line:
 
-gcc -o ./libteocli.so ../libteol0/teonet_l0_client.c -DHAVE_MINGW -shared -fPIC -Wl,--out-implib,libteocli.a
+# gcc -o ./libteocli.so ../libteol0/teonet_l0_client.c -DHAVE_MINGW -shared -fPIC -Wl,--out-implib,libteocli.a
+#
+# gcc -o ./teocli ../main.c -DHAVE_MINGW libteocli.so
+# gcc -o ./teocli_s ../main_select.c -DHAVE_MINGW libteocli.so
 
-gcc -o ./teocli ../main.c -DHAVE_MINGW libteocli.so
-gcc -o ./teocli_s ../main_select.c -DHAVE_MINGW libteocli.so
+gcc -o ./libteocli.so ../libteol0/teonet_l0_client.c -shared -fPIC
+gcc -o ./teocli ../main.c libteocli.so
+sudo ldconfig
 
