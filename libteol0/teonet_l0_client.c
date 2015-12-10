@@ -506,10 +506,10 @@ int set_tcp_nodelay(int fd) {
     int flag = 1;
     
     result = setsockopt(fd,           // socket affected
-                         IPPROTO_TCP,     // set option at TCP level
-                         TCP_NODELAY,     // name of option
-                         (char *) &flag,  // the cast is historical cruft
-                         sizeof(flag));   // length of option value
+                        IPPROTO_TCP,     // set option at TCP level
+                        TCP_NODELAY,     // name of option
+                        (char *) &flag,  // the cast is historical cruft
+                        sizeof(flag));   // length of option value
     if (result < 0) {
         
         printf("Set TCP_NODELAY of fd %d error\n", fd);
