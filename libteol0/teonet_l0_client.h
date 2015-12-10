@@ -35,12 +35,14 @@
  */
 enum CMD_L {
     
-    CMD_L_ECHO = 65,    ///< Echo command
-    CMD_L_ECHO_ANSWER,  ///< Answer to echo command
-    CMD_L_PEERS = 72,   ///< Get peers command
-    CMD_L_PEERS_ANSWER, ///< Answer to get peers command
-    CMD_L_AUTH = 77,    ///< Auth command
-    CMD_L_AUTH_ANSWER,  ///< Auth answer command
+    CMD_L_ECHO = 65,         ///< Echo command
+    CMD_L_ECHO_ANSWER,       ///< Answer to echo command
+    CMD_L_PEERS = 72,        ///< Get peers command
+    CMD_L_PEERS_ANSWER,      ///< Answer to get peers command
+    CMD_L_AUTH = 77,         ///< Auth command
+    CMD_L_AUTH_ANSWER,       ///< Auth answer command
+    CMD_L_L0_CLIENTS,        ///< Get clients list command
+    CMD_L_L0_CLIENTS_ANSWER, ///< Clients list answer command
     
     CMD_L_END = 127
 };
@@ -133,6 +135,22 @@ typedef struct ksnet_arp_data_ar {
     } arp_data[];
     
 } ksnet_arp_data_ar;
+
+/**
+ * Clients list data structure
+ */
+typedef struct teonet_client_data_ar {
+    
+    uint32_t length;
+    struct _client_data {
+        
+        char name[40];
+        //ksnLNullData data;
+        
+    } client_data[];
+    
+} teonet_client_data_ar;
+
 
 #ifdef _WINDLL
 #define TEOCLI_API __declspec(dllexport)

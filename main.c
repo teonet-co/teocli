@@ -105,6 +105,12 @@ int main(int argc, char** argv) {
                "cmd = %d (CMD_L_PEERS)\n", 
                (int)snd,peer_name, CMD_L_PEERS);
         
+        // Send (2.5) clients list request to peer, command CMD_L_L0_CLIENTS
+        snd = teoLNullSend(con, CMD_L_L0_CLIENTS, peer_name, NULL, 0);        
+        printf("Send %d bytes packet to L0 server to peer %s, "
+               "cmd = %d (CMD_L_L0_CLIENTS)\n", 
+               (int)snd, peer_name, CMD_L_L0_CLIENTS);
+        
         // Send (3) echo request to peer, command CMD_L_ECHO
         //
         // Add current time to the end of message (it should be return back by server)
@@ -161,6 +167,35 @@ int main(int argc, char** argv) {
             }
         }
         
+        // Receive (1.5) answer from server, CMD_L_L0_CLIENTS_ANSWER      
+        while((rc = teoLNullRecv(con)) == -1) teoLNullSleep(50);  
+        
+        // Process received data
+        if(rc > 0) {
+
+            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;            
+            printf("Receive %d bytes: %d bytes data from L0 server, "
+                    "from peer %s, cmd = %d\n", 
+                    (int)rc, cp->data_length, cp->peer_name, cp->cmd);
+            
+            // Process CMD_L_L0_CLIENTS_ANSWER
+            if(cp->cmd == CMD_L_L0_CLIENTS_ANSWER && cp->data_length > 1) {
+                
+                // Show peer list
+                teonet_client_data_ar *client_data_ar = (teonet_client_data_ar *)
+                        (cp->peer_name + cp->peer_name_length);
+                const char *ln = "--------------------------------------------"
+                                 "---------\n";
+                printf("%sClients (%d): \n%s", ln, client_data_ar->length, ln);
+                int i;
+                for(i = 0; i < (int)client_data_ar->length; i++) {
+                    
+                    printf("%-12s\n", client_data_ar->client_data[i].name);
+                }
+                printf("%s", ln);
+            }            
+        }
+        
         // Show empty line
         printf("\n");
         
@@ -176,7 +211,7 @@ int main(int argc, char** argv) {
                     "from peer %s, cmd = %d, data: %s\n", 
                     (int)rc, cp->data_length, cp->peer_name, cp->cmd, data);
             
-            // Process CMD_L_PEERS_ANSWER
+            // Process CMD_L_ECHO_ANSWER
             if(cp->cmd == CMD_L_ECHO_ANSWER) {
                 
                 // Get time from answers data
