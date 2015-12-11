@@ -167,6 +167,9 @@ int main(int argc, char** argv) {
             }
         }
         
+        // Show empty line
+        printf("\n");
+        
         // Receive (1.5) answer from server, CMD_L_L0_CLIENTS_ANSWER      
         while((rc = teoLNullRecv(con)) == -1) teoLNullSleep(50);  
         
