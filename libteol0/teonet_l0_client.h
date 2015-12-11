@@ -144,7 +144,7 @@ typedef struct teonet_client_data_ar {
     uint32_t length;
     struct _client_data {
         
-        char name[64];
+        char name[128];
         //ksnLNullData data;
         
     } client_data[];
