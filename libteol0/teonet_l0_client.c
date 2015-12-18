@@ -523,6 +523,8 @@ int set_tcp_nodelay(int fd) {
  * 
  * @param con Pointer to teoLNullConnectData
  * @param timeout Timeout of wait socket read event in ms
+ * 
+ * @return 0 - if disconnected or 1 other way
  */
 int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     
@@ -549,7 +551,6 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     // There is a data in fd
     else {
         
-        //printf("Data in fd\n");
         ssize_t rc;
         while((rc = teoLNullRecv(con)) != -1) {
             
