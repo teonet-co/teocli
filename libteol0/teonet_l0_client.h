@@ -19,7 +19,9 @@
 #include <stdint.h>
 
 #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+#include "AllowWindowsPlatformTypes.h"
 #include <winsock2.h>
+#include "HideWindowsPlatformTypes.h"
 #endif
 
 #if !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
@@ -59,6 +61,13 @@ typedef enum teoLNullEvents {
     EV_L_RECEIVED
             
 } teoLNullEvents;
+
+// Commands:
+enum CMD_R {
+	CMD_R_START = 129,      ///< #129 Start game
+	CMD_R_POSITION,         ///< #130 Transfer position
+	CMD_R_END               ///< #131 End game 
+};
 
 typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data, 
             size_t data_len, void *user_data) ;
