@@ -155,7 +155,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name,
     
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name, 
             data, data_length);
-    if((snd = teoLNullPacketSend(con->fd, buf, pkg_length)) >= 0);
+    if((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0);
     
     free(buf);
     
@@ -382,7 +382,7 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
     
     char buf[L0_BUFFER_SIZE];
     
-    ssize_t rc = teoLNullPacketRecv(con->fd, buf, L0_BUFFER_SIZE);
+    ssize_t rc = teoLNullPacketRecv((int)con->fd, buf, L0_BUFFER_SIZE);
     if(rc != 0)
         rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
     
@@ -430,7 +430,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name) {
     
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
     if(!pkg_length) return 0;
-    if((snd = teoLNullPacketSend(con->fd, buf, pkg_length)) >= 0);    
+	if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0);
     
     // Free buffer
     #if defined(_WIN32) || defined(_WIN64)
@@ -540,7 +540,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     tv.tv_sec = 0;
     tv.tv_usec = timeout * 1000;
 
-    rv = select(con->fd + 1, &rfds, NULL, NULL, &tv);
+	rv = select((int)con->fd + 1, &rfds, NULL, NULL, &tv);
     
     // Error
     if (rv == -1) printf("select() handle error\n");
@@ -551,6 +551,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     // There is a data in fd
     else {
         
+        //printf("Data in fd\n");
         ssize_t rc;
         while((rc = teoLNullRecv(con)) != -1) {
             
@@ -662,10 +663,10 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     }
 
     // Set non block mode
-    set_nonblock(con->fd);
+	set_nonblock((int)con->fd);
     
     // Set TCP_NODELAY option
-    set_tcp_nodelay(con->fd);
+	set_tcp_nodelay((int)con->fd);
     
     // Send connected event
     send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
