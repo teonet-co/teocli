@@ -62,13 +62,6 @@ typedef enum teoLNullEvents {
             
 } teoLNullEvents;
 
-// Commands:
-enum CMD_R {
-	CMD_R_START = 129,      ///< #129 Start game
-	CMD_R_POSITION,         ///< #130 Transfer position
-	CMD_R_END               ///< #131 End game 
-};
-
 typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data, 
             size_t data_len, void *user_data) ;
 
