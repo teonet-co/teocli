@@ -11,39 +11,34 @@ The folder ```libteol0``` contain source code of the teocli library
 
 The ```linux``` folder contain Makefile to make Linux shared library and 
 application.  
-
-See [README](linux) in that folder to additional information.
+_See [README](linux) in that folder to additional information._
 
 
 ### Python
 
 The ```python``` folder contain make_python.sh file to make python module.  
-
-See [README](python) in that folder to additional information.
+_See [README](python) in that folder to additional information._
 
 
 ### Java Script and Node.js
 
 The ```TeocliJS``` subproject content code to connect to Teonet with websocket 
 from Java Script or Node.js.  
-
-See the [TeocliJS](https://gitlab.ksproject.org/teonet/TeocliJS) project.
+_See the [TeocliJS](https://gitlab.ksproject.org/teonet/TeocliJS) project._
 
 
 ### Windows with MinGw-64
 
 The ```win_mingw``` folder contain make_exe.sh file to make Windows DLL and 
 tests application under Linux.  
-
-See [README](win_mingw) in that folder to additional information.
+_See [README](win_mingw) in that folder to additional information._
 
 
 ### Windows with Visual Studio
 
 The ```win_vcxproj``` folder contain solution and projects to make Windows DLL 
 and tests under Windows Visual Studio.  
-
-See [README](win_vcxproj) in that folder to additional information.
+_See [README](win_vcxproj) in that folder to additional information._
 
 
 ## Basic teocli example
