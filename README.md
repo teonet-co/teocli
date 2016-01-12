@@ -22,9 +22,14 @@ _See [README](python) in that folder to additional information._
 
 ### Java Script and Node.js
 
-The ```TeocliJS``` subproject content code to connect to Teonet with websocket 
+The ```TeocliJS``` suproject content code to connect to Teonet with websocket 
 from Java Script or Node.js.  
 _See the [TeocliJS](https://gitlab.ksproject.org/teonet/TeocliJS) project._
+
+### AngelScript (going soon)
+
+The ```TeocliAS``` subproject content code to connect to Teonet from [AngelScript](http://www.angelcode.com/angelscript/).  
+_See the [TeocliAS](https://gitlab.ksproject.org/teonet/TeocliAS) project._
 
 
 ### Windows with MinGw-64
