@@ -546,8 +546,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     if (rv == -1) printf("select() handle error\n");
     
     // Timeout
-    else if(!rv) ; // Tick
+    else if(!rv) { // Idle or Timeout event
 
+        send_l0_event(con, EV_L_IDLE, NULL, 0);
+    }
     // There is a data in fd
     else {
         
@@ -564,6 +566,9 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
             }
         }
     }
+    
+    // Send Tick event    
+    send_l0_event(con, EV_L_TICK, NULL, 0);
     
     return retval;
 }
