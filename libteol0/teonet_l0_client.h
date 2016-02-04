@@ -90,23 +90,6 @@ typedef struct teoLNullConnectData {
 } teoLNullConnectData;
         
 /**
- * L0 client packet data structure
- * 
- */        
-typedef struct teoLNullCPacket {
-
-    uint8_t cmd; ///< Command
-    uint8_t peer_name_length; ///< To peer name length (include leading zero)
-    uint16_t data_length; ///< Packet data length
-    uint8_t reserved_1; ///< Reserved 1
-    uint8_t reserved_2; ///< Reserved 2
-    uint8_t checksum; ///< Whole checksum
-    uint8_t header_checksum; ///< Header checksum
-    char peer_name[]; ///< To/From peer name (include leading zero) + packet data
-
-} teoLNullCPacket;
-
-/**
  * KSNet ARP table data structure
  */
 typedef struct ksnet_arp_data {
@@ -126,6 +109,9 @@ typedef struct ksnet_arp_data {
 
 } ksnet_arp_data;
 
+#pragma pack(push)
+#pragma pack(1)
+
 /**
  * KSNet ARP table whole data array
  */
@@ -142,6 +128,23 @@ typedef struct ksnet_arp_data_ar {
 } ksnet_arp_data_ar;
 
 /**
+ * L0 client packet data structure
+ * 
+ */        
+typedef struct teoLNullCPacket {
+
+    uint8_t cmd; ///< Command
+    uint8_t peer_name_length; ///< To peer name length (include leading zero)
+    uint16_t data_length; ///< Packet data length
+    uint8_t reserved_1; ///< Reserved 1
+    uint8_t reserved_2; ///< Reserved 2
+    uint8_t checksum; ///< Whole checksum
+    uint8_t header_checksum; ///< Header checksum
+    char peer_name[]; ///< To/From peer name (include leading zero) + packet data
+
+} teoLNullCPacket;
+
+/**
  * Clients list data structure
  */
 typedef struct teonet_client_data_ar {
@@ -155,6 +158,19 @@ typedef struct teonet_client_data_ar {
     } client_data[];
     
 } teonet_client_data_ar;
+
+/**
+ * teoSScr class list or CMD_SUBSCRIBE_ANSWER data
+ */
+typedef struct teoSScrData {
+    
+    uint16_t ev; ///< Event (used when send data to subscriber)
+    uint8_t cmd; ///< Command ID (used when send data to subscriber)
+    char data[]; ///< Remote peer name in list or data in CMD_SUBSCRIBE_ANSWER
+        
+} teoSScrData;
+
+#pragma pack(pop)
 
 
 #ifdef _WINDLL
