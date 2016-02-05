@@ -89,13 +89,17 @@ typedef struct teoLNullConnectData {
 
 } teoLNullConnectData;
         
+#define ARP_TABLE_IP_SIZE 48    // INET6_ADDRSTRLEN = 46
+
 /**
  * KSNet ARP table data structure
  */
 typedef struct ksnet_arp_data {
 
     int16_t mode;       ///< Peers mode: -1 - This host, -2 undefined host, 0 - peer , 1 - r-host, 2 - TCP Proxy peer
-    char addr[40];      ///< Peer IP address
+    char addr[ARP_TABLE_IP_SIZE];      ///< Peer IP address
+// \todo test is it possible to change this structure for running peers     
+//    char addr[48];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
     double last_activity;           ///< Last time receved data from peer
@@ -106,7 +110,9 @@ typedef struct ksnet_arp_data {
     double triptime;                ///< Middle triptime
 
     double monitor_time;            ///< Monitor ping time
-
+    
+    double connected_time;          ///< Time when peer was connected to this peer
+    
 } ksnet_arp_data;
 
 #pragma pack(push)
@@ -120,7 +126,7 @@ typedef struct ksnet_arp_data_ar {
     uint32_t length;
     struct _arp_data {
         
-        char name[40];
+        char name[ARP_TABLE_IP_SIZE];
         ksnet_arp_data data;
         
     } arp_data[];
