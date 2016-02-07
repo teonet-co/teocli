@@ -151,6 +151,27 @@ typedef struct teoLNullCPacket {
 } teoLNullCPacket;
 
 /**
+ * L0 Server statistic data structure
+ * 
+ */        
+typedef struct ksnLNullSStat {
+    
+    uint16_t visits;
+    
+} ksnLNullSStat;
+
+/**
+ * L0 Server visits subscribe data structure
+ * 
+ */        
+typedef struct ksnLNullSVisitsData {
+    
+    uint16_t visits;
+    char client[];
+    
+} ksnLNullSVisitsData;
+
+/**
  * Clients list data structure
  */
 typedef struct teonet_client_data_ar {
