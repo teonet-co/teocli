@@ -115,6 +115,19 @@ typedef struct ksnet_arp_data {
     
 } ksnet_arp_data;
 
+#define DIG_IN_TEO_VER 3
+
+/**
+ * Host info data structure
+ */
+typedef struct host_info_data {
+    
+    uint8_t ver[DIG_IN_TEO_VER]; ///< Version
+    uint8_t string_ar_num; ///< Number of elements in array length
+    char string_ar[]; ///< String array structure: { name, type }
+    
+} host_info_data;
+
 #pragma pack(push)
 #pragma pack(1)
 
