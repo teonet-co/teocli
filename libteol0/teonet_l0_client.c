@@ -349,8 +349,8 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
  * Receive packet from L0 server
  * 
  * @param fd L0 server socket
- * @param pkg Buffer to receive
- * @param pkg_length Buffer length
+ * @param buf Buffer to receive
+ * @param buf_length Buffer length
  * 
  * @return Length of send data
  */
@@ -410,9 +410,8 @@ size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
  * 
  * Create and send L0 clients initialization packet
  * 
- * @param buffer Buffer to create packet in
- * @param buffer_length Buffer length
- * @param host_name Name of this L0 client
+ * @param con Pointer to teoLNullConnectData
+ * @param host_name Client name
  * 
  * @return Length of send data or -1 at error
  */
