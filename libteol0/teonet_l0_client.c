@@ -28,6 +28,7 @@
 #include "teonet_l0_client.h"
 
 // Uncomment next line to show debug message
+//#define CONNECT_MSG
 //#define DEBUG_MSG
 
 #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64) 
@@ -622,7 +623,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         #endif
     }
 
+    #ifdef CONNECT_MSG
     printf("Connecting to the server %s at port %d ...\n", server, port);
+    #endif
 
     memset(&serveraddr, 0x00, sizeof(struct sockaddr_in));
     serveraddr.sin_family = AF_INET;
@@ -663,7 +666,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         return con;
     }
     else {
+        #ifdef CONNECT_MSG
         printf("Connection established ...\n");
+        #endif
     }
 
     // Set non block mode
