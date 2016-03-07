@@ -6,7 +6,7 @@
  */
 
 /**
- * @mainpage Teocli library Documentation  
+ * \page Teocli library Documentation  
  * 
  * * [Native library structures and functions](teonet__l0__client_8h.html) 
  * * [C++ teocli class wrapper](classteocli.html)  
