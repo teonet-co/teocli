@@ -595,6 +595,8 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     struct hostent *hostp;
     struct sockaddr_in serveraddr;
     teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    if(con == NULL) return con;
+    
     con->last_packet_ptr = 0;
     con->read_buffer = NULL;
     con->read_buffer_ptr = 0;
