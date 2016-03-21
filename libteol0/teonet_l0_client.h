@@ -210,6 +210,16 @@ typedef struct teoSScrData {
         
 } teoSScrData;
 
+/**
+ * Data for CMD_L0_INFO_ANSWER command
+ */
+typedef struct l0_info_data {
+    
+    uint32_t l0_tcp_port;
+    char l0_tcp_ip_remote[];
+    
+} l0_info_data;
+
 #pragma pack(pop)
 
 
