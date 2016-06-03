@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="libteol0" displayName="libteol0" projectFiles="true">
+      <itemPath>libteol0/teocli</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
     </logicalFolder>
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
       <itemPath>linux/Makefile.am</itemPath>
+      <itemPath>linux/README</itemPath>
     </logicalFolder>
     <logicalFolder name="python" displayName="python" projectFiles="true">
+      <itemPath>python/README</itemPath>
+      <itemPath>python/make_python.sh</itemPath>
       <itemPath>python/teonet_l0_client.i</itemPath>
-      <itemPath>python/teonet_l0_client.make.sh</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -18,8 +21,20 @@
       <itemPath>main.c</itemPath>
     </logicalFolder>
     <logicalFolder name="win_mingw" displayName="win_mingw" projectFiles="true">
-      <itemPath>win_mingw/make_exe.bat</itemPath>
-      <itemPath>win_mingw/teocli.exe</itemPath>
+      <itemPath>win_mingw/README</itemPath>
+      <itemPath>win_mingw/make_exe.sh</itemPath>
+    </logicalFolder>
+    <logicalFolder name="win_vcxproj" displayName="win_vcxproj" projectFiles="true">
+      <logicalFolder name="libteocli" displayName="libteocli" projectFiles="true">
+        <itemPath>win_vcxproj/libteocli/libteocli.vcxproj</itemPath>
+      </logicalFolder>
+      <logicalFolder name="teocli" displayName="teocli" projectFiles="true">
+        <itemPath>win_vcxproj/teocli/teocli.vcxproj</itemPath>
+      </logicalFolder>
+      <logicalFolder name="teocli_s" displayName="teocli_s" projectFiles="true">
+        <itemPath>win_vcxproj/teocli_s/teocli_s.vcxproj</itemPath>
+      </logicalFolder>
+      <itemPath>win_vcxproj/libteocli.sln</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -40,6 +55,7 @@
     <Elem>python</Elem>
     <Elem>linux</Elem>
     <Elem>win_mingw</Elem>
+    <Elem>win_vcxproj</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -61,21 +77,41 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="linux/README" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="python/teonet_l0_client.make.sh" ex="false" tool="3" flavor2="0">
+      <item path="python/README" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="win_mingw/make_exe.bat" ex="false" tool="3" flavor2="0">
+      <item path="python/make_python.sh" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="win_mingw/teocli.exe" ex="false" tool="3" flavor2="0">
+      <item path="win_mingw/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_mingw/make_exe.sh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="win_vcxproj/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/libteocli.sln" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/libteocli/libteocli.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="win_vcxproj/teocli/teocli.vcxproj" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/teocli_s/teocli_s.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -111,23 +147,43 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="linux/README" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="python/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="python/make_python.sh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="python/teonet_l0_client.i" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="python/teonet_l0_client.make.sh" ex="false" tool="3" flavor2="0">
+      <item path="win_mingw/README" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="win_mingw/make_exe.bat" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="win_mingw/teocli.exe" ex="false" tool="3" flavor2="0">
+      <item path="win_mingw/make_exe.sh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="win_vcxproj/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/libteocli.sln" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/libteocli/libteocli.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="win_vcxproj/teocli/teocli.vcxproj" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="win_vcxproj/teocli_s/teocli_s.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
     </conf>
   </confs>
