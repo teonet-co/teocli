@@ -14,6 +14,7 @@
                 <sourceRootElem>python</sourceRootElem>
                 <sourceRootElem>linux</sourceRootElem>
                 <sourceRootElem>win_mingw</sourceRootElem>
+                <sourceRootElem>win_vcxproj</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
