@@ -44,8 +44,6 @@
 
 #include "libteol0/teonet_l0_client.h"
 
-#define TL0CN_VERSION "0.0.1"  
-
 /**
  * Main L0 Native client example function
  *

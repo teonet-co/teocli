@@ -16,6 +16,9 @@
 #ifndef TEONET_L0_CLIENT_H
 #define	TEONET_L0_CLIENT_H
 
+///! Teonet native client version (should change in linux/Makefile.am:7 too)
+#define TL0CN_VERSION "0.0.2"  
+
 #include <stdint.h>
 
 #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
@@ -268,18 +271,16 @@ TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 
 // Low level functions
-size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
+TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
         const char* host_name);
-size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
+TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
 
-ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length);
-ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length);
-
-ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
-        size_t data_len, ssize_t received);
-
+// Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
+void set_nonblock(int sd);
+int set_tcp_nodelay(int sd);
+
 
 #ifdef	__cplusplus
 }
