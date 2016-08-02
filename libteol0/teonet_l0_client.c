@@ -31,10 +31,17 @@
 //#define CONNECT_MSG
 //#define DEBUG_MSG
 
+// Internal functions
+static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length);
+static ssize_t teoLNullPacketRecv(int sd, void* buf, size_t buf_length);
+static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
+        size_t data_len, ssize_t received);
+
+
 #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64) 
-    #define close_socket(fd) closesocket(fd)
+    #define close_socket(sd) closesocket(sd)
 #else
-    #define close_socket(fd) close(fd)
+    #define close_socket(sd) close(sd)
 #endif
 
 // Send connected event
@@ -46,6 +53,7 @@
 /**
  * Initialize L0 client library.
  * 
+ * Startup windows socket library.
  * Calls once per application to initialize this client library.
  */
 void teoLNullInit() {
@@ -61,11 +69,12 @@ void teoLNullInit() {
 /**
  * Cleanup L0 client library.
  * 
+ * Cleanup windows socket library.
  * Calls once per application to cleanup this client library.
  */
 void teoLNullCleanup() {
     
-    // Cleanup socket library
+    // Cleanup windows socket library
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     WSACleanup();
     #endif    
@@ -112,20 +121,20 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
 /**
  * Send packet to L0 server
  * 
- * @param fd L0 server socket
+ * @param sd L0 server socket
  * @param pkg Package to send
  * @param pkg_length Package length
  * 
  * @return Length of send data or -1 at error
  */
-ssize_t teoLNullPacketSend(int fd, void* pkg, size_t pkg_length) {
+static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
     
 	ssize_t snd;
     
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-	if ((snd = send(fd, pkg, (int)pkg_length, 0)) >= 0);
+	if ((snd = send(sd, pkg, (int)pkg_length, 0)) >= 0);
     #else
-    if((snd = write(fd, pkg, pkg_length)) >= 0);                
+    if((snd = write(sd, pkg, pkg_length)) >= 0);                
     #endif
 
     return snd;
@@ -236,7 +245,7 @@ int teoLNullProccessEchoAnswer(const char *msg) {
  * @retval -1 Packet not receiving yet (got part of packet)
  * @retval -2 Wrong packet received (dropped)
  */
-ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
+static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, 
         size_t data_len, ssize_t received) {
     
     ssize_t retval = -1;
@@ -349,20 +358,20 @@ ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
 /**
  * Receive packet from L0 server
  * 
- * @param fd L0 server socket
+ * @param sd L0 server socket
  * @param buf Buffer to receive
  * @param buf_length Buffer length
  * 
  * @return Length of send data
  */
-ssize_t teoLNullPacketRecv(int fd, void* buf, size_t buf_length) {
+static ssize_t teoLNullPacketRecv(int sd, void* buf, size_t buf_length) {
     
 	ssize_t rc;
     
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    rc = recv(fd, buf, (int)buf_length, 0);
+    rc = recv(sd, buf, (int)buf_length, 0);
     #else
-    rc = read(fd, buf, buf_length);
+    rc = read(sd, buf, buf_length);
     #endif
 
     return rc;
@@ -464,11 +473,11 @@ uint8_t get_byte_checksum(void *data, size_t data_length) {
 }
 
 /**
- * Set socket or FD to non blocking mode
+ * Set socket or SD to non blocking mode
  * 
- * @param fd
+ * @param sd Socket descriptor
  */
-void set_nonblock(int fd) {
+void set_nonblock(int sd) {
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     //-------------------------
@@ -481,38 +490,38 @@ void set_nonblock(int fd) {
     int iResult;
     u_long iMode = 1;
 
-    iResult = ioctlsocket(fd, FIONBIO, &iMode);
+    iResult = ioctlsocket(sd, FIONBIO, &iMode);
     if (iResult != NO_ERROR)
       printf("ioctlsocket failed with error: %ld\n", iResult);
     
     #else
     int flags;
 
-    flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    flags = fcntl(sd, F_GETFL, 0);
+    fcntl(sd, F_SETFL, flags | O_NONBLOCK);
     #endif
 }
 
 /**
  * Set TCP NODELAY option
  * 
- * @param fd TCP socket descriptor
+ * @param sd TCP socket descriptor
  * 
  * @return Result of setting. Success if >= 0.
  */
-int set_tcp_nodelay(int fd) {
+int set_tcp_nodelay(int sd) {
 
     int result = 0;    
     int flag = 1;
     
-    result = setsockopt(fd,           // socket affected
+    result = setsockopt(sd,           // socket affected
                         IPPROTO_TCP,     // set option at TCP level
                         TCP_NODELAY,     // name of option
                         (char *) &flag,  // the cast is historical cruft
                         sizeof(flag));   // length of option value
     if (result < 0) {
         
-        printf("Set TCP_NODELAY of fd %d error\n", fd);
+        printf("Set TCP_NODELAY of sd %d error\n", sd);
     }
 
     return result;
@@ -550,10 +559,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
         send_l0_event(con, EV_L_IDLE, NULL, 0);
     }
-    // There is a data in fd
+    // There is a data in sd
     else {
         
-        //printf("Data in fd\n");
+        //printf("Data in sd\n");
         ssize_t rc;
         while((rc = teoLNullRecv(con)) != -1) {
             
@@ -674,10 +683,10 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     }
 
     // Set non block mode
-	set_nonblock((int)con->fd);
+    set_nonblock((int)con->fd);
     
     // Set TCP_NODELAY option
-	set_tcp_nodelay((int)con->fd);
+    set_tcp_nodelay((int)con->fd);
     
     // Send connected event
     send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));

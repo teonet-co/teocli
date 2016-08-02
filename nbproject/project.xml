@@ -32,10 +32,14 @@
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>DLL</word>
-            <word>Linux</word>
-            <word>README</word>
+            <word>kirill</word>
+            <word>linux</word>
+            <word>readme</word>
+            <word>scherba</word>
             <word>teocli</word>
+            <word>teonet</word>
             <word>teostream</word>
+            <word>utils</word>
             <word>websocket</word>
         </spellchecker-wordlist>
     </configuration>
