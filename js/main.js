@@ -17,7 +17,8 @@ try {
 
     var connector = teoclient.connect("127.0.0.1", 9000)
     console.log(connector);
-    connector.login();
+    connector.login("my_name");
+    connector.enumm = "sss"
 
 //    var c = new teoclient.Connector("127.0.0.1", 9000);
 //    c.Login();
