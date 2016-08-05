@@ -11,14 +11,37 @@ teoclient = require("/home/aksenofo/PROJECT/TEOCLI/teocli/js/node_modules/teocli
 
 //console.log(teoclient.version())
 
+//tt = new teoclient.TeoPacket()
+
 teoclient.init();
 
 try {
 
     var connector = teoclient.connect("127.0.0.1", 9000)
-    console.log(connector);
-    connector.login("my_name");
-    connector.enumm = "sss"
+//    console.log(connector);
+    var snd = connector.login("my_name");
+    console.log("Login Sent:", snd)
+
+    snd = connector.send(connector.CMD_L_PEERS, "teotest");
+    console.log("CMD_L_PEERS Sent:", snd)
+
+//    snd = connector.send(connector.CMD_L_L0_CLIENTS, "teotest");
+//    console.log("CMD_L_L0_CLIENTS Sent:", snd)
+
+//    snd = connector.send(connector.CMD_L_ECHO, "teotest", "hello");
+//    console.log("CMD_L_ECHO Sent:", snd)
+
+    connector.sleep(.5);
+    console.log("Recv:", connector.recv());
+
+//    while(1) {
+//	try {
+//	    console.log("Recv:", connector.recv());
+//	    break;
+//	}
+//	catch( e ) {
+//	}
+//    }
 
 //    var c = new teoclient.Connector("127.0.0.1", 9000);
 //    c.Login();
