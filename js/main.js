@@ -1,6 +1,6 @@
 console.info("node.js adapter to teo");
 
-teoclient = require("/home/aksenofo/PROJECT/TEOCLI/teocli/js/node_modules/teoclient/build/Debug/teoclient.node")
+teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
 
 teoclient.init();
 
@@ -29,6 +29,8 @@ try {
 //    console.log("-------------------------------------------------------");
 //    console.log("Recv:", connector.recv());
     connector.disconnect();
+//    connector.disconnect();
+    snd = connector.send(connector.CMD_L_ECHO, "teotest", "hello");
 
 }
 catch (err) {
