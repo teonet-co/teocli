@@ -10,11 +10,6 @@ try {
     var snd = connector.login("my_name");
     console.log("Login Sent:", snd)
 
-//    snd = connector.send(connector.CMD_L_ECHO, "teotest", "TTTTT");
-//    console.log("CMD_L_ECHO Sent:", snd)
-//    console.log("Recv:", connector.recv());
-//    throw ""
-
     snd = connector.send(connector.CMD_L_PEERS, "teotest");
     console.log("CMD_L_PEERS Sent:", snd)
 
@@ -31,8 +26,9 @@ try {
     console.log("-------------------------------------------------------");
     console.log("Recv:", connector.recv());
 
-    console.log("-------------------------------------------------------");
-    console.log("Recv:", connector.recv());
+//    console.log("-------------------------------------------------------");
+//    console.log("Recv:", connector.recv());
+    connector.disconnect();
 
 }
 catch (err) {
