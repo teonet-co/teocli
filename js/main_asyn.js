@@ -1,3 +1,5 @@
+var sleep = require('sleep');
+
 console.info("node.js adapter to teo");
 
 teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
@@ -6,7 +8,25 @@ teoclient.init();
 
 try {
 
-    var connector = teoclient.connect("127.0.0.1", 9000)
+    var ttt = 10;
+
+while(ttt) {
+    var connector = teoclient.connectAsync("127.0.0.1", 9000, function(connector, error) {
+	console.log(connector)
+	connector.login("my_name", function (){
+	})
+	snd = connector.send(connector.CMD_L_PEERS, "teotest");
+	connector.sleep(.5);
+	console.log("Recv:", connector.recv());
+	console.log(ttt);
+	connector.disconnect();
+    })
+}
+
+//    setTimeout(suspend.resume(), 10000);
+//    sleep.sleep(10)
+
+/*
     var snd = connector.login("my_name");
     console.log("Login Sent:", snd)
 
@@ -31,7 +51,7 @@ try {
     connector.disconnect();
 //    connector.disconnect();
 //    snd = connector.send(connector.CMD_L_ECHO, "teotest", "hello");
-
+*/
 }
 catch (err) {
     console.log(err)
