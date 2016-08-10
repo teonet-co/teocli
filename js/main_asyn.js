@@ -3,6 +3,8 @@ teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
 
 teoclient.init();
 
+var t = new Buffer(10);
+
 try {
     var status = 0;
     var connector = teoclient.connectAsync("127.0.0.1", 9000,
