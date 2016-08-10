@@ -6,17 +6,23 @@ teoclient.init();
 var t = new Buffer(10);
 
 try {
+    var counter = 0;
     var status = 0;
     var connector = teoclient.connectAsync("127.0.0.1", 9000,
 	function(ev, buf, err) { // Progress
 	    try {
-		console.log("PROGRESS", ev, buf, err)
-
-		if(ev == connector.EV_L_CONNECTED) {
-//		    connector.disconnect();
-		    connector.login("my_name");
+		if(ev != connector.EV_L_TICK )
+		    console.log(counter++, "PROGRESS", ev, buf, err)
+		if(status == 0) {
+		    if(ev == connector.EV_L_CONNECTED) {
+//		    	connector.disconnect();
+			connector.login("my_name");
+			status = 1;
+		    }
 		}
-
+		else if(status == 1) {
+		    connector.send(connector.CMD_L_L0_CLIENTS, "teotest");
+		}
 	    } catch (e) {
 		console.log(e)
 	    }
