@@ -32,7 +32,7 @@ try {
     function() { // Finished
 	console.log("DISCONNECTED")
     },
-    100
+    1000
     )
 }
 catch (err) {
