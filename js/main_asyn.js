@@ -12,9 +12,9 @@ try {
 	    try {
 		console.log("PROGRESS", ev, buf, err)
 
-		if(ev == 0) {
-		    connector.disconnect();
-//		    connector.login("my_name");
+		if(ev == connector.EV_L_CONNECTED) {
+//		    connector.disconnect();
+		    connector.login("my_name");
 		}
 
 	    } catch (e) {
