@@ -10,6 +10,8 @@ try {
     var snd = connector.login("my_name");
     console.log("Login Sent:", snd)
 
+    console.log("Is Connected:", connector.is_connected())
+
     snd = connector.send(connector.CMD_L_PEERS, "teotest");
     console.log("CMD_L_PEERS Sent:", snd)
 
