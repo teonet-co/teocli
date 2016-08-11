@@ -3,8 +3,6 @@ teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
 
 teoclient.init();
 
-var t = new Buffer(10);
-
 try {
     var counter = 0;
     var status = 0;
@@ -32,7 +30,7 @@ try {
     function() { // Finished
 	console.log("DISCONNECTED")
     },
-    1000
+    300
     )
 }
 catch (err) {
