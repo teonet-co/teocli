@@ -1,6 +1,14 @@
 console.info("node.js adapter to teo");
 
-teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
+//teoclient = require("./node_modules/teoclient/build/Debug/teoclient.node")
+
+//var debug = typeof v8debug === 'object';
+
+//console.log("DEBUG:", debug)
+
+
+teoclient = require("teoclient")
+
 
 teoclient.init();
 
