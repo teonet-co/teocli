@@ -17,7 +17,7 @@ _See [README](linux) in that folder to additional information._
 ### Python
 
 The ```python``` folder contain make_python.sh file to make python module.  
-_See [README.md](python) in that folder to additional information._
+_See [README](python) in that folder to additional information._
 
 
 ### Java Script and Node.js
@@ -28,7 +28,7 @@ _See the [TeocliJS](https://gitlab.ksproject.org/teonet/TeocliJS) project._
 
 The ```teonet-client``` project located at nodejs folder is native node.js 
 module.  
-_See [README.md](nodejs) in nodejs folder to additional information._
+_See [README](nodejs) in nodejs folder to additional information._
 
 ### AngelScript (going soon)
 
@@ -40,7 +40,7 @@ _See the [TeocliAS](https://gitlab.ksproject.org/teonet/TeocliAS) project._
 
 The ```win_mingw``` folder contain make_exe.sh file to make Windows DLL and 
 tests application under Linux.  
-_See [README.md](win_mingw) in that folder to additional information._
+_See [README](win_mingw) in that folder to additional information._
 
 
 ### Windows with Visual Studio
