@@ -1,0 +1,130 @@
+/*
+ * Copyright (c) 1996-2015 Kirill Scherba <kirill@scherba.ru>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef TEOCLI_CPP_H
+#define	TEOCLI_CPP_H
+
+#include "libteol0/teonet_l0_client.h"
+
+/**
+ * Teocli class.
+ * 
+ * This is Teonet L0 client C++ wrapper
+ */
+class teocli {
+
+public:
+
+    /**
+     * Teonet client simple constructor
+     */
+    teocli() {}    
+    
+    /**
+     * Teonet client simple destructor
+     */
+    ~teocli() {}
+    
+    /**
+     * Initialize L0 client library.
+     * 
+     * Calls once per application to initialize this client library.
+     */
+    inline void init() { teoLNullInit(); }
+    
+    /**
+     * Cleanup L0 client library.
+     * 
+     * Calls once per application to cleanup this client library.
+     */
+    inline void cleanup() { teoLNullCleanup(); }
+    
+    /**
+     * Create TCP client and connect to server
+     * 
+     * @param server Server IP or name
+     * @param port Server port
+     * 
+     * @return Pointer to teoLNullConnectData. Null if no memory error
+     * @retval teoLNullConnectData::fd>0   - Success connection
+     * @retval teoLNullConnectData::fd==-1 - Create socket error
+     * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
+     * @retval teoLNullConnectData::fd==-3 - Client-connect() error
+     */
+    inline teoLNullConnectData *connect(int port, const char *server) {
+        return teoLNullConnect(port, server);
+    }
+    
+    /**
+     * Disconnect from server and free teoLNullConnectData
+     * 
+     * @param con Pointer to teoLNullConnectData
+     */
+    inline void disconnect(teoLNullConnectData *con) {
+        teoLNullDisconnect(con);
+    }
+    
+    
+    /**
+     * Create initialize L0 client packet
+     * 
+     * @param con Pointer to teoLNullConnectData
+     * @param host_name Name of this L0 client
+     * 
+     * @return Length of send data or -1 at error
+     */
+    inline size_t login(teoLNullConnectData *con, const char* host_name) { 
+        
+        return teoLNullLogin(con, host_name);
+    }   
+    
+    /**
+     * Send command to L0 server
+     * 
+     * Create L0 clients packet and send it to L0 server
+     * 
+     * @param con Pointer to teoLNullConnectData
+     * @param cmd Command
+     * @param peer_name Peer name to send to
+     * @param data Pointer to data
+     * @param data_length Length of data
+     * 
+     * @return Length of send data or -1 at error
+     */
+    inline ssize_t send(teoLNullConnectData *con, int cmd, 
+        const char *peer_name, void *data, size_t data_length) {
+        
+        return teoLNullSend(con, cmd, peer_name, data, data_length);
+    }
+    
+    /**
+     * Receive packet from L0 server and split or combine it
+     * 
+     * @param con Pointer to teoLNullConnectData
+     * 
+     * @return Size of packet or Packet state code
+     * @retval >0 Packet received
+     * @retval -1 Packet not receiving yet (got part of packet)
+     * @retval -2 Wrong packet received (dropped)
+     */
+    inline ssize_t recv(teoLNullConnectData *con) {
+        
+        return teoLNullRecv(con);
+    }    
+    
+};
+
+#endif	/* TEOCLI_CPP_H */
