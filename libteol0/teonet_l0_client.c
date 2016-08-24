@@ -16,6 +16,7 @@
 #if defined(_WIN32) || defined(_WIN64) 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define BARNABY_API __declspec(dllexport )
+#include <winsock2.h>
 #else
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -42,6 +43,10 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
     #define close_socket(sd) closesocket(sd)
 #else
     #define close_socket(sd) close(sd)
+#endif
+
+#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64) 
+void TEOCLI_API WinSleep(uint32_t dwMilliseconds) {Sleep(dwMilliseconds);}
 #endif
 
 // Send connected event
