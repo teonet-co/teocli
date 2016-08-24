@@ -1,0 +1,17 @@
+{
+  "name": "teonet-client",
+  "version": "0.0.9",
+  "description": "Teonet client nodejs module",
+  "homepage": "https://gitlab.ksproject.org/teonet/teocli/tree/master/nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "teonet",
+    "network"
+  ],
+  "dependencies" : { "nan":""},
+  "author": "aksenofo <aksenofo@yahoo.ru> (http://gitlab.ksproject.org/)",
+  "license": "MIT"
+}
