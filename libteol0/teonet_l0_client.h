@@ -21,12 +21,6 @@
 
 #include <stdint.h>
 
-#if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-#include "AllowWindowsPlatformTypes.h"
-#include <winsock2.h>
-#include "HideWindowsPlatformTypes.h"
-#endif
-
 #if !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
 	#ifdef MS_WIN64
 	typedef __int64 ssize_t;
@@ -77,7 +71,7 @@ typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data,
 typedef struct teoLNullConnectData {
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    SOCKET fd;                  ///< Connection socket
+	uint32_t fd;                  ///< Connection socket
     #else
     int fd;                     ///< Connection socket
     #endif
@@ -245,7 +239,8 @@ extern "C" {
     ( sizeof(teoLNullCPacket) + peer_length + data_length )
     
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)   
-    #define teoLNullSleep(ms) Sleep(ms)
+	void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
+	#define teoLNullSleep(ms) WinSleep(ms)
 #else
     #define teoLNullSleep(ms) usleep(ms * 1000)    
 #endif
