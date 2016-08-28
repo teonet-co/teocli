@@ -21,6 +21,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
@@ -664,7 +665,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
             send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));
             return con;
         }
-        memcpy(&serveraddr.sin_addr, hostp->h_addr, sizeof(serveraddr.sin_addr));
+        memcpy(&serveraddr.sin_addr, hostp->h_addr_list[0], sizeof(serveraddr.sin_addr));
     }
 
     /* After the socket descriptor is received, the */
