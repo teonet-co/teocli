@@ -87,12 +87,12 @@ NAN_METHOD(Connector::Login) {
     Nan::HandleScope scope;
     if(info.Length() < 1 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::login");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
 
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
     size_t snd(This->login(*Nan::Utf8String(info[0])));
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.login()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -113,7 +113,7 @@ NAN_METHOD(Connector::SendAsString) {
 
     if(info.Length() < 2 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::send_as_buffer");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     auto cmd(info[0]->IntegerValue());
@@ -128,7 +128,7 @@ NAN_METHOD(Connector::SendAsString) {
     size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
 
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send_as_buffer()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -149,7 +149,7 @@ NAN_METHOD(Connector::SendAsBuffer) {
 
     if(info.Length() < 2 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::send_as_string");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     auto cmd(info[0]->IntegerValue());
@@ -158,6 +158,10 @@ NAN_METHOD(Connector::SendAsBuffer) {
     size_t buffer_len(0);
     if(info.Length() >= 3 ) {
 	Local<Object> bufferObj = info[2]->ToObject();
+	if(!bufferObj->IsUint8Array()) {
+	    return Nan::ThrowError("Invalid parameter type. Must be Buffer.");
+	}
+
 	buffer = node::Buffer::Data(bufferObj);
 	buffer_len = node::Buffer::Length(bufferObj);
     }
@@ -165,7 +169,7 @@ NAN_METHOD(Connector::SendAsBuffer) {
     size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
 
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send_as_buffer()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -225,7 +229,7 @@ Local<Value> Connector::fnCMD_L_PEERS_ANSWER(const Nan::FunctionCallbackInfo<v8:
 
 NAN_METHOD(Connector::Disconnect) {
     Nan::HandleScope scope;
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::disconnect");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     This->disconnect();
@@ -235,12 +239,12 @@ NAN_METHOD(Connector::Recv) {
 
     Nan::HandleScope scope;
 
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::recv");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     ssize_t size(This->recv());
     if(size == -1)
-        return (void)Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.recv()"));
+        return (void)Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else {
 	// Parse type
 	switch(This->cmd()) {
@@ -305,7 +309,7 @@ NAN_METHOD(Connector::New) {
     if(!object->connect()) {
 	auto terrno = errno;
 	delete object;
-	Nan::ThrowError(TeoErrnoExeption::createNewInstance(terrno, "Connector"));
+	Nan::ThrowError(TeoErrnoExeption::createNewInstance(terrno, __FUNCTION__));
     }
     else
 	object->Wrap(info.This());
