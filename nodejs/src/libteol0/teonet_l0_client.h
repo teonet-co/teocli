@@ -17,7 +17,7 @@
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.2"  
+#define TL0CN_VERSION "0.0.3"  
 
 #include <stdint.h>
 
@@ -27,6 +27,11 @@
 	#else
 	typedef _W64 int ssize_t;
 	#endif
+#else
+#include <unistd.h>
+#if !defined(usleep) && !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
+extern int usleep (__useconds_t __useconds);
+#endif
 #endif
 
 /**
