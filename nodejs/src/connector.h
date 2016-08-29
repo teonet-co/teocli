@@ -103,7 +103,9 @@ private:
 
     static NAN_METHOD(Login); // Login method
 
-    static NAN_METHOD(Send); // Send
+    static NAN_METHOD(SendAsString); // Send As String
+
+    static NAN_METHOD(SendAsBuffer); // Send As Buffer
 
     static NAN_METHOD(Recv); // Rec
 
