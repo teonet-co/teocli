@@ -7,15 +7,15 @@ try {
     var counter = 0;
     var status = 0;
     var connector = teonetClient.connectAsync('127.0.0.1', 9000,
-	function(ev, buf, err) { // Progress
+	function(obj, err) { // Progress
 	    try {
-		if(ev !== connector.EV_L_TICK ) {
-		    console.log(counter++, 'PROGRESS', ev, buf, err);
+		if(obj.event !== connector.EV_L_TICK ) {
+		    console.log(counter++, 'PROGRESS', obj.event, obj.peer_name, obj.cmd, obj.buffer, err);
 		    if(counter === 100)
 			connector.disconnect();
 		}
 		if(status === 0) {
-		    if(ev === connector.EV_L_CONNECTED) {
+		    if(obj.event === connector.EV_L_CONNECTED) {
 			connector.login('my_name');
 			status = 1;
 		    }
@@ -27,8 +27,8 @@ try {
 		console.log(counter, e);
 	    }
       },
-      function() { // Finished
-	console.log('DISCONNECTED');
+      function(error) { // Finished
+	console.log('DISCONNECTED', error);
       },
       300
     );

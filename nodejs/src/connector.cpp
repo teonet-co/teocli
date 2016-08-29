@@ -5,7 +5,6 @@
  * Created on August 3, 2016, 12:32 PM
  */
 
-
 #include "connector.h"
 #include "errno_exeption.h"
 #include "teo_exeption.h"
@@ -30,6 +29,8 @@
     OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), Nan::New<Integer>(VALUE));
 #define SET_PROP_NUMB(OBJ,NAME,VALUE) \
     OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), Nan::New<Number>(VALUE));
+#define SET_PROP_OBJECT(OBJ,NAME,VALUE) \
+    OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), VALUE);
 
 using namespace Nan;
 using namespace v8;
@@ -376,6 +377,7 @@ Connector::Worker::Worker(const std::string ip, int port,
 , ip_(ip)
 , port_(port)
 , progress_(progress)
+, errno_(0)
 , milliseconds_(milliseconds)
 , owner_(owner)
 , exec_progress_(nullptr) {
@@ -394,8 +396,9 @@ void Connector::Worker::Execute(const AsyncProgressWorker::ExecutionProgress& pr
     }
     else {
 	while(con && con->fd > 0 && teoLNullReadEventLoop(con, milliseconds_)) {
-//	    usleep(100);
 	}
+	// save last errno to report it
+	errno_ = errno;
     }
 
     exec_progress_ = nullptr;
@@ -404,11 +407,12 @@ void Connector::Worker::Execute(const AsyncProgressWorker::ExecutionProgress& pr
 void Connector::Worker::HandleOKCallback() {
     auto obj(Nan::New(owner_));
     auto This(Nan::ObjectWrap::Unwrap<Connector>(obj));
-    callback->Call(0, {});
+    v8::Local<v8::Value> argv[] = {Nan::New<v8::Integer>(errno_)};
+    callback->Call(1, argv);
 }
 
-void Connector::Worker::HandleProgressCallback(const char *data, size_t size) {
-    const worker_payload* wp(reinterpret_cast<const worker_payload*>(data));
+void Connector::Worker::HandleProgressCallback(const char *buf, size_t size) {
+    const worker_payload* wp(reinterpret_cast<const worker_payload*>(buf));
 
     Nan::HandleScope scope;
 
@@ -422,26 +426,32 @@ void Connector::Worker::HandleProgressCallback(const char *data, size_t size) {
 	This->attach_connect(wp->con_);
     }
 
-    // Create a new buffer
-    if(wp->data_ && wp->len_ > 0) {
-	char* b((char*)malloc(wp->len_));
-	memcpy(b, wp->data_, wp->len_);
-	auto mb(Nan::NewBuffer(b, wp->len_));
-	v8::Local<v8::Value> argv[] = {
-    	    Nan::New<v8::Integer>(wp->event_),
-	    mb.ToLocalChecked(),
-	    Nan::New<v8::Integer>(wp->error_)
-	};
-	progress_->Call(3, argv);
+    // generate object
+    Local<Object> object(Object::New(Isolate::GetCurrent()));
+    SET_PROP_INT(object, event, wp->event_);
+    
+    // Create a new buffer only if event == EV_L_RECEIVED
+    if(wp->data_ && wp->len_ > 0 && wp->event_ == EV_L_RECEIVED) {
+	teoLNullCPacket *cp = (teoLNullCPacket*) wp->data_;
+
+	SET_PROP_INT(object, cmd, cp->cmd);
+	SET_PROP_STR(object, peer_name, cp->peer_name);
+
+	auto tail_ptr((char*)wp->data_ + cp->data_length);
+	auto head_ptr((char*)cp->peer_name + cp->peer_name_length);
+
+	size_t len(tail_ptr - head_ptr);
+	char* b((char*)malloc(len));
+	memcpy(b, head_ptr, len);
+	auto mb(Nan::NewBuffer(b, len));
+
+	SET_PROP_OBJECT(object, buffer, mb.ToLocalChecked());
     }
-    else {
-	v8::Local<v8::Value> argv[] = {
-	    Nan::New<v8::Integer>(wp->event_),
-	    Undefined(),
-	    Nan::New<v8::Integer>(wp->error_)
-	};
-	progress_->Call(3, argv);
-    }
+    v8::Local<v8::Value> argv[] = {
+	object,
+	Nan::New<v8::Integer>(wp->error_)
+    };
+    progress_->Call(2, argv);
 
     if(wp->data_)
 	free(wp->data_);

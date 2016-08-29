@@ -54,6 +54,8 @@ public:
 
 	const Nan::AsyncProgressWorker::ExecutionProgress* exec_progress_;
 
+	int errno_;
+
 	virtual void event(void *con, teoLNullEvents event, void *data, size_t data_len);
 
 	static void event_cb(void *con, teoLNullEvents event, void *data, size_t data_len, void *user_data) {
