@@ -10,6 +10,40 @@
       <itemPath>linux/Makefile.am</itemPath>
       <itemPath>linux/README</itemPath>
     </logicalFolder>
+    <logicalFolder name="nodejs" displayName="nodejs" projectFiles="true">
+      <logicalFolder name="example" displayName="example" projectFiles="true">
+        <logicalFolder name="hello" displayName="hello" projectFiles="true">
+          <itemPath>nodejs/example/hello/binding.gyp</itemPath>
+          <itemPath>nodejs/example/hello/hello.cc</itemPath>
+          <itemPath>nodejs/example/hello/hello.js</itemPath>
+        </logicalFolder>
+        <itemPath>nodejs/example/main.js</itemPath>
+        <itemPath>nodejs/example/main_asyn.js</itemPath>
+      </logicalFolder>
+      <logicalFolder name="src" displayName="src" projectFiles="true">
+        <logicalFolder name="libteol0" displayName="libteol0" projectFiles="true">
+          <itemPath>nodejs/src/libteol0/teocli</itemPath>
+          <itemPath>nodejs/src/libteol0/teonet_l0_client.c</itemPath>
+          <itemPath>nodejs/src/libteol0/teonet_l0_client.h</itemPath>
+        </logicalFolder>
+        <itemPath>nodejs/src/connector.cpp</itemPath>
+        <itemPath>nodejs/src/connector.h</itemPath>
+        <itemPath>nodejs/src/errno_exeption.cpp</itemPath>
+        <itemPath>nodejs/src/errno_exeption.h</itemPath>
+        <itemPath>nodejs/src/teo_aux.h</itemPath>
+        <itemPath>nodejs/src/teo_exeption.cpp</itemPath>
+        <itemPath>nodejs/src/teo_exeption.h</itemPath>
+        <itemPath>nodejs/src/teo_main.cpp</itemPath>
+        <itemPath>nodejs/src/teo_main.h</itemPath>
+        <itemPath>nodejs/src/teo_packet.cpp</itemPath>
+        <itemPath>nodejs/src/teo_packet.h</itemPath>
+      </logicalFolder>
+      <itemPath>nodejs/.gitignore</itemPath>
+      <itemPath>nodejs/README.md</itemPath>
+      <itemPath>nodejs/binding.gyp</itemPath>
+      <itemPath>nodejs/index.js</itemPath>
+      <itemPath>nodejs/package.json</itemPath>
+    </logicalFolder>
     <logicalFolder name="python" displayName="python" projectFiles="true">
       <itemPath>python/README</itemPath>
       <itemPath>python/make_python.sh</itemPath>
@@ -56,6 +90,7 @@
     <Elem>linux</Elem>
     <Elem>win_mingw</Elem>
     <Elem>win_vcxproj</Elem>
+    <Elem>nodejs</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -88,6 +123,60 @@
       <item path="linux/README" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="nodejs/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/hello.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/hello.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/main.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/main_asyn.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/index.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/package.json" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/connector.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/connector.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/errno_exeption.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/errno_exeption.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teocli" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teonet_l0_client.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teonet_l0_client.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_aux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_exeption.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_exeption.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_packet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_packet.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="python/README" ex="false" tool="3" flavor2="0">
       </item>
@@ -158,6 +247,60 @@
       <item path="linux/README" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/hello.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/example/hello/hello.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/main.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/example/main_asyn.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/index.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/package.json" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/connector.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/connector.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/errno_exeption.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/errno_exeption.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teocli" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teonet_l0_client.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="nodejs/src/libteol0/teonet_l0_client.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_aux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_exeption.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_exeption.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_packet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nodejs/src/teo_packet.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="python/README" ex="false" tool="3" flavor2="0">
       </item>
