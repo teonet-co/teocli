@@ -21,7 +21,7 @@ try {
 		    }
 		}
 		else if(status === 1) {
-		    connector.send(connector.CMD_L_L0_CLIENTS, 'teotest');
+		    connector.send_as_buffer(connector.CMD_L_L0_CLIENTS, 'teotest');
 		}
 	    } catch (e) {
 		console.log(counter, e);

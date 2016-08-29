@@ -104,16 +104,16 @@ NAN_METHOD(Connector::Login) {
  *.
  * @param cmd Command
  * @param peer_name Peer name to send to
- * @param data Array of data (optioonal)
+ * @param data String of data (optioonal)
  *.
  * @return Length of send data or -1 at error
  */
-NAN_METHOD(Connector::Send) {
+NAN_METHOD(Connector::SendAsString) {
     Nan::HandleScope scope;
 
     if(info.Length() < 2 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::send");
+    MAKE_THROW_IF_NOT_CONNECTED("Connector::send_as_buffer");
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     auto cmd(info[0]->IntegerValue());
@@ -128,7 +128,44 @@ NAN_METHOD(Connector::Send) {
     size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
 
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send_as_buffer()"));
+    else
+        info.GetReturnValue().Set((int)snd);
+}
+
+/**
+ * Send command to L0 server
+ *.
+ * Create L0 clients packet and send it to L0 server
+ *.
+ * @param cmd Command
+ * @param peer_name Peer name to send to
+ * @param data Buffer(optioonal)
+ *.
+ * @return Length of send data or -1 at error
+ */
+NAN_METHOD(Connector::SendAsBuffer) {
+    Nan::HandleScope scope;
+
+    if(info.Length() < 2 )
+	Nan::ThrowError("Not enough parameters");
+    MAKE_THROW_IF_NOT_CONNECTED("Connector::send_as_string");
+    auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
+
+    auto cmd(info[0]->IntegerValue());
+    auto peer_name(*Nan::Utf8String(info[1]));
+    const char* buffer = nullptr;
+    size_t buffer_len(0);
+    if(info.Length() >= 3 ) {
+	Local<Object> bufferObj = info[2]->ToObject();
+	buffer = node::Buffer::Data(bufferObj);
+	buffer_len = node::Buffer::Length(bufferObj);
+    }
+    
+    size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
+
+    if(snd == (size_t)-1)
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send_as_buffer()"));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -284,7 +321,8 @@ NAN_MODULE_INIT(Connector::Init) {
 
     // add member functions and accessors
     Nan::SetPrototypeMethod(ctor, "login", Login);
-    Nan::SetPrototypeMethod(ctor, "send", Send);
+    Nan::SetPrototypeMethod(ctor, "send_as_string", SendAsString);
+    Nan::SetPrototypeMethod(ctor, "send_as_buffer", SendAsBuffer);
     Nan::SetPrototypeMethod(ctor, "recv", Recv);
     Nan::SetPrototypeMethod(ctor, "sleep", Sleep);
     Nan::SetPrototypeMethod(ctor, "disconnect", Disconnect);
