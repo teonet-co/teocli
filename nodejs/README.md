@@ -30,3 +30,31 @@ npm install teonet-client
 [coveralls-image]: https://coveralls.io/repos//teonet-client/badge.svg
 [coveralls-url]: https://coveralls.io/r//teonet-client
 
+### Usage
+
+1. Export module
+teonetClient = require('teonet-client');
+
+2. initialize
+teonetClient.init();
+
+3. Establish a connection
+var connector = 
+    teonetClient.connectAsync(
+	host_id,                      // host ip
+	port,                         // port
+	function(object, error_code) {// select-like method
+	    ....................
+	},
+	function(error_code) {        // Connection lost 
+	    ....................
+	}
+    )
+
+where:
+     error_code is a code of last operartion ( 0 - success  otherwise errno )
+     object:
+	obj.event  - event id
+	obj.peer_name - peer name
+	obj.cmd	- cmd ???
+	obj.buffer  - binary buffer
