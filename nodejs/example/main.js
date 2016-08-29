@@ -10,13 +10,13 @@ try {
 
     console.log('Is Connected:', connector.is_connected());
 
-    snd = connector.send(connector.CMD_L_PEERS, 'teotest');
+    snd = connector.send_as_buffer(connector.CMD_L_PEERS, 'teotest');
     console.log('CMD_L_PEERS Sent:', snd);
 
-    snd = connector.send(connector.CMD_L_L0_CLIENTS, 'teotest');
+    snd = connector.send_as_buffer(connector.CMD_L_L0_CLIENTS, 'teotest');
     console.log('CMD_L_L0_CLIENTS Sent:', snd);
 
-    snd = connector.send(connector.CMD_L_ECHO, 'teotest', 'hello');
+    snd = connector.send_as_buffer(connector.CMD_L_ECHO, 'teotest', 'hello');
     console.log('CMD_L_ECHO Sent:', snd);
 
     connector.sleep(.5);

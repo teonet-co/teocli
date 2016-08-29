@@ -5,7 +5,6 @@
  * Created on August 3, 2016, 12:32 PM
  */
 
-
 #include "connector.h"
 #include "errno_exeption.h"
 #include "teo_exeption.h"
@@ -30,6 +29,8 @@
     OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), Nan::New<Integer>(VALUE));
 #define SET_PROP_NUMB(OBJ,NAME,VALUE) \
     OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), Nan::New<Number>(VALUE));
+#define SET_PROP_OBJECT(OBJ,NAME,VALUE) \
+    OBJ->Set(Nan::New<String>(#NAME).ToLocalChecked(), VALUE);
 
 using namespace Nan;
 using namespace v8;
@@ -86,12 +87,12 @@ NAN_METHOD(Connector::Login) {
     Nan::HandleScope scope;
     if(info.Length() < 1 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::login");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
 
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
     size_t snd(This->login(*Nan::Utf8String(info[0])));
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.login()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -103,16 +104,16 @@ NAN_METHOD(Connector::Login) {
  *.
  * @param cmd Command
  * @param peer_name Peer name to send to
- * @param data Array of data (optioonal)
+ * @param data String of data (optioonal)
  *.
  * @return Length of send data or -1 at error
  */
-NAN_METHOD(Connector::Send) {
+NAN_METHOD(Connector::SendAsString) {
     Nan::HandleScope scope;
 
     if(info.Length() < 2 )
 	Nan::ThrowError("Not enough parameters");
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::send");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     auto cmd(info[0]->IntegerValue());
@@ -127,7 +128,48 @@ NAN_METHOD(Connector::Send) {
     size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
 
     if(snd == (size_t)-1)
-        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.send()"));
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
+    else
+        info.GetReturnValue().Set((int)snd);
+}
+
+/**
+ * Send command to L0 server
+ *.
+ * Create L0 clients packet and send it to L0 server
+ *.
+ * @param cmd Command
+ * @param peer_name Peer name to send to
+ * @param data Buffer(optioonal)
+ *.
+ * @return Length of send data or -1 at error
+ */
+NAN_METHOD(Connector::SendAsBuffer) {
+    Nan::HandleScope scope;
+
+    if(info.Length() < 2 )
+	Nan::ThrowError("Not enough parameters");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
+    auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
+
+    auto cmd(info[0]->IntegerValue());
+    auto peer_name(*Nan::Utf8String(info[1]));
+    const char* buffer = nullptr;
+    size_t buffer_len(0);
+    if(info.Length() >= 3 ) {
+	Local<Object> bufferObj = info[2]->ToObject();
+	if(!bufferObj->IsUint8Array()) {
+	    return Nan::ThrowError("Invalid parameter type. Must be Buffer.");
+	}
+
+	buffer = node::Buffer::Data(bufferObj);
+	buffer_len = node::Buffer::Length(bufferObj);
+    }
+    
+    size_t snd(This->send(cmd, peer_name, buffer, buffer_len));
+
+    if(snd == (size_t)-1)
+        Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else
         info.GetReturnValue().Set((int)snd);
 }
@@ -187,7 +229,7 @@ Local<Value> Connector::fnCMD_L_PEERS_ANSWER(const Nan::FunctionCallbackInfo<v8:
 
 NAN_METHOD(Connector::Disconnect) {
     Nan::HandleScope scope;
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::disconnect");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     This->disconnect();
@@ -197,12 +239,12 @@ NAN_METHOD(Connector::Recv) {
 
     Nan::HandleScope scope;
 
-    MAKE_THROW_IF_NOT_CONNECTED("Connector::recv");
+    MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
 
     ssize_t size(This->recv());
     if(size == -1)
-        return (void)Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, "Connector.recv()"));
+        return (void)Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else {
 	// Parse type
 	switch(This->cmd()) {
@@ -267,7 +309,7 @@ NAN_METHOD(Connector::New) {
     if(!object->connect()) {
 	auto terrno = errno;
 	delete object;
-	Nan::ThrowError(TeoErrnoExeption::createNewInstance(terrno, "Connector"));
+	Nan::ThrowError(TeoErrnoExeption::createNewInstance(terrno, __FUNCTION__));
     }
     else
 	object->Wrap(info.This());
@@ -283,7 +325,8 @@ NAN_MODULE_INIT(Connector::Init) {
 
     // add member functions and accessors
     Nan::SetPrototypeMethod(ctor, "login", Login);
-    Nan::SetPrototypeMethod(ctor, "send", Send);
+    Nan::SetPrototypeMethod(ctor, "send_as_string", SendAsString);
+    Nan::SetPrototypeMethod(ctor, "send_as_buffer", SendAsBuffer);
     Nan::SetPrototypeMethod(ctor, "recv", Recv);
     Nan::SetPrototypeMethod(ctor, "sleep", Sleep);
     Nan::SetPrototypeMethod(ctor, "disconnect", Disconnect);
@@ -376,6 +419,7 @@ Connector::Worker::Worker(const std::string ip, int port,
 , ip_(ip)
 , port_(port)
 , progress_(progress)
+, errno_(0)
 , milliseconds_(milliseconds)
 , owner_(owner)
 , exec_progress_(nullptr) {
@@ -394,8 +438,9 @@ void Connector::Worker::Execute(const AsyncProgressWorker::ExecutionProgress& pr
     }
     else {
 	while(con && con->fd > 0 && teoLNullReadEventLoop(con, milliseconds_)) {
-//	    usleep(100);
 	}
+	// save last errno to report it
+	errno_ = errno;
     }
 
     exec_progress_ = nullptr;
@@ -404,11 +449,12 @@ void Connector::Worker::Execute(const AsyncProgressWorker::ExecutionProgress& pr
 void Connector::Worker::HandleOKCallback() {
     auto obj(Nan::New(owner_));
     auto This(Nan::ObjectWrap::Unwrap<Connector>(obj));
-    callback->Call(0, {});
+    v8::Local<v8::Value> argv[] = {Nan::New<v8::Integer>(errno_)};
+    callback->Call(1, argv);
 }
 
-void Connector::Worker::HandleProgressCallback(const char *data, size_t size) {
-    const worker_payload* wp(reinterpret_cast<const worker_payload*>(data));
+void Connector::Worker::HandleProgressCallback(const char *buf, size_t size) {
+    const worker_payload* wp(reinterpret_cast<const worker_payload*>(buf));
 
     Nan::HandleScope scope;
 
@@ -422,26 +468,32 @@ void Connector::Worker::HandleProgressCallback(const char *data, size_t size) {
 	This->attach_connect(wp->con_);
     }
 
-    // Create a new buffer
-    if(wp->data_ && wp->len_ > 0) {
-	char* b((char*)malloc(wp->len_));
-	memcpy(b, wp->data_, wp->len_);
-	auto mb(Nan::NewBuffer(b, wp->len_));
-	v8::Local<v8::Value> argv[] = {
-    	    Nan::New<v8::Integer>(wp->event_),
-	    mb.ToLocalChecked(),
-	    Nan::New<v8::Integer>(wp->error_)
-	};
-	progress_->Call(3, argv);
+    // generate object
+    Local<Object> object(Object::New(Isolate::GetCurrent()));
+    SET_PROP_INT(object, event, wp->event_);
+    
+    // Create a new buffer only if event == EV_L_RECEIVED
+    if(wp->data_ && wp->len_ > 0 && wp->event_ == EV_L_RECEIVED) {
+	teoLNullCPacket *cp = (teoLNullCPacket*) wp->data_;
+
+	SET_PROP_INT(object, cmd, cp->cmd);
+	SET_PROP_STR(object, peer_name, cp->peer_name);
+
+	auto tail_ptr((char*)wp->data_ + cp->data_length);
+	auto head_ptr((char*)cp->peer_name + cp->peer_name_length);
+
+	size_t len(tail_ptr - head_ptr);
+	char* b((char*)malloc(len));
+	memcpy(b, head_ptr, len);
+	auto mb(Nan::NewBuffer(b, len));
+
+	SET_PROP_OBJECT(object, buffer, mb.ToLocalChecked());
     }
-    else {
-	v8::Local<v8::Value> argv[] = {
-	    Nan::New<v8::Integer>(wp->event_),
-	    Undefined(),
-	    Nan::New<v8::Integer>(wp->error_)
-	};
-	progress_->Call(3, argv);
-    }
+    v8::Local<v8::Value> argv[] = {
+	object,
+	Nan::New<v8::Integer>(wp->error_)
+    };
+    progress_->Call(2, argv);
 
     if(wp->data_)
 	free(wp->data_);

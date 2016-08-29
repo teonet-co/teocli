@@ -54,6 +54,8 @@ public:
 
 	const Nan::AsyncProgressWorker::ExecutionProgress* exec_progress_;
 
+	int errno_;
+
 	virtual void event(void *con, teoLNullEvents event, void *data, size_t data_len);
 
 	static void event_cb(void *con, teoLNullEvents event, void *data, size_t data_len, void *user_data) {
@@ -101,7 +103,9 @@ private:
 
     static NAN_METHOD(Login); // Login method
 
-    static NAN_METHOD(Send); // Send
+    static NAN_METHOD(SendAsString); // Send As String
+
+    static NAN_METHOD(SendAsBuffer); // Send As Buffer
 
     static NAN_METHOD(Recv); // Rec
 
