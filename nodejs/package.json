@@ -1,6 +1,6 @@
 {
   "name": "teonet-client",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Teonet client nodejs module",
   "homepage": "https://gitlab.ksproject.org/teonet/teocli/tree/master/nodejs",
   "main": "index.js",
