@@ -14,7 +14,7 @@
         'link_settings': {
     	    'libraries': []
         },
-	"cflags": [
+	"cflags_cc": [
     	    "-std=c++11"
         ],
 	"ldflags": [
