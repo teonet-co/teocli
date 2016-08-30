@@ -127,7 +127,7 @@ private:
 
     ssize_t send(int cmd, const char *peer_name, const void *data, size_t data_length);
 
-    ssize_t recv();
+    ssize_t recv(const uint32_t& timeout);
 
     size_t length() const {
 	assert(connector_);
@@ -144,7 +144,7 @@ private:
 	return reinterpret_cast<teoLNullCPacket*>(connector_->read_buffer)->cmd;
     }
 
-    const void* arp_data() const {
+    const void* payload_data() const {
 	assert(connector_);
 	auto cp(reinterpret_cast<teoLNullCPacket*>(connector_->read_buffer));
 	return cp->peer_name + cp->peer_name_length;
@@ -155,6 +155,8 @@ private:
     v8::Local<v8::Value> fnCMD_L_L0_CLIENTS_ANSWER(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
     v8::Local<v8::Value> fnCMD_L_ECHO_ANSWER(const Nan::FunctionCallbackInfo<v8::Value>& info);
+
+    v8::Local<v8::Value> fnCMD_BUFFER(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
     //--------------------------------------------------------
 

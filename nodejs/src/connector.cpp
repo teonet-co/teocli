@@ -68,9 +68,20 @@ ssize_t Connector::send(int cmd, const char *peer_name, const void *data, size_t
     return teoLNullSend(connector_, cmd, peer_name, (void*)data, data_length);
 }
 
-ssize_t Connector::recv() {
+ssize_t Connector::recv(const uint32_t& timeout) {
     assert(connector_);
-    return teoLNullRecv(connector_);
+    if(timeout == 0)
+	return teoLNullRecv(connector_);
+    else {
+	uint32_t tmp(0);
+	ssize_t rc(0);
+	const uint32_t wait_period(50);
+	while((rc = teoLNullRecv(connector_)) == -1 && tmp < timeout) {
+	    teoLNullSleep(wait_period);
+	    tmp += wait_period;
+	}
+	return rc;
+    }
 }
 
 /**
@@ -174,6 +185,16 @@ NAN_METHOD(Connector::SendAsBuffer) {
         info.GetReturnValue().Set((int)snd);
 }
 
+v8::Local<v8::Value> Connector::fnCMD_BUFFER(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+    if(length() > 1) {
+	return Nan::NewBuffer((char*)clone_buffer(payload_data(),
+                              length()),
+                              length()).ToLocalChecked();
+    }
+    else
+	return Undefined();
+}
+
 Local<Value> Connector::fnCMD_L_ECHO_ANSWER(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if(length() > 1) {
 	Local<Object> obj(Object::New(info.GetIsolate()));
@@ -186,7 +207,7 @@ Local<Value> Connector::fnCMD_L_ECHO_ANSWER(const Nan::FunctionCallbackInfo<v8::
 
 Local<Value> Connector::fnCMD_L_L0_CLIENTS_ANSWER(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if(length() > 1) {
-	const teonet_client_data_ar *client_data_ar(static_cast<const teonet_client_data_ar*>(arp_data()));
+	const teonet_client_data_ar *client_data_ar(static_cast<const teonet_client_data_ar*>(payload_data()));
 	Local<Array> list = Array::New(info.GetIsolate());
 	for(int i(0); i < (int)client_data_ar->length; i++) {
 	    Local<Object> obj(Object::New(info.GetIsolate()));
@@ -203,7 +224,7 @@ Local<Value> Connector::fnCMD_L_L0_CLIENTS_ANSWER(const Nan::FunctionCallbackInf
 
 Local<Value> Connector::fnCMD_L_PEERS_ANSWER(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if(length() > 1) {
-	const ksnet_arp_data_ar* arp_data_ar(static_cast<const ksnet_arp_data_ar*>(arp_data()));
+	const ksnet_arp_data_ar* arp_data_ar(static_cast<const ksnet_arp_data_ar*>(payload_data()));
 	Local<Array> list = Array::New(info.GetIsolate());
 	for(size_t i(0); i < (int)arp_data_ar->length; i++) {
 	    Local<Object> obj(Object::New(info.GetIsolate()));
@@ -235,14 +256,26 @@ NAN_METHOD(Connector::Disconnect) {
     This->disconnect();
 }
 
+/**
+ * Receive a packet
+ *
+ * Receive packet from server
+ *
+ * @param timeout(optional = 0 )
+ *.
+ * @return Known object of Buffer if unknown
+ */
 NAN_METHOD(Connector::Recv) {
 
     Nan::HandleScope scope;
 
     MAKE_THROW_IF_NOT_CONNECTED(__FUNCTION__);
     auto This(Nan::ObjectWrap::Unwrap<Connector>(info.Holder()));
+    uint32_t timeout(0);
+    if(info.Length() > 0)
+	timeout = info[0]->NumberValue() * 1000.0;
 
-    ssize_t size(This->recv());
+    ssize_t size(This->recv(timeout));
     if(size == -1)
         return (void)Nan::ThrowError(TeoErrnoExeption::createNewInstance(errno, __FUNCTION__));
     else {
@@ -260,7 +293,8 @@ NAN_METHOD(Connector::Recv) {
 		info.GetReturnValue().Set(This->fnCMD_L_L0_CLIENTS_ANSWER(info));
 	    return;
 	    default:
-		break;
+		info.GetReturnValue().Set(This->fnCMD_BUFFER(info));
+	    return;
 	}
         return info.GetReturnValue().Set(Undefined());
     }
