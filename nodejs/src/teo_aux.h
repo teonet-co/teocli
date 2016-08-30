@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <string.h>
+
 #define DECL_CONSTANT(NAME, VALUE)\
 static NAN_GETTER(GETTER_##NAME) {\
     info.GetReturnValue().Set(VALUE);\
@@ -22,3 +24,11 @@ Nan::SetAccessor(TARGET, Nan::New(#NAME).ToLocalChecked(), GETTER_##NAME, nullpt
 #else
     #define close_socket(sd) close(sd)
 #endif
+
+inline
+void* clone_buffer(const void* ptr, const size_t& len) {
+    auto rc(malloc(len));
+    if(rc)
+	memcpy(rc, ptr, len);
+    return rc;
+}
