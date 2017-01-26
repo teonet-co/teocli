@@ -1,3 +1,8 @@
+To create make filr (first time after clone this project) use:
+
+    touch AUTHORS NEWS README ChangeLog
+    ./autogen.sh
+
 To make example application and Teonet L0 client library under Linux use command line:
 
     make
@@ -31,4 +36,3 @@ Build teocli shared librare and example in command line:
     gcc -o ./libteocli.so ../libteol0/teonet_l0_client.c -shared -fPIC
     gcc -o ./teocli ../main.c ./libteocli.so
     sudo ldconfig
-
