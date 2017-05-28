@@ -20,6 +20,7 @@
 #else
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>
@@ -178,6 +179,36 @@ ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name,
     return snd;
 }
 
+static size_t teo_time_length() {
+    
+    return sizeof(struct timeval);
+}
+
+static void *teo_time_get(size_t *time_size) {
+
+	size_t len = teo_time_length();
+	struct timeval *tv = malloc(len);
+	gettimeofday(tv, 0);
+	if(time_size) *time_size = len;
+
+	return tv;
+}
+
+static void teo_time_free(void *tv) {
+	free(tv);
+}
+
+static int teo_time_diff(void *tv) {
+
+	struct timeval *tv_last = tv,
+		       *tv_current = teo_time_get(0);
+	int ret = (tv_current->tv_sec - tv_last->tv_sec) * 1000
+		+ (tv_current->tv_usec - tv_last->tv_usec) / 1000;
+	teo_time_free(tv_current);
+
+	return ret;
+};
+
 /**
  * Send ECHO command to L0 server
  * 
@@ -194,21 +225,28 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
     
     // Add current time to the end of message (it should be return 
     // back by server)
-    struct timeb time_start;
-    const size_t time_length = sizeof(struct timeb);
-    ftime(&time_start);
+    
+//    struct timeb time_start;
+//    const size_t time_length = sizeof(struct timeb);
+//    ftime(&time_start);
+    
+    // Get current time in millisecond
+    size_t time_length;
+    void *time_start = teo_time_get(&time_length);
+    
     const size_t msg_len = strlen(msg) + 1;
     const size_t msg_buf_len = msg_len + time_length;
     char *msg_buf = malloc(msg_buf_len); 
     //
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
-    memcpy(msg_buf + msg_len, &time_start, time_length);
+    memcpy(msg_buf + msg_len, time_start, time_length);
     //
     // Send message with time
     ssize_t snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, 
             msg_buf_len);
     
+    teo_time_free(time_start);
     free(msg_buf);
     
     return snd;
@@ -222,18 +260,21 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
  */
 int teoLNullProccessEchoAnswer(const char *msg) {
     
-    struct timeb time_start, time_end;
-    const size_t time_length = sizeof(struct timeb);
+    //struct timeb time_start, time_end;
+    void *time_start;
+    size_t time_length = teo_time_length() ; // = sizeof(struct timeb);
     
     // Get time from answers data
-    ftime(&time_end);
+    //ftime(&time_end);
+    //time_end = teo_time_get(&time_length);
     size_t time_ptr = strlen(msg) + 1;
-    memcpy(&time_start, msg + time_ptr, time_length);
+    memcpy(time_start, msg + time_ptr, time_length);
 
     // Calculate trip time
     int trip_time = 
-            (int) (1000.0 * (time_end.time - time_start.time)
-            + (time_end.millitm - time_start.millitm));
+//            (int) (1000.0 * (time_end.time - time_start.time)
+//            + (time_end.millitm - time_start.millitm));
+        teo_time_diff(time_start);
 
     return trip_time;
 }
