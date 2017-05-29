@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/main_select.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
 	${OBJECTDIR}/nodejs/src/errno_exeption.o \
@@ -80,6 +81,11 @@ ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
+
+${OBJECTDIR}/main_select.o: main_select.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.c
 
 ${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc
 	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello

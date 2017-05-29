@@ -17,6 +17,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define BARNABY_API __declspec(dllexport )
 #include <winsock2.h>
+#include <sys/timeb.h> 
 #else
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -26,7 +27,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
-//#include <sys/timeb.h> 
 
 #include "teonet_l0_client.h"
 
@@ -179,31 +179,76 @@ ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name,
     return snd;
 }
 
+/**
+ * Get size of time structure
+ * 
+ * @return 
+ */
 static size_t teo_time_length() {
     
+    #if defined(_WIN32) || defined(_WIN64)
+    return sizeof(struct timeb);
+    #else
     return sizeof(struct timeval);
+    #endif
 }
 
+/**
+ * Get current time
+ * 
+ * Allocate memory and save current time to it
+ *  
+ * @param time_size Pointer to size_t variable to save size of time structure
+ * 
+ * @return Buffer with time structure. Should be free with teo_time_free 
+ *         function after use
+ */
 static void *teo_time_get(size_t *time_size) {
 
 	size_t len = teo_time_length();
+        
+        #if defined(_WIN32) || defined(_WIN64)
+        struct timeb *tv = malloc(len);
+        ftime(tv);
+        #else        
 	struct timeval *tv = malloc(len);
 	gettimeofday(tv, 0);
+        #endif
+        
 	if(time_size) *time_size = len;
 
 	return tv;
 }
 
+/**
+ * Free previously allocated time structure
+ * 
+ * @param tv Pointer to time structure
+ */
 static void teo_time_free(void *tv) {
 	free(tv);
 }
 
+/**
+ * Get time in milliseconds between saved time and current time
+ * 
+ * @param tv Pointer to saved time structure
+ * 
+ * @return Time in milliseconds between tv and current time
+ */
 static int teo_time_diff(void *tv) {
 
+        #if defined(_WIN32) || defined(_WIN64)
+	struct timeb *tv_last = tv,
+		     *tv_current = teo_time_get(0);
+	int ret = (int) (1000.0 * (tv_current->time - tv_last->time)
+                + (tv_current->millitm - tv_last->millitm));
+        #else
 	struct timeval *tv_last = tv,
 		       *tv_current = teo_time_get(0);
 	int ret = (tv_current->tv_sec - tv_last->tv_sec) * 1000
 		+ (tv_current->tv_usec - tv_last->tv_usec) / 1000;
+        #endif
 	teo_time_free(tv_current);
 
 	return ret;
@@ -226,11 +271,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
     // Add current time to the end of message (it should be return 
     // back by server)
     
-//    struct timeb time_start;
-//    const size_t time_length = sizeof(struct timeb);
-//    ftime(&time_start);
-    
-    // Get current time in millisecond
+    // Get current time to buffer
     size_t time_length;
     void *time_start = teo_time_get(&time_length);
     
@@ -260,22 +301,12 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
  */
 int teoLNullProccessEchoAnswer(const char *msg) {
     
-    //struct timeb time_start, time_end;
-    void *time_start;
-    size_t time_length = teo_time_length() ; // = sizeof(struct timeb);
-    
     // Get time from answers data
-    //ftime(&time_end);
-    //time_end = teo_time_get(&time_length);
     size_t time_ptr = strlen(msg) + 1;
-    //memcpy(time_start, msg + time_ptr, time_length);
-    time_start = (void *)msg + time_ptr;
+    void *time_start = (void *)msg + time_ptr;
 
     // Calculate trip time
-    int trip_time = 
-//            (int) (1000.0 * (time_end.time - time_start.time)
-//            + (time_end.millitm - time_start.millitm));
-        teo_time_diff(time_start);
+    int trip_time = teo_time_diff(time_start);
 
     return trip_time;
 }
