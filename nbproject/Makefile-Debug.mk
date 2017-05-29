@@ -36,14 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
-	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/nodejs/example/hello/hello.o \
-	${OBJECTDIR}/nodejs/src/connector.o \
-	${OBJECTDIR}/nodejs/src/errno_exeption.o \
-	${OBJECTDIR}/nodejs/src/libteol0/teonet_l0_client.o \
-	${OBJECTDIR}/nodejs/src/teo_exeption.o \
-	${OBJECTDIR}/nodejs/src/teo_main.o \
-	${OBJECTDIR}/nodejs/src/teo_packet.o
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -68,52 +61,17 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c 
+${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0
 	${RM} "$@.d"
 	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_l0_client.o libteol0/teonet_l0_client.c
 
-${OBJECTDIR}/main.o: main.c 
+${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
-
-${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/example/hello/hello.o nodejs/example/hello/hello.cc
-
-${OBJECTDIR}/nodejs/src/connector.o: nodejs/src/connector.cpp 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/connector.o nodejs/src/connector.cpp
-
-${OBJECTDIR}/nodejs/src/errno_exeption.o: nodejs/src/errno_exeption.cpp 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/errno_exeption.o nodejs/src/errno_exeption.cpp
-
-${OBJECTDIR}/nodejs/src/libteol0/teonet_l0_client.o: nodejs/src/libteol0/teonet_l0_client.c 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src/libteol0
-	${RM} "$@.d"
-	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/libteol0/teonet_l0_client.o nodejs/src/libteol0/teonet_l0_client.c
-
-${OBJECTDIR}/nodejs/src/teo_exeption.o: nodejs/src/teo_exeption.cpp 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/teo_exeption.o nodejs/src/teo_exeption.cpp
-
-${OBJECTDIR}/nodejs/src/teo_main.o: nodejs/src/teo_main.cpp 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/teo_main.o nodejs/src/teo_main.cpp
-
-${OBJECTDIR}/nodejs/src/teo_packet.o: nodejs/src/teo_packet.cpp 
-	${MKDIR} -p ${OBJECTDIR}/nodejs/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nodejs/src/teo_packet.o nodejs/src/teo_packet.cpp
 
 # Subprojects
 .build-subprojects:
@@ -121,7 +79,6 @@ ${OBJECTDIR}/nodejs/src/teo_packet.o: nodejs/src/teo_packet.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli
 
 # Subprojects
 .clean-subprojects:
