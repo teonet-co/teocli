@@ -79,7 +79,7 @@ static ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout) {
 int main(int argc, char** argv) {
     
     // Welcome message
-    printf("Teonet L0 client example ver " TL0CN_VERSION " (native client)\n\n");
+    printf("Teonet L0 client example version " TL0CN_VERSION " (Native TCP Client)\n\n");
     
     // Check application parameters
     if(argc < 5) {
@@ -133,8 +133,8 @@ int main(int argc, char** argv) {
             // Show L0 answer
             teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
             data = cp->peer_name + cp->peer_name_length;
-            printf("Receive %d bytes: %d bytes data from L0 server, "
-                    "from peer %s, cmd = %d, data: %s\n\n", 
+            printf("Receive %d bytes: %hu bytes data from L0 server, "
+                    "from peer %s, cmd = %hhu, data: %s\n\n", 
                     (int)rc, cp->data_length, cp->peer_name, cp->cmd, 
                     cp->data_length ? data : "");
         
@@ -153,21 +153,22 @@ int main(int argc, char** argv) {
             // Send (3) echo request to peer, command CMD_L_ECHO
             //
             // Add current time to the end of message (it should be return back by server)
-            ftime(&time_start);
-            const size_t msg_len = strlen(msg) + 1;
-            const size_t msg_buf_len = msg_len + time_length;
-            char *msg_buf = malloc(msg_buf_len); 
-            memcpy(msg_buf, msg, msg_len);
-            memcpy(msg_buf + msg_len, &time_start, time_length);
-            //
-            // Send message with time
-            snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
+//            ftime(&time_start);
+//            const size_t msg_len = strlen(msg) + 1;
+//            const size_t msg_buf_len = msg_len + time_length;
+//            char *msg_buf = malloc(msg_buf_len); 
+//            memcpy(msg_buf, msg, msg_len);
+//            memcpy(msg_buf + msg_len, &time_start, time_length);
+//            //
+//            // Send message with time
+//            snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
+            snd = teoLNullSendEcho(con, peer_name, msg);
             if(snd == -1) perror(strerror(errno));
             printf("Send %d bytes packet to L0 server to peer %s, "
                    "cmd = %d (CMD_L_ECHO), " 
                    "data: %s\n", 
                    (int)snd, peer_name, CMD_L_ECHO, msg);
-            free(msg_buf);
+//            free(msg_buf);
 
             // Show empty line
             printf("\n");
@@ -179,8 +180,8 @@ int main(int argc, char** argv) {
             if(rc > 0) {
 
                 teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;            
-                printf("Receive %d bytes: %d bytes data from L0 server, "
-                        "from peer %s, cmd = %d\n", 
+                printf("Receive %d bytes: %hu bytes data from L0 server, "
+                        "from peer %s, cmd = %hhu\n", 
                         (int)rc, cp->data_length, cp->peer_name, cp->cmd);
 
                 // Process CMD_L_PEERS_ANSWER
@@ -191,7 +192,7 @@ int main(int argc, char** argv) {
                             (cp->peer_name + cp->peer_name_length);
                     const char *ln = "--------------------------------------------"
                                      "---------\n";
-                    printf("%sPeers (%d): \n%s", ln, arp_data_ar->length, ln);
+                    printf("%sPeers (%u): \n%s", ln, arp_data_ar->length, ln);
                     int i;
                     for(i = 0; i < (int)arp_data_ar->length; i++) {
 
@@ -216,8 +217,8 @@ int main(int argc, char** argv) {
             if(rc > 0) {
 
                 teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;            
-                printf("Receive %d bytes: %d bytes data from L0 server, "
-                        "from peer %s, cmd = %d\n", 
+                printf("Receive %d bytes: %hu bytes data from L0 server, "
+                        "from peer %s, cmd = %hhu\n", 
                         (int)rc, cp->data_length, cp->peer_name, cp->cmd);
 
                 // Process CMD_L_L0_CLIENTS_ANSWER
@@ -228,7 +229,7 @@ int main(int argc, char** argv) {
                             (cp->peer_name + cp->peer_name_length);
                     const char *ln = "--------------------------------------------"
                                      "---------\n";
-                    printf("%sClients (%d): \n%s", ln, client_data_ar->length, ln);
+                    printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
                     int i;
                     for(i = 0; i < (int)client_data_ar->length; i++) {
 
@@ -249,23 +250,25 @@ int main(int argc, char** argv) {
 
                 teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
                 data = cp->peer_name + cp->peer_name_length;
-                printf("Receive %d bytes: %d bytes data from L0 server, "
-                        "from peer %s, cmd = %d, data: %s\n", 
+                printf("Receive %d bytes: %hu bytes data from L0 server, "
+                        "from peer %s, cmd = %hhu, data: %s\n", 
                         (int)rc, cp->data_length, cp->peer_name, cp->cmd, data);
 
                 // Process CMD_L_ECHO_ANSWER
                 if(cp->cmd == CMD_L_ECHO_ANSWER) {
 
-                    // Get time from answers data
-                    ftime(&time_end);
-                    size_t time_ptr = strlen(data) + 1;
-                    memcpy(&time_start, data + time_ptr, time_length);
+//                    // Get time from answers data
+//                    ftime(&time_end);
+//                    size_t time_ptr = strlen(data) + 1;
+//                    memcpy(&time_start, data + time_ptr, time_length);
+//
+//                    // Calculate trip time
+//                    int trip_time = 
+//                            (int) (1000.0 * (time_end.time - time_start.time)
+//                            + (time_end.millitm - time_start.millitm));
 
-                    // Calculate trip time
-                    int trip_time = 
-                            (int) (1000.0 * (time_end.time - time_start.time)
-                            + (time_end.millitm - time_start.millitm));
-
+                    int trip_time = teoLNullProccessEchoAnswer(data);
+                    
                     // Show trip time
                     printf("Trip time: %d ms\n", trip_time);
                 }
@@ -286,8 +289,8 @@ int main(int argc, char** argv) {
 
                     teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
                     data = cp->peer_name + cp->peer_name_length;
-                    printf("Receive %d bytes: %d bytes data from L0 server, "
-                            "from peer %s, cmd = %d, data: %s\n", 
+                    printf("Receive %d bytes: %hu bytes data from L0 server, "
+                            "from peer %s, cmd = %hhu, data: %s\n", 
                             (int)rc, cp->data_length, cp->peer_name, cp->cmd, 
                             cp->data_length ? data : "");
                 } 
