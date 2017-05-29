@@ -26,7 +26,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
-#include <sys/timeb.h> 
+//#include <sys/timeb.h> 
 
 #include "teonet_l0_client.h"
 
