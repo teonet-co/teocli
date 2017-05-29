@@ -295,11 +295,11 @@ int main(int argc, char** argv) {
                             cp->data_length ? data : "");
                     
                     // Send echo answer command \TODO add it to client
-                    if(cp->cmd == CMD_L_ECHO) {
-                        
-                        teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
-                        
-                    }
+//                    if(cp->cmd == CMD_L_ECHO) {
+//                        
+//                        teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+//                        
+//                    }
                 } 
                 else if(rc == 0) { 
 
