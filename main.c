@@ -293,6 +293,13 @@ int main(int argc, char** argv) {
                             "from peer %s, cmd = %hhu, data: %s\n", 
                             (int)rc, cp->data_length, cp->peer_name, cp->cmd, 
                             cp->data_length ? data : "");
+                    
+                    // Send echo answer command \TODO add it to client
+                    if(cp->cmd == CMD_L_ECHO) {
+                        
+                        teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+                        
+                    }
                 } 
                 else if(rc == 0) { 
 
