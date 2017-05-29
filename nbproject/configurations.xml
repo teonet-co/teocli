@@ -124,8 +124,6 @@
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="main_select.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="make.sh" ex="false" tool="3" flavor2="0">

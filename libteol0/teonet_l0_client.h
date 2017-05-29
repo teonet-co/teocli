@@ -1,23 +1,23 @@
-/** 
+/**
  * \file   teonet_l0_client.h
  * \author Kirill Scherba <kirill@scherba.ru>
- * 
+ *
  * Created on October 12, 2015, 12:32 PM
  */
 
 /**
- * \page Teocli library Documentation  
- * 
- * * [Native library structures and functions](teonet__l0__client_8h.html) 
- * * [C++ teocli class wrapper](classteocli.html)  
- * * [Basic example](main_8c-example.html)    
+ * \page Teocli library Documentation
+ *
+ * * [Native library structures and functions](teonet__l0__client_8h.html)
+ * * [C++ teocli class wrapper](classteocli.html)
+ * * [Basic example](main_8c-example.html)
  */
 
 #ifndef TEONET_L0_CLIENT_H
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.4"  
+#define TL0CN_VERSION "0.0.4"
 
 #include <stdint.h>
 
@@ -38,7 +38,7 @@ extern int usleep (__useconds_t __useconds);
  * L0 System commands
  */
 enum CMD_L {
-    
+
     CMD_L_ECHO = 65,              ///< #65 Echo command
     CMD_L_ECHO_ANSWER,            ///< #66 Answer to echo command
     CMD_L_PEERS = 72,             ///< #72 Get peers command
@@ -48,7 +48,7 @@ enum CMD_L {
     CMD_L_L0_CLIENTS,             ///< #79 Get clients list command
     CMD_L_L0_CLIENTS_ANSWER,      ///< #80 Clients list answer command
     CMD_L_SUBSCRIBE_ANSWER = 83,  ///< #83 Subscribe answer
-    
+
     CMD_L_END = 127
 };
 
@@ -58,16 +58,16 @@ enum CMD_L {
  * L0 client events
  */
 typedef enum teoLNullEvents {
-    
+
     EV_L_CONNECTED, ///< After connected to L0 server
     EV_L_DISCONNECTED, ///< After disconnected from L0 server
     EV_L_RECEIVED, ///< Data received
     EV_L_TICK, ///< Send after every teoLNullReadEventLoop calls
-    EV_L_IDLE ///< Send after teoLNullReadEventLoop calls if data was not received during timeout 
-            
+    EV_L_IDLE ///< Send after teoLNullReadEventLoop calls if data was not received during timeout
+
 } teoLNullEvents;
 
-typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data, 
+typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) ;
 
 /**
@@ -80,17 +80,17 @@ typedef struct teoLNullConnectData {
     #else
     int fd;                     ///< Connection socket
     #endif
-    
+
     void *read_buffer;          ///< Pointer to saved buffer
     size_t read_buffer_ptr;     ///< Pointer in read buffer
     size_t read_buffer_size;    ///< Read buffer size
     size_t last_packet_ptr;     ///< Last recived packet pointer (length)
-    
+
     teoLNullEventsCb event_cb;  ///< Event callback function
     void *user_data;            ///< User data
 
 } teoLNullConnectData;
-        
+
 #define ARP_TABLE_IP_SIZE 48    // INET6_ADDRSTRLEN = 46
 
 /**
@@ -100,7 +100,7 @@ typedef struct ksnet_arp_data {
 
     int16_t mode;       ///< Peers mode: -1 - This host, -2 undefined host, 0 - peer , 1 - r-host, 2 - TCP Proxy peer
     char addr[ARP_TABLE_IP_SIZE];      ///< Peer IP address
-// \todo test is it possible to change this structure for running peers     
+// \todo test is it possible to change this structure for running peers
 //    char addr[48];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
@@ -112,9 +112,9 @@ typedef struct ksnet_arp_data {
     double triptime;                ///< Middle triptime
 
     double monitor_time;            ///< Monitor ping time
-    
+
     double connected_time;          ///< Time when peer was connected to this peer
-    
+
 } ksnet_arp_data;
 
 #define DIG_IN_TEO_VER 3
@@ -123,11 +123,11 @@ typedef struct ksnet_arp_data {
  * Host info data structure
  */
 typedef struct host_info_data {
-    
+
     uint8_t ver[DIG_IN_TEO_VER]; ///< Version
     uint8_t string_ar_num; ///< Number of elements in array length
     char string_ar[]; ///< String array structure: { name, type }
-    
+
 } host_info_data;
 
 #pragma pack(push)
@@ -137,21 +137,21 @@ typedef struct host_info_data {
  * KSNet ARP table whole data array
  */
 typedef struct ksnet_arp_data_ar {
-    
+
     uint32_t length;
     struct _arp_data {
-        
+
         char name[ARP_TABLE_IP_SIZE];
         ksnet_arp_data data;
-        
+
     } arp_data[];
-    
+
 } ksnet_arp_data_ar;
 
 /**
  * L0 client packet data structure
- * 
- */        
+ *
+ */
 typedef struct teoLNullCPacket {
 
     uint8_t cmd; ///< Command
@@ -167,59 +167,59 @@ typedef struct teoLNullCPacket {
 
 /**
  * L0 Server statistic data structure
- * 
- */        
+ *
+ */
 typedef struct ksnLNullSStat {
-    
+
     uint16_t visits;
-    
+
 } ksnLNullSStat;
 
 /**
  * L0 Server visits subscribe data structure
- * 
- */        
+ *
+ */
 typedef struct ksnLNullSVisitsData {
-    
+
     uint16_t visits;
     char client[];
-    
+
 } ksnLNullSVisitsData;
 
 /**
  * Clients list data structure
  */
 typedef struct teonet_client_data_ar {
-    
+
     uint32_t length;
     struct _client_data {
-        
+
         char name[128];
         //ksnLNullData data;
-        
+
     } client_data[];
-    
+
 } teonet_client_data_ar;
 
 /**
  * teoSScr class list or CMD_SUBSCRIBE_ANSWER data
  */
 typedef struct teoSScrData {
-    
+
     uint16_t ev; ///< Event (used when send data to subscriber)
     uint8_t cmd; ///< Command ID (used when send data to subscriber)
     char data[]; ///< Remote peer name in list or data in CMD_SUBSCRIBE_ANSWER
-        
+
 } teoSScrData;
 
 /**
  * Data for CMD_L0_INFO_ANSWER command
  */
 typedef struct l0_info_data {
-    
+
     uint32_t l0_tcp_port;
     char l0_tcp_ip_remote[];
-    
+
 } l0_info_data;
 
 #pragma pack(pop)
@@ -228,13 +228,13 @@ typedef struct l0_info_data {
 #ifdef _WINDLL
 #define TEOCLI_API __declspec(dllexport)
 #else
-#define TEOCLI_API 
+#define TEOCLI_API
 #endif
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
+
 /**
  * Get output buffer size
  * @param peer_length
@@ -242,26 +242,26 @@ extern "C" {
  */
 #define teoLNullBufferSize(peer_length, data_length) \
     ( sizeof(teoLNullCPacket) + peer_length + data_length )
-    
-#if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)   
+
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)
 	void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
 	#define teoLNullSleep(ms) WinSleep(ms)
 #else
-    #define teoLNullSleep(ms) usleep(ms * 1000)    
+    #define teoLNullSleep(ms) usleep(ms * 1000)
 #endif
-    
-    
-// Hight level functions    
+
+
+// Hight level functions
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
 TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
-TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port, 
+TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
-TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, 
+TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd,
         const char *peer_name, void *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         const char *msg);
