@@ -441,8 +441,18 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
     char buf[L0_BUFFER_SIZE];
     
     ssize_t rc = teoLNullPacketRecv((int)con->fd, buf, L0_BUFFER_SIZE);
-    if(rc != 0)
+    if(rc != 0) {
         rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
+     
+        // Send echo answer to echo command
+        if(rc > 0) {
+            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
+            if(cp->cmd == CMD_L_ECHO) {
+                char *data = cp->peer_name + cp->peer_name_length;
+                teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+            }
+        }
+    }
     
     return rc;
 }
