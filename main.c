@@ -40,7 +40,6 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
-//#include <sys/timeb.h> 
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -104,10 +103,6 @@ int main(int argc, char** argv) {
     ssize_t rc;
     char *data = NULL;
     
-    // Define time structure for echo command
-//    struct timeb time_start, time_end;
-//    const size_t time_length = sizeof(struct timeb);
-    
     // Initialize L0 Client library
     teoLNullInit();
 
@@ -152,23 +147,12 @@ int main(int argc, char** argv) {
 
             // Send (3) echo request to peer, command CMD_L_ECHO
             //
-            // Add current time to the end of message (it should be return back by server)
-//            ftime(&time_start);
-//            const size_t msg_len = strlen(msg) + 1;
-//            const size_t msg_buf_len = msg_len + time_length;
-//            char *msg_buf = malloc(msg_buf_len); 
-//            memcpy(msg_buf, msg, msg_len);
-//            memcpy(msg_buf + msg_len, &time_start, time_length);
-//            //
-//            // Send message with time
-//            snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
             snd = teoLNullSendEcho(con, peer_name, msg);
             if(snd == -1) perror(strerror(errno));
             printf("Send %d bytes packet to L0 server to peer %s, "
                    "cmd = %d (CMD_L_ECHO), " 
                    "data: %s\n", 
                    (int)snd, peer_name, CMD_L_ECHO, msg);
-//            free(msg_buf);
 
             // Show empty line
             printf("\n");
@@ -257,16 +241,7 @@ int main(int argc, char** argv) {
                 // Process CMD_L_ECHO_ANSWER
                 if(cp->cmd == CMD_L_ECHO_ANSWER) {
 
-//                    // Get time from answers data
-//                    ftime(&time_end);
-//                    size_t time_ptr = strlen(data) + 1;
-//                    memcpy(&time_start, data + time_ptr, time_length);
-//
-//                    // Calculate trip time
-//                    int trip_time = 
-//                            (int) (1000.0 * (time_end.time - time_start.time)
-//                            + (time_end.millitm - time_start.millitm));
-
+                    // Get time from answers data
                     int trip_time = teoLNullProccessEchoAnswer(data);
                     
                     // Show trip time
@@ -294,12 +269,7 @@ int main(int argc, char** argv) {
                             (int)rc, cp->data_length, cp->peer_name, cp->cmd, 
                             cp->data_length ? data : "");
                     
-                    // Send echo answer command \TODO add it to client
-//                    if(cp->cmd == CMD_L_ECHO) {
-//                        
-//                        teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
-//                        
-//                    }
+                    // Echo answer command sent automatically by client
                 } 
                 else if(rc == 0) { 
 

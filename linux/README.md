@@ -34,5 +34,6 @@ Build teocli shared librare and example in command line:
     # gcc -o ./teocli_s ../main_select.c -DHAVE_MINGW libteocli.so
 
     gcc -o ./libteocli.so ../libteol0/teonet_l0_client.c -shared -fPIC
+    gcc -o ./teocli_s ../main_select.c ./libteocli.so
     gcc -o ./teocli ../main.c ./libteocli.so
     sudo ldconfig
