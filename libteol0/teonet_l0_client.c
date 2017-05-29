@@ -141,7 +141,7 @@ static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
 	if ((snd = send(sd, pkg, (int)pkg_length, 0)) >= 0);
     #else
-    if((snd = write(sd, pkg, pkg_length)) >= 0);                
+    if((snd = write(sd, pkg, pkg_length)) >= 0) {};
     #endif
 
     return snd;
@@ -172,7 +172,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, int cmd, const char *peer_name,
     
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name, 
             data, data_length);
-    if((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0);
+    if((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
     
     free(buf);
     
@@ -528,7 +528,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name) {
     
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
     if(!pkg_length) return 0;
-	if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0);
+	if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
     
     // Free buffer
     #if defined(_WIN32) || defined(_WIN64)
