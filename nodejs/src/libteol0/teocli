@@ -36,7 +36,7 @@ public:
     /**
      * Teonet client simple destructor
      */
-    ~teocli() {}
+    ~Teocli() {}
     
     /**
      * Initialize L0 client library.

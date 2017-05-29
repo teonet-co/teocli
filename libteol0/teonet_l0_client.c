@@ -269,7 +269,7 @@ int teoLNullProccessEchoAnswer(const char *msg) {
     //time_end = teo_time_get(&time_length);
     size_t time_ptr = strlen(msg) + 1;
     //memcpy(time_start, msg + time_ptr, time_length);
-    time_start = msg + time_ptr;
+    time_start = (void *)msg + time_ptr;
 
     // Calculate trip time
     int trip_time = 
