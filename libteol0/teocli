@@ -24,7 +24,7 @@
  * 
  * This is Teonet L0 client C++ wrapper
  */
-class teocli {
+class Teocli {
     
 private:    
     
@@ -50,16 +50,16 @@ public:
     /**
      * Teonet client simple constructor
      */
-    teocli() { con = NULL; init(); }    
-    teocli(const char *server, int port) {
-        teocli();
+    Teocli() { con = NULL; init(); }    
+    Teocli(const char *server, int port) : Teocli()  {
+        //Teocli();
         connect(server, port);
     }
     
     /**
      * Teonet client simple destructor
      */
-    ~teocli() { cleanup(); }
+    ~Teocli() { cleanup(); }
     
     /**
      * Check if this class is connected to L0 server

@@ -40,7 +40,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
-#include <sys/timeb.h> 
+//#include <sys/timeb.h> 
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -105,8 +105,8 @@ int main(int argc, char** argv) {
     char *data = NULL;
     
     // Define time structure for echo command
-    struct timeb time_start, time_end;
-    const size_t time_length = sizeof(struct timeb);
+//    struct timeb time_start, time_end;
+//    const size_t time_length = sizeof(struct timeb);
     
     // Initialize L0 Client library
     teoLNullInit();
