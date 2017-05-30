@@ -203,8 +203,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 int main(int argc, char** argv) {
 
     // Welcome message
-    printf("Teonet L0 client with select example ver " TL0CNS_VERSION
-           " (native client)\n\n");
+    printf("Teonet L0 client with Select and Event Loop Callback example version " TL0CN_VERSION " (Native TCP Client)\n\n");
 
     // Check application parameters
     if(argc < 5) {
