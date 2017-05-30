@@ -14,17 +14,31 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef TEOCLI_CPP_H
-#define	TEOCLI_CPP_H
+#pragma once
+
+#include <functional>
 
 #include "teonet_l0_client.h"
 
+namespace teo {
+    
+//! L0 client events (teoLNullEvents)
+typedef teoLNullEvents Events;
+
+using namespace std::placeholders;
+    
 /**
  * Teocli class.
  * 
  * This is Teonet L0 client C++ wrapper
  */
 class Teocli {
+    
+/**
+ * Teocli event callback (teoLNullEventsCb)
+ */
+typedef void (*eventsCb)(Teocli &cli, Events event, void *data, size_t data_len, 
+                         void *user_data) ;    
     
 private:    
     
@@ -71,8 +85,8 @@ public:
      * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
      * @retval teoLNullConnectData::fd==-3 - Client-connect() error 
      */
-    inline int connected() {
-        return con == NULL ? 0:con->fd;
+    inline int connected() const {
+        return con == NULL ? 0 : con->fd;
     }
     
     /**
@@ -89,6 +103,46 @@ public:
      */
     inline teoLNullConnectData *connect(const char *server, int port) {
         return con = teoLNullConnect(server, port);
+    }
+    
+    /**
+     * Create TCP client and connect to server with event callback
+     *
+     * @param server Server IP or name
+     * @param port Server port
+     * @param event_cb Pointer to event callback function
+     * @param user_data Pointer to user data which will be send to event callback
+     *
+     * @return Pointer to teoLNullConnectData. Null if no memory error
+     * @retval teoLNullConnectData::fd>0   - Success connection
+     * @retval teoLNullConnectData::fd==-1 - Create socket error
+     * @retval teoLNullConnectData::fd==-2 - HOST NOT FOUND error
+     * @retval teoLNullConnectData::fd==-3 - Client-connect() error
+     */    
+//    inline teoLNullConnectData* connectE(const char *server, int port,
+//        teoLNullEventsCb event_cb, void *user_data) {
+//        
+//        return con = teoLNullConnectE(server, port, event_cb, user_data);
+//    }
+    
+    inline teoLNullConnectData* connectE(const char *server, int port,
+         eventsCb event_cb, void *user_data) {
+        
+        //teoLNullEventsCb
+        //std::bind(event_cb, this, _2, _3, _4, 5);
+        
+//        typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, 
+//                void *data, size_t data_len, void *user_data) ;
+        
+//        typedef std::function< void(void *kc, teoLNullEvents event, void *data, size_t data_len, void *user_data) > teoLNullEventsCb;
+        
+        //teoLNullEventsCb 
+        std::function< void(void *kc, teoLNullEvents event, void *data, size_t data_len, void *user_data) > cb = 
+            std::bind(event_cb, this, _2, _3, _4, _5);
+        
+        
+        
+        return con = teoLNullConnectE(server, port, cb, user_data);
     }
     
     /**
@@ -157,10 +211,21 @@ public:
      * @retval -1 Packet not receiving yet (got part of packet)
      * @retval -2 Wrong packet received (dropped)
      */
-    inline ssize_t recv() {
-        
+    inline ssize_t recv() {        
         return teoLNullRecv(con);
     }    
+    
+    /**
+     * Wait socket data during timeout and call callback if data received
+     *
+     * @param con Pointer to teoLNullConnectData
+     * @param timeout Timeout of wait socket read event in ms
+     *
+     * @return 0 - if disconnected or 1 other way
+     */    
+    inline int eventLoop(int timeout) {        
+        return teoLNullReadEventLoop(con, timeout);
+    }
     
     /**
      * Sleep
@@ -175,7 +240,7 @@ public:
      * Return read buffer of last recv call
      * @return Pointer to teoLNullCPacket
      */
-    inline teoLNullCPacket *packet() {
+    inline teoLNullCPacket *packet() const {
         return (teoLNullCPacket*) con->read_buffer;
     }
     
@@ -183,7 +248,7 @@ public:
      * Return packet arp data of last recv call
      * @return Pointer to ksnet_arp_data_ar
      */
-    inline ksnet_arp_data_ar *packetArpData() {
+    inline ksnet_arp_data_ar *packetArpData() const {
         return (ksnet_arp_data_ar *) (packet()->peer_name + packet()->peer_name_length);
     }
     
@@ -191,7 +256,7 @@ public:
      * Return packet clients array data
      * @return Pointer to teonet_client_data_ar
      */
-    inline teonet_client_data_ar *packetClientData() {
+    inline teonet_client_data_ar *packetClientData() const {
         return (teonet_client_data_ar *)
                         (packet()->peer_name + packet()->peer_name_length);
     }
@@ -200,9 +265,9 @@ public:
      * Return packet data
      * @return Pointer to void data
      */
-    inline void *packetData() {
+    inline void *packetData() const {
         return (void*) (packet()->peer_name + packet()->peer_name_length);
     }
 };
 
-#endif	/* TEOCLI_CPP_H */
+}
