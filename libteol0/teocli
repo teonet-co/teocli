@@ -77,7 +77,7 @@ public:
     /**
      * Teonet client simple constructor
      */
-    Teocli() { con = NULL; init(); }
+    Teocli() : con(NULL) { init(); }
     Teocli(const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli()  {
         connect(server, port, event_cb, user_data);
     }
