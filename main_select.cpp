@@ -34,7 +34,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "teocli"
+#include "libteol0/teocli"
 
 /**
  * Application parameters structure

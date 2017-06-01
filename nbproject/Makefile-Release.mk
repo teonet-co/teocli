@@ -35,9 +35,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/libteol0/main_select.o \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/main_select.o \
 	${OBJECTDIR}/main_select.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
@@ -73,11 +73,6 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/libteol0/main_select.o: libteol0/main_select.cpp
-	${MKDIR} -p ${OBJECTDIR}/libteol0
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/main_select.o libteol0/main_select.cpp
-
 ${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0
 	${RM} "$@.d"
@@ -92,6 +87,11 @@ ${OBJECTDIR}/main_select.o: main_select.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.c
+
+${OBJECTDIR}/main_select.o: main_select.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.cpp
 
 ${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc
 	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello

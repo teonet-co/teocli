@@ -55,7 +55,7 @@
                    projectFiles="true">
       <itemPath>main.c</itemPath>
       <itemPath>main_select.c</itemPath>
-      <itemPath>libteol0/main_select.cpp</itemPath>
+      <itemPath>main_select.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="win_mingw" displayName="win_mingw" projectFiles="true">
       <itemPath>win_mingw/README.md</itemPath>
@@ -116,8 +116,6 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="libteol0/main_select.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
@@ -127,6 +125,8 @@
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main_select.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="make.sh" ex="false" tool="3" flavor2="0">
       </item>
@@ -225,8 +225,6 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="libteol0/main_select.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
@@ -240,6 +238,8 @@
       <item path="main.c" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main_select.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="main_select.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="make.sh" ex="false" tool="3" flavor2="0">
       </item>
