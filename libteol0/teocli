@@ -210,9 +210,14 @@ public:
      *
      * @return 0 - if disconnected or 1 other way
      */
-    inline int eventLoop(int timeout) {
+    inline int eventLoop(int timeout = 0) {
         return teoLNullReadEventLoop(con, timeout);
     }
+    static void eventLoopE(void *par) {
+        Teocli *cli = (Teocli*) par;
+        cli->eventLoop();
+    }
+
 
     /**
      * Sleep
