@@ -29,7 +29,7 @@ typedef teoLNullEvents Events;
 typedef teoLNullCPacket Packet;
 
 //! Teocli C++ callback bind function declaration
-static void callbackBind (void *com, Events event, void *data, size_t data_len, 
+static void callbackBind (void *com, Events event, void *data, size_t data_len,
         void *user_data);
 
 using namespace std::placeholders;
@@ -41,21 +41,22 @@ using namespace std::placeholders;
  * This is Teonet L0 client C++ wrapper
  */
 class Teocli {
-   
+
 public:
-    
+
 /**
  * Teocli event callback (teoLNullEventsCb)
  */
-typedef void (*EventsCb)(Teocli *cli, Events event, void *data, 
+typedef void (*EventsCb)(Teocli &cli, Events event, void *data,
                          size_t data_len, void *user_data);
 
 
 private:
 
     void *userData = NULL;
-    teoLNullConnectData *con;    
     EventsCb eventCallBack = NULL;
+    teoLNullConnectData *con = NULL;
+    std::string clientName = "teocli++-default";
 
     /**
      * Initialize L0 client library.
@@ -77,15 +78,15 @@ public:
     /**
      * Teonet client simple constructor
      */
-    Teocli() : con(NULL) { init(); }
-    Teocli(const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli()  {
+    Teocli(const char *client = "teocli++") : clientName(client) { init(); }
+    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client)  {
         connect(server, port, event_cb, user_data);
     }
 
     /**
      * Teonet client simple destructor
      */
-    ~Teocli() { cleanup(); }
+    virtual ~Teocli() { cleanup(); }
 
     /**
      * Check if this class is connected to L0 server
@@ -121,12 +122,12 @@ public:
 
         eventCallBack = event_cb;
         userData = user_data;
-        
+
         con = teoLNullConnectE(server, port, callbackBind, this);
 
         return connected();
     }
-    
+
     /**
      * Disconnect from server and free teoLNullConnectData
      *
@@ -146,6 +147,10 @@ public:
     inline size_t login(const char* host_name) {
 
         return teoLNullLogin(con, host_name);
+    }
+    inline size_t login() {
+
+        return login(clientName.c_str());
     }
 
     /**
@@ -253,7 +258,7 @@ public:
 
     /**
      * Return pointer to user data
-     * 
+     *
      * @return Pointer to user data, or NULL if not set
      */
     inline void* getUserData() const {
@@ -262,7 +267,7 @@ public:
 
     /**
      * Return pointer to Event CallBack
-     * 
+     *
      * @return Pointer to Event CallBack, or NULL if not set
      */
     inline EventsCb getEventCallBack() const {
@@ -271,32 +276,45 @@ public:
 
     /**
      * Set con member
-     * 
+     *
      * @param con
      */
     inline void setCon(teoLNullConnectData* con) {
         this->con = con;
     }
+
+private:
+
+    /**
+     * Teocli C++ callback bind function declaration
+     *
+     * @param con
+     * @param event
+     * @param data
+     * @param data_len
+     * @param user_data
+     */
+    static void callbackBind (void *con, Events event, void *data,
+            size_t data_len, void *user_data) {
+
+        Teocli &cli = *(Teocli *) user_data;
+
+        if(event == EV_L_CONNECTED) {
+
+            cli.setCon((teoLNullConnectData *)con);
+            if(cli.connected() > 0) {
+
+                // Send (1) Initialization packet to L0 server, *** REQUERED ***
+                ssize_t snd = cli.login();
+                if(snd == -1) std::cout << "Can't send login to server\n"; 
+                else std::cout << "\nSend " << snd << 
+                        " bytes packet to L0 server, Initialization packet\n";
+            }
+        }
+
+        cli.getEventCallBack()(cli, event, data, data_len, cli.getUserData());
+    }
+
 };
-
-/**
- * Teocli C++ callback bind function declaration
- * 
- * @param con
- * @param event
- * @param data
- * @param data_len
- * @param user_data
- */
-static void callbackBind (void *con, Events event, void *data,
-        size_t data_len, void *user_data) {
-
-    Teocli *cli = (Teocli *) user_data;
-    cli->setCon((teoLNullConnectData *)con);
-    
-    Teocli::EventsCb cb = cli->getEventCallBack();
-    if(cb) cb(cli, event, data, data_len, cli->getUserData());
-}
-
 
 }
