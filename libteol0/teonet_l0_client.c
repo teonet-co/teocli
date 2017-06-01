@@ -5,6 +5,7 @@
  * Created on October 12, 2015, 12:32 PM
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -710,7 +711,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     /* will be used for this socket. */
     /******************************************/
     /* get a socket descriptor */
-    if((con->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if((con->fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 
         printf("Client-socket() error\n");
         con->fd = -1;
@@ -757,9 +758,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     /***********************************************/
     /* connect() to server. */
     if((rc = connect(con->fd, (struct sockaddr *)&serveraddr,
-            sizeof(serveraddr))) < 0) {
+            sizeof(serveraddr))) < 0 && errno != EINPROGRESS) {
 
-        printf("Client-connect() error\n");
+        printf("Client-connect() error: %d, %s\n", errno, strerror(errno));
 		close_socket(con->fd);
         con->fd = -3;
         send_l0_event(con, EV_L_CONNECTED, &con->fd, sizeof(con->fd));

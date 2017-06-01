@@ -34,6 +34,10 @@
 #include <iostream>
 #include <cstdlib>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "libteol0/teocli"
 
 /**
@@ -242,6 +246,9 @@ int main(int argc, char** argv) {
         unsigned long num = 0;
         const int timeout = 50;
 
+	#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg(cli.eventLoopE, &cli, 60, 0);
+	#else
         // Event loop
         while(cli.eventLoop(timeout)) {
 
@@ -251,6 +258,7 @@ int main(int argc, char** argv) {
 
             num++;
         }
+	#endif
 
         // Close connection
         cli.disconnect();
