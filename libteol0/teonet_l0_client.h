@@ -17,7 +17,7 @@
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.4"
+#define TL0CN_VERSION "0.0.5"
 
 #include <stdint.h>
 
@@ -48,6 +48,7 @@ enum CMD_L {
     CMD_L_L0_CLIENTS,             ///< #79 Get clients list command
     CMD_L_L0_CLIENTS_ANSWER,      ///< #80 Clients list answer command
     CMD_L_SUBSCRIBE_ANSWER = 83,  ///< #83 Subscribe answer
+    CMD_L_AUTH_LOGIN_ANSWER = 96, ///< #96 Auth server login answer
 
     CMD_L_END = 127
 };
