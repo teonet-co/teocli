@@ -39,3 +39,6 @@
 /win_vcxproj/libteocli/libteocli.vcxproj.user
 /win_vcxproj/teocli/teocli.vcxproj.user
 /nodejs/nbproject/private/
+/emscripten/test/echo_server/test_sockets_echo_client.js
+/emscripten/test/echo_server/test_sockets_echo_server.js
+/emscripten/node_modules/
