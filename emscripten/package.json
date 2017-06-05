@@ -1,0 +1,15 @@
+{
+  "name": "teonpcli",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main_select.js",
+  "dependencies": {
+    "ws": "^0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

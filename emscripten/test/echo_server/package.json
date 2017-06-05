@@ -1,0 +1,15 @@
+{
+  "name": "echo_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test_sockets_echo_client.js",
+  "dependencies": {
+    "ws": "^0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -642,7 +642,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 	rv = select((int)con->fd + 1, &rfds, NULL, NULL, &tv);
 
     // Error
-    if (rv == -1) printf("select() handle error\n");
+    if (rv == -1) { 
+        printf("select(fd = %d) handle error %d: %s\n", 
+                (int)con->fd , errno, strerror(errno));
+    }
 
     // Timeout
     else if(!rv) { // Idle or Timeout event
@@ -723,7 +726,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         printf("Client-socket() OK\n");
         #endif
     }
-
+    
     #ifdef CONNECT_MSG
     printf("Connecting to the server %s at port %d ...\n", server, port);
     #endif
@@ -771,7 +774,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         printf("Connection established ...\n");
         #endif
     }
-
+    
     // Set non block mode
     set_nonblock((int)con->fd);
 
