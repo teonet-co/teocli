@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="emscripten" displayName="emscripten" projectFiles="true">
+      <itemPath>emscripten/README.md</itemPath>
+      <itemPath>emscripten/emscripten.sh</itemPath>
+      <itemPath>emscripten/package.json</itemPath>
+    </logicalFolder>
     <logicalFolder name="libteol0" displayName="libteol0" projectFiles="true">
       <itemPath>libteol0/teocli</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
@@ -9,7 +14,14 @@
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
       <itemPath>linux/Makefile.am</itemPath>
       <itemPath>linux/README.md</itemPath>
-      <itemPath>make.sh</itemPath>
+    </logicalFolder>
+    <logicalFolder name="nbind" displayName="nbind" projectFiles="true">
+      <itemPath>nbind/README.md</itemPath>
+      <itemPath>nbind/autogypi.json</itemPath>
+      <itemPath>nbind/binding.gyp</itemPath>
+      <itemPath>nbind/index.js</itemPath>
+      <itemPath>nbind/main_select.cpp</itemPath>
+      <itemPath>nbind/package.json</itemPath>
     </logicalFolder>
     <logicalFolder name="nodejs" displayName="nodejs" projectFiles="true">
       <logicalFolder name="example" displayName="example" projectFiles="true">
@@ -46,7 +58,7 @@
       <itemPath>nodejs/package.json</itemPath>
     </logicalFolder>
     <logicalFolder name="python" displayName="python" projectFiles="true">
-      <itemPath>python/README</itemPath>
+      <itemPath>python/README.md</itemPath>
       <itemPath>python/make_python.sh</itemPath>
       <itemPath>python/teonet_l0_client.i</itemPath>
     </logicalFolder>
@@ -94,6 +106,9 @@
     <Elem>win_mingw</Elem>
     <Elem>win_vcxproj</Elem>
     <Elem>nodejs</Elem>
+    <Elem>emscripten</Elem>
+    <Elem>build</Elem>
+    <Elem>nbind</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -116,6 +131,12 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="emscripten/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/emscripten.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/package.json" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
@@ -128,7 +149,15 @@
       </item>
       <item path="main_select.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="make.sh" ex="false" tool="3" flavor2="0">
+      <item path="nbind/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/autogypi.json" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/index.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/package.json" ex="false" tool="3" flavor2="0">
       </item>
       <item path="nodejs/.gitignore" ex="false" tool="3" flavor2="0">
       </item>
@@ -167,7 +196,7 @@
       </item>
       <item path="nodejs/src/teo_packet.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="python/README" ex="false" tool="3" flavor2="0">
+      <item path="python/README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="python/make_python.sh" ex="false" tool="3" flavor2="0">
       </item>
@@ -225,6 +254,12 @@
       </compileType>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="emscripten/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/emscripten.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/package.json" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
@@ -241,7 +276,17 @@
       </item>
       <item path="main_select.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="make.sh" ex="false" tool="3" flavor2="0">
+      <item path="nbind/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/autogypi.json" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/binding.gyp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/index.js" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbind/main_select.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nbind/package.json" ex="false" tool="3" flavor2="0">
       </item>
       <item path="nodejs/.gitignore" ex="false" tool="3" flavor2="0">
       </item>
@@ -297,7 +342,7 @@
       </item>
       <item path="nodejs/src/teo_packet.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="python/README" ex="false" tool="3" flavor2="0">
+      <item path="python/README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="python/make_python.sh" ex="false" tool="3" flavor2="0">
       </item>

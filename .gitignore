@@ -42,3 +42,8 @@
 /emscripten/test/echo_server/test_sockets_echo_client.js
 /emscripten/test/echo_server/test_sockets_echo_server.js
 /emscripten/node_modules/
+node_modules/
+/emscripten/main_select.js
+/nbind/build/
+/nbind/auto.gypi
+/nbind/auto-top.gypi
