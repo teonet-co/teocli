@@ -206,6 +206,8 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
     }
 }
 
+teo::Teocli *cli;
+
 /**
  * Main L0 Native client example function
  *
@@ -239,30 +241,35 @@ int main(int argc, char** argv) {
     };
 
     // Create Teocli object, Initialize L0 Client library and connect to L0 server
-    teo::Teocli cli(parameters.client_name, parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
+    cli = new teo::Teocli(parameters.client_name, parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 
-    if(cli.connected() > 0) {
+    if(cli->connected() > 0) {
 
         unsigned long num = 0;
         const int timeout = 50;
 
 	#ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop_arg(cli.eventLoopE, &cli, 60, 0);
+	emscripten_set_main_loop_arg(cli->eventLoopE, cli, 60, 0);
 	#else
         // Event loop
-        while(cli.eventLoop(timeout)) {
+        while(cli->eventLoop(timeout)) {
 
             // Send Echo command every second
             if( !(num % (1000 / timeout)) )
-                cli.sendEcho(parameters.peer_name, parameters.message);
+                cli->sendEcho(parameters.peer_name, parameters.message);
 
             num++;
         }
 	#endif
 
         // Close connection
-        cli.disconnect();
+        cli->disconnect();
     }
+    
+    #ifdef __EMSCRIPTEN__
+    #else
+    delete(cli);
+    #endif
 
     return (EXIT_SUCCESS);
 }
