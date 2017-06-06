@@ -1,0 +1,30 @@
+{
+  "name": "teocli-nbind",
+  "version": "0.0.1",
+  "description": "Teonet native C++ client build with Nbind",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js",
+
+    "autogypi": "autogypi",
+    "node-gyp": "node-gyp",
+    "emcc-path": "emcc-path",
+    "copyasm": "copyasm",
+
+    "install": "autogypi && node-gyp configure build"
+
+  },
+  "keywords": [
+    "teonet",
+    "teocli",
+    "nbind",
+    "c++"
+  ],
+  "author": "Kirill Scherba <kirill@scherba.ru>",
+  "license": "MIT",
+  "dependencies": {
+    "autogypi": "^0.2.2",
+    "nbind": "^0.3.12",
+    "node-gyp": "^3.6.2"
+  }
+}
