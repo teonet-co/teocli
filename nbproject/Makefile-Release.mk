@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/main_select.o \
 	${OBJECTDIR}/main_select.o \
+	${OBJECTDIR}/nbind/main_select.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
 	${OBJECTDIR}/nodejs/src/errno_exeption.o \
@@ -92,6 +93,11 @@ ${OBJECTDIR}/main_select.o: main_select.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.cpp
+
+${OBJECTDIR}/nbind/main_select.o: nbind/main_select.cpp
+	${MKDIR} -p ${OBJECTDIR}/nbind
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind/main_select.o nbind/main_select.cpp
 
 ${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc
 	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello

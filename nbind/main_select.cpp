@@ -31,14 +31,19 @@
  * Created on May 30, 2017, 13:27
  */
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
+#include <functional>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
 #include "../libteol0/teocli"
+
+typedef std::function<void ()> ConnectCb;
+typedef std::function<void ()> DisconnectCb;
+typedef std::function<void (const char *from, int cmd, const char *data, size_t data_len)> MessageCb;
 
 /**
  * Application parameters structure
@@ -50,6 +55,9 @@ struct AppParameters {
     int tcp_port;
     const char *peer_name;
     const char *message;
+    ConnectCb on_connect;
+    DisconnectCb on_disconnect;
+    MessageCb on_message;
 
 };
 
@@ -72,6 +80,8 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
         case EV_L_CONNECTED: {
         
             if(cli.connected() > 0) {
+                
+                param->on_connect();
 
                 std::cout << "Successfully connect to server\n";
                 
@@ -101,13 +111,19 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
         } break;
 
-        case EV_L_DISCONNECTED: std::cout << "Disconnected ...\n"; break;
+        case EV_L_DISCONNECTED: {
+            
+            param->on_connect(); 
+            std::cout << "Disconnected ...\n"; 
+        } break;
 
         case EV_L_RECEIVED: {
         
             // Receive answer from server
             const size_t rc = data_len;
             teo::Packet *cp = cli.packet();
+            
+            param->on_message(cp->peer_name, int(cp->cmd), (const char*)(cp->peer_name + cp->peer_name_length), cp->data_length);
 
             std::cout << "Receive " << rc << " bytes: " << cp->data_length << 
                 " bytes data from L0 server, "
@@ -206,8 +222,10 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
     }
 }
 
-struct Teo {
 
+
+struct Teo {
+    
 /**
  * Main L0 Native client example function
  *
@@ -216,30 +234,25 @@ struct Teo {
  *
  * @return
  */
-static int main_select(/*int argc, char** argv*/const char *argv_1, const char *argv_2, int argv_3, const char *argv_4, const char *argv_5 = "Hello") {
+static int main_select(const char *client_name, const char *tcp_server, 
+    int tcp_port, const char *peer_name, const char *message,
+    ConnectCb on_connect, DisconnectCb on_disconnect, MessageCb on_message) {
     
     // Welcome message
     std::cout << "Teonet c++ L0 client with Select and Event Loop Callback example version " TL0CN_VERSION " (Native TCP Client)\n\n";
 
-    // Check application parameters
-//    if(argc < 5) {
-//
-//        std::cout << "Usage: " << argv[0] << 
-//               " <client_name> <server_address> <server_port> <peer_name> "
-//               "[message]\n";
-//
-//        exit(EXIT_SUCCESS);
-//    }
-
     // Teonet L0 server parameters
     AppParameters parameters = { 
-        argv_1, // This client name 
-        argv_2, // L0 tcp_server
-        argv_3, // L0 tcp_port
-        argv_4, // Peer name to send test messages to
-        argv_5 // Test message
+        client_name, // This client name 
+        tcp_server, // L0 tcp_server
+        tcp_port, // L0 tcp_port
+        peer_name, // Peer name to send test messages to
+        message, // Test message
+        on_connect, // On connect callback
+        on_disconnect, // On disconnect callback
+        on_message // On message callback
     };
-
+    
     // Create Teocli object, Initialize L0 Client library and connect to L0 server
     teo::Teocli cli(parameters.client_name, parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 

@@ -16,6 +16,9 @@
                 <sourceRootElem>win_mingw</sourceRootElem>
                 <sourceRootElem>win_vcxproj</sourceRootElem>
                 <sourceRootElem>nodejs</sourceRootElem>
+                <sourceRootElem>emscripten</sourceRootElem>
+                <sourceRootElem>build</sourceRootElem>
+                <sourceRootElem>nbind</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
@@ -37,10 +40,12 @@
             <word>DLL</word>
             <word>hhu</word>
             <word>hu</word>
+            <word>javascript</word>
             <word>kirill</word>
             <word>len</word>
             <word>linux</word>
             <word>ms</word>
+            <word>nbind</word>
             <word>readme</word>
             <word>scherba</word>
             <word>tcp</word>
