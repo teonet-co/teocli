@@ -66,6 +66,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
+      <itemPath>main_cpp.cpp</itemPath>
       <itemPath>main_select.c</itemPath>
       <itemPath>main_select.cpp</itemPath>
     </logicalFolder>
@@ -83,6 +84,7 @@
       <logicalFolder name="teocli_s" displayName="teocli_s" projectFiles="true">
         <itemPath>win_vcxproj/teocli_s/teocli_s.vcxproj</itemPath>
       </logicalFolder>
+      <itemPath>win_vcxproj/README.md</itemPath>
       <itemPath>win_vcxproj/libteocli.sln</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -94,10 +96,10 @@
                    displayName="Important Files"
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Doxyfile</itemPath>
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>README.md</itemPath>
-    <itemPath>win_vcxproj/README.md</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>libteol0</Elem>
@@ -146,6 +148,8 @@
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main_select.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -271,6 +275,8 @@
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="main_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main_select.c" ex="false" tool="0" flavor2="0">
       </item>
