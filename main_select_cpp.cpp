@@ -85,13 +85,13 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
                 snd = cli.send(CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
                 std::cout << "Send " << snd << " bytes packet to L0 server to "
                        "peer " << param->peer_name << ", "
-                       "cmd = " << CMD_L_PEERS << " (CMD_L_L0_CLIENTS)\n";
+                       "cmd = " << CMD_L_L0_CLIENTS << " (CMD_L_L0_CLIENTS)\n";
 
                 // Send (3) echo request to peer, command CMD_L_ECHO
                 snd = cli.sendEcho(param->peer_name, param->message);
                 std::cout << "Send " << snd << " bytes packet to L0 server to "
                        "peer " << param->peer_name << ", " 
-                       "cmd = " << CMD_L_PEERS << " (CMD_L_ECHO), "
+                       "cmd = " << CMD_L_ECHO << " (CMD_L_ECHO), "
                        "data: " << param->message << "\n";
 
                 // Show empty line

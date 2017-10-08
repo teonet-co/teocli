@@ -1,4 +1,4 @@
-To create make filr (first time after clone this project) use:
+To create make file (first time after clone this project) use:
 
     touch AUTHORS NEWS README ChangeLog
     ./autogen.sh
