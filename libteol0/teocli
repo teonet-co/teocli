@@ -32,9 +32,6 @@ typedef teoLNullCPacket Packet;
 static void callbackBind (void *com, Events event, void *data, size_t data_len,
         void *user_data);
 
-using namespace std::placeholders;
-
-
 /**
  * Teocli class.
  *
@@ -79,6 +76,7 @@ public:
      * Teonet client simple constructor
      */
     Teocli(const char *client = "teocli++") : clientName(client) { init(); }
+    Teocli(const char *server, int port) : Teocli() { connect(server, port); }
     Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client)  {
         connect(server, port, event_cb, user_data);
     }
@@ -123,7 +121,7 @@ public:
         eventCallBack = event_cb;
         userData = user_data;
 
-        con = teoLNullConnectE(server, port, callbackBind, this);
+        con = teoLNullConnectE(server, port, event_cb == NULL ? NULL : callbackBind, this);
 
         return connected();
     }
