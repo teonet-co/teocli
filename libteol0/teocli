@@ -27,7 +27,7 @@ typedef teoLNullCPacket Packet;
 
 //! Teocli C++ callback bind function declaration
 static void callbackBind (void *com, Events event, void *data, size_t data_len,
-        void *user_data);
+    void *user_data);
 
 /**
  * Teocli class.
@@ -38,12 +38,11 @@ class Teocli {
 
 public:
 
-/**
- * Teocli event callback (teoLNullEventsCb)
- */
-typedef void (*EventsCb)(Teocli &cli, Events event, void *data,
+    /**
+     * Teocli event callback (teoLNullEventsCb)
+     */
+    typedef void (*EventsCb)(Teocli &cli, Events event, void *data,
                          size_t data_len, void *user_data);
-
 
 private:
 
@@ -75,18 +74,17 @@ private:
      * @param user_data Pointer to user data which will be send to event callback, may be NULL or Missed
      *
      * @return connected status
-     * @retval 0 if disconnected
-     * @retval 0   - Success connection
+     * @retval  0 if disconnected
+     * @retval  0 - Success connection
      * @retval -1 - Create socket error
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connect(const char *server, int port,
-            EventsCb event_cb = NULL, void *user_data = NULL) {
+    inline int connect(const char *server, int port, EventsCb event_cb = NULL, 
+        void *user_data = NULL) {
 
         eventCallBack = event_cb;
         userData = user_data;
-
         con = teoLNullConnectE(server, port, event_cb == NULL ? NULL : callbackBind, this);
 
         return connected();
@@ -98,9 +96,10 @@ private:
      */
     inline void disconnect() {
         teoLNullDisconnect(con);
+        std::cout << "Disconnected. Bye.\n";
     }
-    
-        /**
+
+    /**
      * Return pointer to user data
      *
      * @return Pointer to user data, or NULL if not set
@@ -117,18 +116,17 @@ private:
     inline EventsCb getEventCallBack() const {
         return eventCallBack;
     }
-    
+
     /**
      * Create initialize L0 client packet
      *
      * @return Length of send data or -1 at error
      */
     inline size_t login() {
-
         return login(clientName.c_str());
     }
-    
-        /**
+
+    /**
      * Set con member
      *
      * @param con
@@ -136,7 +134,7 @@ private:
     inline void setCon(teoLNullConnectData* con) {
         this->con = con;
     }
-    
+
 public:
 
     /**
@@ -144,16 +142,16 @@ public:
      */
     Teocli(const char *client = "teocli++") : clientName(client) { init(); }
     Teocli(const char *server, int port) : Teocli() { connect(server, port); }
-    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client)  {
+    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client) {
         connect(server, port, event_cb, user_data);
     }
 
     /**
      * Teonet client simple destructor
      */
-    virtual ~Teocli() { 
+    virtual ~Teocli() {
         disconnect();
-        cleanup(); 
+        cleanup();
     }
 
     /**
@@ -178,7 +176,6 @@ public:
      * @return Length of send data or -1 at error
      */
     inline size_t login(const char* host_name) {
-
         return teoLNullLogin(con, host_name);
     }
 
@@ -194,8 +191,8 @@ public:
      *
      * @return Length of send data or -1 at error
      */
-    inline ssize_t send(int cmd,
-        const char *peer_name, void *data, size_t data_length) {
+    inline ssize_t send(int cmd, const char *peer_name, void *data, 
+                        size_t data_length) {
 
         return teoLNullSend(con, cmd, peer_name, data, data_length);
     }
@@ -230,7 +227,7 @@ public:
     inline ssize_t recv() {
         return teoLNullRecv(con);
     }
-    
+
     /**
      * Receive data from L0 server during timeout
      *
@@ -259,7 +256,6 @@ public:
         cli->eventLoop();
     }
 
-
     /**
      * Sleep
      *
@@ -282,7 +278,8 @@ public:
      * @return Pointer to ksnet_arp_data_ar
      */
     inline ksnet_arp_data_ar *packetArpData() const {
-        return (ksnet_arp_data_ar *) (packet()->peer_name + packet()->peer_name_length);
+        return (ksnet_arp_data_ar *) 
+                    (packet()->peer_name + packet()->peer_name_length);
     }
 
     /**
@@ -291,7 +288,7 @@ public:
      */
     inline teonet_client_data_ar *packetClientData() const {
         return (teonet_client_data_ar *)
-                        (packet()->peer_name + packet()->peer_name_length);
+                    (packet()->peer_name + packet()->peer_name_length);
     }
 
     /**
@@ -325,15 +322,14 @@ private:
 
                 // Send (1) Initialization packet to L0 server, *** REQUERED ***
                 ssize_t snd = cli.login();
-                if(snd == -1) std::cout << "Can't send login to server\n"; 
-                else std::cout << "\nSend " << snd << 
+                if(snd == -1) std::cout << "Can't send login to server\n";
+                else std::cout << "\nSend " << snd <<
                         " bytes packet to L0 server, Initialization packet\n";
             }
         }
 
         cli.getEventCallBack()(cli, event, data, data_len, cli.getUserData());
     }
-
 };
 
 }

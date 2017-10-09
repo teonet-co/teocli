@@ -115,7 +115,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
 
     pkg->cmd = command;
     pkg->data_length = (uint16_t)data_length;
-	pkg->peer_name_length = (uint8_t)peer_name_length;
+    pkg->peer_name_length = (uint8_t)peer_name_length;
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
     pkg->checksum = get_byte_checksum(pkg->peer_name, pkg->peer_name_length +
@@ -206,19 +206,19 @@ static size_t teo_time_length() {
  */
 static void *teo_time_get(size_t *time_size) {
 
-	size_t len = teo_time_length();
+    size_t len = teo_time_length();
 
-        #if defined(_WIN32) || defined(_WIN64)
-        struct timeb *tv = malloc(len);
-        ftime(tv);
-        #else
-	struct timeval *tv = malloc(len);
-	gettimeofday(tv, 0);
-        #endif
+    #if defined(_WIN32) || defined(_WIN64)
+    struct timeb *tv = malloc(len);
+    ftime(tv);
+    #else
+    struct timeval *tv = malloc(len);
+    gettimeofday(tv, 0);
+    #endif
 
-	if(time_size) *time_size = len;
+    if(time_size) *time_size = len;
 
-	return tv;
+    return tv;
 }
 
 /**
@@ -227,7 +227,7 @@ static void *teo_time_get(size_t *time_size) {
  * @param tv Pointer to time structure
  */
 static void teo_time_free(void *tv) {
-	free(tv);
+    free(tv);
 }
 
 /**
@@ -239,20 +239,20 @@ static void teo_time_free(void *tv) {
  */
 static int teo_time_diff(void *tv) {
 
-        #if defined(_WIN32) || defined(_WIN64)
-	struct timeb *tv_last = tv,
-		     *tv_current = teo_time_get(0);
-	int ret = (int) (1000.0 * (tv_current->time - tv_last->time)
-                + (tv_current->millitm - tv_last->millitm));
-        #else
-	struct timeval *tv_last = tv,
-		       *tv_current = teo_time_get(0);
-	int ret = (tv_current->tv_sec - tv_last->tv_sec) * 1000
-		+ (tv_current->tv_usec - tv_last->tv_usec) / 1000;
-        #endif
-	teo_time_free(tv_current);
+    #if defined(_WIN32) || defined(_WIN64)
+    struct timeb *tv_last = tv,
+                 *tv_current = teo_time_get(0);
+    int ret = (int) (1000.0 * (tv_current->time - tv_last->time)
+            + (tv_current->millitm - tv_last->millitm));
+    #else
+    struct timeval *tv_last = tv,
+                   *tv_current = teo_time_get(0);
+    int ret = (tv_current->tv_sec - tv_last->tv_sec) * 1000
+            + (tv_current->tv_usec - tv_last->tv_usec) / 1000;
+    #endif
+    teo_time_free(tv_current);
 
-	return ret;
+    return ret;
 };
 
 /**
@@ -446,7 +446,7 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data,
  */
 static ssize_t teoLNullPacketRecv(int sd, void* buf, size_t buf_length) {
 
-	ssize_t rc;
+    ssize_t rc;
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
     rc = recv(sd, buf, (int)buf_length, 0);
@@ -481,7 +481,8 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
             teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
             if(cp->cmd == CMD_L_ECHO) {
                 char *data = cp->peer_name + cp->peer_name_length;
-                teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+                teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, 
+                        cp->data_length );
             }
         }
     }
@@ -662,11 +663,11 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     tv.tv_sec = 0;
     tv.tv_usec = timeout * 1000;
 
-	rv = select((int)con->fd + 1, &rfds, NULL, NULL, &tv);
+    rv = select((int)con->fd + 1, &rfds, NULL, NULL, &tv);
 
     // Error
-    if (rv == -1) { 
-        printf("select(fd = %d) handle error %d: %s\n", 
+    if (rv == -1) {
+        printf("select(fd = %d) handle error %d: %s\n",
                 (int)con->fd , errno, strerror(errno));
     }
 
@@ -675,6 +676,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
         send_l0_event(con, EV_L_IDLE, NULL, 0);
     }
+    
     // There is a data in sd
     else {
 
@@ -749,7 +751,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         printf("Client-socket() OK\n");
         #endif
     }
-    
+
     #ifdef CONNECT_MSG
     printf("Connecting to the server %s at port %d ...\n", server, port);
     #endif
@@ -797,7 +799,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         printf("Connection established ...\n");
         #endif
     }
-    
+
     // Set non block mode
     set_nonblock((int)con->fd);
 
