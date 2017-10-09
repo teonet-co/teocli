@@ -268,6 +268,7 @@ TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_n
         const char *msg);
 TEOCLI_API int teoLNullProccessEchoAnswer(const char *msg);
 TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
+TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout);
 TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 

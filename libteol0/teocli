@@ -199,6 +199,18 @@ public:
     inline ssize_t recv() {
         return teoLNullRecv(con);
     }
+    
+    /**
+     * Receive data from L0 server during timeout
+     *
+     * @param con Pointer to teoLNullConnectData
+     * @param timeout Timeout in uSeconds
+     *
+     * @return Number of received bytes or -1 at timeout
+     */
+    inline ssize_t recvTimeout(uint32_t timeout) {
+        return teoLNullRecvTimeout(con, timeout);
+    }
 
     /**
      * Wait socket data during timeout and call callback if data received
