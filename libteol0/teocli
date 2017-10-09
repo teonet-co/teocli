@@ -16,10 +16,7 @@
 
 #pragma once
 
-#include <functional>
-
 #include "teonet_l0_client.h"
-
 
 namespace teo {
 
@@ -101,7 +98,6 @@ private:
      */
     inline void disconnect() {
         teoLNullDisconnect(con);
-        std::cout << "Disconnected\n";
     }
     
         /**
