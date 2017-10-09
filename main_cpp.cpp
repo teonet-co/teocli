@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
         }
                 
         // Close connection
-        teo->disconnect();
+        //teo->disconnect();
     }
     
     // Cleanup L0 Client library

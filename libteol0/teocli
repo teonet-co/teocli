@@ -69,37 +69,6 @@ private:
      */
     inline void cleanup() { teoLNullCleanup(); }
 
-
-public:
-
-    /**
-     * Teonet client simple constructor
-     */
-    Teocli(const char *client = "teocli++") : clientName(client) { init(); }
-    Teocli(const char *server, int port) : Teocli() { connect(server, port); }
-    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client)  {
-        connect(server, port, event_cb, user_data);
-    }
-
-    /**
-     * Teonet client simple destructor
-     */
-    virtual ~Teocli() { cleanup(); }
-
-    /**
-     * Check if this class is connected to L0 server
-     *
-     * @return connected status
-     * @retval 0 if disconnected
-     * @retval >0 - Success connection
-     * @retval -1 - Create socket error
-     * @retval -2 - HOST NOT FOUND error
-     * @retval -3 - Client-connect() error
-     */
-    inline int connected() const {
-        return con == NULL ? 0 : con->fd;
-    }
-
     /**
      * Create TCP client and connect to server with event callback
      *
@@ -132,8 +101,78 @@ public:
      */
     inline void disconnect() {
         teoLNullDisconnect(con);
+        std::cout << "Disconnected\n";
+    }
+    
+        /**
+     * Return pointer to user data
+     *
+     * @return Pointer to user data, or NULL if not set
+     */
+    inline void* getUserData() const {
+        return userData;
     }
 
+    /**
+     * Return pointer to Event CallBack
+     *
+     * @return Pointer to Event CallBack, or NULL if not set
+     */
+    inline EventsCb getEventCallBack() const {
+        return eventCallBack;
+    }
+    
+    /**
+     * Create initialize L0 client packet
+     *
+     * @return Length of send data or -1 at error
+     */
+    inline size_t login() {
+
+        return login(clientName.c_str());
+    }
+    
+        /**
+     * Set con member
+     *
+     * @param con
+     */
+    inline void setCon(teoLNullConnectData* con) {
+        this->con = con;
+    }
+    
+public:
+
+    /**
+     * Teonet client simple constructor
+     */
+    Teocli(const char *client = "teocli++") : clientName(client) { init(); }
+    Teocli(const char *server, int port) : Teocli() { connect(server, port); }
+    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client)  {
+        connect(server, port, event_cb, user_data);
+    }
+
+    /**
+     * Teonet client simple destructor
+     */
+    virtual ~Teocli() { 
+        disconnect();
+        cleanup(); 
+    }
+
+    /**
+     * Check if this class is connected to L0 server
+     *
+     * @return connected status
+     * @retval 0 if disconnected
+     * @retval >0 - Success connection
+     * @retval -1 - Create socket error
+     * @retval -2 - HOST NOT FOUND error
+     * @retval -3 - Client-connect() error
+     */
+    inline int connected() const {
+        return con == NULL ? 0 : con->fd;
+    }
 
     /**
      * Create initialize L0 client packet
@@ -145,10 +184,6 @@ public:
     inline size_t login(const char* host_name) {
 
         return teoLNullLogin(con, host_name);
-    }
-    inline size_t login() {
-
-        return login(clientName.c_str());
     }
 
     /**
@@ -269,33 +304,6 @@ public:
      */
     inline void *packetData() const {
         return (void*) (packet()->peer_name + packet()->peer_name_length);
-    }
-
-    /**
-     * Return pointer to user data
-     *
-     * @return Pointer to user data, or NULL if not set
-     */
-    inline void* getUserData() const {
-        return userData;
-    }
-
-    /**
-     * Return pointer to Event CallBack
-     *
-     * @return Pointer to Event CallBack, or NULL if not set
-     */
-    inline EventsCb getEventCallBack() const {
-        return eventCallBack;
-    }
-
-    /**
-     * Set con member
-     *
-     * @param con
-     */
-    inline void setCon(teoLNullConnectData* con) {
-        this->con = con;
     }
 
 private:
