@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
 	#endif
 
         // Close connection
-        cli->disconnect();
+        //cli->disconnect();
     }
     
     #ifdef __EMSCRIPTEN__
