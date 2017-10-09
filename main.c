@@ -45,29 +45,6 @@
 
 
 /**
- * Receive data from L0 server during timeout
- *
- * @param con Pointer to teoLNullConnectData
- * @param timeout Timeout in uSeconds
- *
- * @return Number of received bytes or -1 at timeout
- */
-static ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout) {
-
-    ssize_t rc;
-    uint32_t t = 0;
-    const uint32_t wait = 50;
-
-    // Receive answer from server, CMD_L_L0_CLIENTS_ANSWER
-    while((rc = teoLNullRecv(con)) == -1 && t < timeout) {
-        teoLNullSleep(wait);
-        t += wait;
-    }
-
-    return rc;
-}
-
-/**
  * Main L0 Native client example function
  *
  * @param argc Number of arguments

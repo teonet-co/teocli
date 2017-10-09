@@ -63,24 +63,23 @@ int main(int argc, char** argv) {
                 " bytes packet to L0 server, Initialization packet\n";
         
         // Get L0 Server answer (1.2)
-//        if((rc = teoLNullRecvTimeout(con, 1000000)) == -1) {
-//
-//            printf("Can't get answer from L0 server during timeout\n");
-//
-//        }
-//        // Show L0 answer and continue send and receive data
-//        else {
-//
-//            // Show L0 answer
-//            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
-//            data = cp->peer_name + cp->peer_name_length;
-//            printf("Receive %d bytes: %hu bytes data from L0 server, "
-//                    "from peer %s, cmd = %hhu, data: %s\n\n",
-//                    (int)rc, cp->data_length, cp->peer_name, cp->cmd,
-//                    cp->data_length ? data : "");
-//
-//        
-        {        
+        if((rc = teo->recvTimeout(1000000)) == -1) {
+
+            printf("Can't get answer from L0 server during timeout\n");
+
+        }
+        // Show L0 answer and continue send and receive data
+        else {
+
+            // Process received data
+            if(rc > 0) {
+                cout << "Receive " << rc << " bytes: " <<
+                        teo->packet()->data_length << " bytes data from L0 server, " <<
+                        "from peer " << teo->packet()->peer_name << ", cmd = " << 
+                        (int)teo->packet()->cmd << ", data:" << 
+                        (char*)teo->packetData() << "\n";
+            }
+        
             // Send (2) peer list request to peer, command CMD_L_PEERS
             snd = teo->send(CMD_L_PEERS, peer_name, NULL, 0);        
             cout << "Send " << snd << " bytes packet to L0 server to peer " << 
