@@ -21,7 +21,7 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-Linux
+CND_PLATFORM=None-Generic
 CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
@@ -37,9 +37,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/main_cpp.o \
 	${OBJECTDIR}/main_select.o \
-	${OBJECTDIR}/main_select.o \
-	${OBJECTDIR}/nbind/main_select.o \
+	${OBJECTDIR}/main_select_cpp.o \
+	${OBJECTDIR}/nbind/main_select_cpp.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
 	${OBJECTDIR}/nodejs/src/errno_exeption.o \
@@ -84,20 +85,25 @@ ${OBJECTDIR}/main.o: main.c
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
 
+${OBJECTDIR}/main_cpp.o: main_cpp.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_cpp.o main_cpp.cpp
+
 ${OBJECTDIR}/main_select.o: main_select.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.c
 
-${OBJECTDIR}/main_select.o: main_select.cpp
+${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.cpp
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_cpp.o main_select_cpp.cpp
 
-${OBJECTDIR}/nbind/main_select.o: nbind/main_select.cpp
+${OBJECTDIR}/nbind/main_select_cpp.o: nbind/main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}/nbind
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind/main_select.o nbind/main_select.cpp
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind/main_select_cpp.o nbind/main_select_cpp.cpp
 
 ${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc
 	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello

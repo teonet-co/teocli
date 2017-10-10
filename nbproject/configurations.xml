@@ -21,7 +21,7 @@
       <itemPath>nbind/autogypi.json</itemPath>
       <itemPath>nbind/binding.gyp</itemPath>
       <itemPath>nbind/index.js</itemPath>
-      <itemPath>nbind/main_select.cpp</itemPath>
+      <itemPath>nbind/main_select_cpp.cpp</itemPath>
       <itemPath>nbind/package.json</itemPath>
     </logicalFolder>
     <logicalFolder name="nodejs" displayName="nodejs" projectFiles="true">
@@ -295,7 +295,7 @@
       </item>
       <item path="nbind/index.js" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="nbind/main_select.cpp" ex="false" tool="1" flavor2="0">
+      <item path="nbind/main_select_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="nbind/package.json" ex="false" tool="3" flavor2="0">
       </item>

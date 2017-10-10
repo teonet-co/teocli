@@ -198,9 +198,6 @@ int main(int argc, char** argv) {
                       !strcmp(msg, (char*)teo->packetData())) ? "OK" : "ERROR") << 
                     "\n";
         }
-                
-        // Close connection
-        //teo->disconnect();
     }
     
     // Cleanup L0 Client library

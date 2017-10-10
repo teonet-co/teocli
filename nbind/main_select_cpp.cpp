@@ -275,8 +275,6 @@ static int main_select(const char *client_name, const char *tcp_server,
         }
 	#endif
 
-        // Close connection
-        //cli.disconnect();
     }
 
     return (EXIT_SUCCESS);
