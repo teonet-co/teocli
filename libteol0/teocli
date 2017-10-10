@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2015 Kirill Scherba <kirill@scherba.ru>
+ * Copyright (c) 1996-2017 Kirill Scherba <kirill@scherba.ru>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,14 +20,8 @@
 
 namespace teo {
 
-//! L0 client events (teoLNullEvents)
-typedef teoLNullEvents Events;
-
-typedef teoLNullCPacket Packet;
-
-//! Teocli C++ callback bind function declaration
-static void callbackBind (void *com, Events event, void *data, size_t data_len,
-    void *user_data);
+typedef teoLNullEvents Events; //! L0 client Events
+typedef teoLNullCPacket Packet; //! L0 client Packet
 
 /**
  * Teocli class.
@@ -71,7 +65,8 @@ private:
      * @param server Server IP or name
      * @param port Server port
      * @param event_cb Pointer to event callback function, may be NULL or Missed
-     * @param user_data Pointer to user data which will be send to event callback, may be NULL or Missed
+     * @param user_data Pointer to user data which will be send to event 
+     *                  callback, may be NULL or Missed
      *
      * @return connected status
      * @retval  0 if disconnected
@@ -85,7 +80,8 @@ private:
 
         eventCallBack = event_cb;
         userData = user_data;
-        con = teoLNullConnectE(server, port, event_cb == NULL ? NULL : callbackBind, this);
+        con = teoLNullConnectE(server, port, 
+                event_cb == NULL ? NULL : callbackBind, this);
 
         return connected();
     }
@@ -96,7 +92,8 @@ private:
      */
     inline void disconnect() {
         teoLNullDisconnect(con);
-        std::cout << "Disconnected. Bye.\n";
+        con = NULL;
+        //std::cout << "Disconnected. Bye.\n";
     }
 
     /**
@@ -142,7 +139,8 @@ public:
      */
     Teocli(const char *client = "teocli++") : clientName(client) { init(); }
     Teocli(const char *server, int port) : Teocli() { connect(server, port); }
-    Teocli(const char *client, const char *server, int port, EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client) {
+    Teocli(const char *client, const char *server, int port, 
+        EventsCb event_cb = NULL, void *user_data = NULL) : Teocli(client) {
         connect(server, port, event_cb, user_data);
     }
 
@@ -177,25 +175,24 @@ public:
      */
     inline size_t login(const char* host_name) {
         return teoLNullLogin(con, host_name);
-    }
+        }
 
-    /**
-     * Send command to L0 server
-     *
-     * Create L0 clients packet and send it to L0 server
-     *
-     * @param cmd Command
-     * @param peer_name Peer name to send to
-     * @param data Pointer to data
-     * @param data_length Length of data
-     *
-     * @return Length of send data or -1 at error
-     */
-    inline ssize_t send(int cmd, const char *peer_name, void *data, 
-                        size_t data_length) {
-
-        return teoLNullSend(con, cmd, peer_name, data, data_length);
-    }
+        /**
+         * Send command to L0 server
+         *
+         * Create L0 clients packet and send it to L0 server
+         *
+         * @param cmd Command
+         * @param peer_name Peer name to send to
+         * @param data Pointer to data
+         * @param data_length Length of data
+         *
+         * @return Length of send data or -1 at error
+         */
+        inline ssize_t send(int cmd, const char *peer_name, void *data,
+                size_t data_length) {
+            return teoLNullSend(con, cmd, peer_name, data, data_length);
+        }
 
     /**
      * Send Echo command

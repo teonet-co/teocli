@@ -206,7 +206,7 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
     }
 }
 
-teo::Teocli *cli;
+//teo::Teocli *cli;
 
 /**
  * Main L0 Native client example function
@@ -219,7 +219,8 @@ teo::Teocli *cli;
 int main(int argc, char** argv) {
     
     // Welcome message
-    std::cout << "Teonet c++ L0 client with Select and Event Loop Callback example version " TL0CN_VERSION " (Native TCP Client)\n\n";
+    std::cout << "Teonet c++ L0 client with Select and Event Callback example "
+                 "version " TL0CN_VERSION " (Native TCP Client)\n\n";
 
     // Check application parameters
     if(argc < 5) {
@@ -241,7 +242,8 @@ int main(int argc, char** argv) {
     };
 
     // Create Teocli object, Initialize L0 Client library and connect to L0 server
-    cli = new teo::Teocli(parameters.client_name, parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
+    teo::Teocli *cli = new teo::Teocli(parameters.client_name, 
+        parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 
     if(cli->connected() > 0) {
 
@@ -262,8 +264,6 @@ int main(int argc, char** argv) {
         }
 	#endif
 
-        // Close connection
-        //cli->disconnect();
     }
     
     #ifdef __EMSCRIPTEN__

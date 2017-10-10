@@ -6,7 +6,7 @@
 			],
 			"sources": [
 				"../libteol0/teonet_l0_client.c",
-				"main_select.cpp"
+				"main_select_cpp.cpp"
 			]
 		}
 	],

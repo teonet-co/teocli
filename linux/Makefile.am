@@ -2,8 +2,6 @@
 
 AM_CXXFLAGS = -std=c++11
 
-#-std=gnu++11
-
 lib_LTLIBRARIES = libteocli.la
 teocliincludedir=$(includedir)/teocli
 nobase_teocliinclude_HEADERS = ../libteol0/teonet_l0_client.h
