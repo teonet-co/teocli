@@ -36,7 +36,7 @@
 //#define DEBUG_MSG
 
 // Internal functions
-static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length);
+//static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length);
 static ssize_t teoLNullPacketRecv(int sd, void* buf, size_t buf_length);
 static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void* data,
         size_t data_len, ssize_t received);
@@ -135,8 +135,8 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  *
  * @return Length of send data or -1 at error
  */
-static ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
-
+ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
+    
 	ssize_t snd;
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
