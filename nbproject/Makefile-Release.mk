@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main_cpp.o \
 	${OBJECTDIR}/main_select.o \
 	${OBJECTDIR}/main_select_cpp.o \
+	${OBJECTDIR}/main_select_trudp.o \
 	${OBJECTDIR}/nbind/main_select_cpp.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
@@ -99,6 +100,11 @@ ${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_cpp.o main_select_cpp.cpp
+
+${OBJECTDIR}/main_select_trudp.o: main_select_trudp.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_trudp.o main_select_trudp.c
 
 ${OBJECTDIR}/nbind/main_select_cpp.o: nbind/main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}/nbind
