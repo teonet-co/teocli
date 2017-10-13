@@ -36,10 +36,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
-	${OBJECTDIR}/main_cpp.o
-	
-	
-#	${OBJECTDIR}/main_select_cpp.o
+	${OBJECTDIR}/main_cpp.o \
+	${OBJECTDIR}/main_select_cpp.o \
+	${OBJECTDIR}/main_select_trudp.o
 
 
 # C Compiler Flags
@@ -80,6 +79,11 @@ ${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_cpp.o main_select_cpp.cpp
+
+${OBJECTDIR}/main_select_trudp.o: main_select_trudp.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_trudp.o main_select_trudp.c
 
 # Subprojects
 .build-subprojects:

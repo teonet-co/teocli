@@ -473,20 +473,38 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
     char buf[L0_BUFFER_SIZE];
 
     ssize_t rc = teoLNullPacketRecv((int)con->fd, buf, L0_BUFFER_SIZE);
-    if(rc != 0) {
-        rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
+    if(rc != 0) rc = teoLNullRecvCheck(con, buf, rc);
 
-        // Send echo answer to echo command
-        if(rc > 0) {
-            teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
-            if(cp->cmd == CMD_L_ECHO) {
-                char *data = cp->peer_name + cp->peer_name_length;
-                teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, 
-                        cp->data_length );
-            }
+    return rc;
+}
+
+/**
+ * Check received packet
+ * 
+ * @param con
+ * @param buf
+ * @param rc
+ * 
+ * @return 
+ * @return Size of packet or Packet state code
+ * @retval >0 Packet received
+ * @retval -1 Packet not receiving yet (got part of packet)
+ * @retval -2 Wrong packet received (dropped)
+ */
+ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc) {
+    
+    rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
+
+    // Send echo answer to echo command
+    if(rc > 0) {
+        teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
+        if(cp->cmd == CMD_L_ECHO) {
+            char *data = cp->peer_name + cp->peer_name_length;
+            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, 
+                    cp->data_length );
         }
-    }
-
+    } 
+    
     return rc;
 }
 
@@ -553,7 +571,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name) {
 
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
     if(!pkg_length) return 0;
-	if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
+    if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
 
     // Free buffer
     #if defined(_WIN32) || defined(_WIN64)
