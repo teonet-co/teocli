@@ -77,7 +77,7 @@ typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data,
 typedef struct teoLNullConnectData {
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-	uint32_t fd;                  ///< Connection socket
+    uint32_t fd;                ///< Connection socket
     #else
     int fd;                     ///< Connection socket
     #endif
@@ -268,6 +268,7 @@ TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_n
         const char *msg);
 TEOCLI_API int teoLNullProccessEchoAnswer(const char *msg);
 TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
+TEOCLI_API ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc);
 TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout);
 TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
