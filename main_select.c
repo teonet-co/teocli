@@ -173,6 +173,18 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     printf("Trip time: %d ms\n\n", trip_time);
 
                 } break;
+                
+                case CMD_L_AUTH_LOGIN_ANSWER: {
+                    
+                    printf("Got answer from authentication server\n");
+                    
+                    const char *auth_data = (const char *)
+                            (cp->peer_name + cp->peer_name_length);
+                    
+                    // Show data
+                    printf("Data: %s\n\n", auth_data);
+                }
+                break;
 
                 case CMD_L_ECHO:
                 {
