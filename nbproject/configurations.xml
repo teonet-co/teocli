@@ -15,6 +15,7 @@
       <itemPath>linux/Makefile</itemPath>
       <itemPath>linux/Makefile.am</itemPath>
       <itemPath>linux/README.md</itemPath>
+      <itemPath>linux/configure.ac</itemPath>
     </logicalFolder>
     <logicalFolder name="nbind" displayName="nbind" projectFiles="true">
       <itemPath>nbind/README.md</itemPath>
@@ -153,6 +154,8 @@
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="linux/configure.ac" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main_select_cpp.cpp" ex="false" tool="1" flavor2="0">
@@ -281,6 +284,8 @@
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="linux/configure.ac" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="1" flavor2="0">
       </item>
