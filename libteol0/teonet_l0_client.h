@@ -54,6 +54,7 @@ enum CMD_L {
 };
 
 #define L0_BUFFER_SIZE 2048
+#define MAX_FD_NUMBER 65536
 
 /**
  * L0 client events
