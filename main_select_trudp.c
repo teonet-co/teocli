@@ -367,7 +367,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         case GOT_ACK_PING: {
 
             char *key = trudp_ChannelMakeKey(tcd);
-            fprintf(stderr,
+            //fprintf(stderr,
+            debug(
               "Got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
               key, (char*)data,
               (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
@@ -393,7 +394,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         case GOT_ACK: {
 
             char *key = trudp_ChannelMakeKey(tcd);
-            debug("got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
+            debug("Got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
                   trudpPacketGetId(data/*trudpPacketGetPacket(data)*/),
                   key, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
 
@@ -410,7 +411,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         case GOT_DATA: {
 
             char *key = trudp_ChannelMakeKey(tcd);
-            debug("got %d byte data at channel %s, id=%u: ", 
+            debug("Got %d byte data at channel %s, id=%u\n", 
                 trudpPacketGetPacketLength(trudpPacketGetPacket(data))/*(int)data_length*/,
                 key, trudpPacketGetId(trudpPacketGetPacket(data)));
 
@@ -430,7 +431,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
 //                // Show statistic window
 //                //showStatistic(TD(tcd));
 //            }
-            debug("\n");
+            
+            //debug("%s\n", " ");
 
         } break;
         
@@ -465,12 +467,12 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
                 uint32_t id = trudpPacketGetId(data);
                 char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
                 if(!(type = trudpPacketGetType(data))) {
-                    debug("send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms\n",
+                    debug("Send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms\n",
                         (int)data_length, id, addr, port,
                         tcd->triptime / 1000.0, tcd->triptimeMiddle / 1000.0);
                 }
                 else {
-                    debug("send %d bytes %s id=%u, to %s:%d\n",
+                    debug("Send %d bytes %s id=%u, to %s:%d\n",
                         (int)data_length, 
                         type == 1 ? "ACK" :
                         type == 2 ? "RESET" :
@@ -537,7 +539,7 @@ static void network_select_loop(trudpData *td, int timeout) {
         // Process send queue
         if(timeout_sq != UINT32_MAX) {
             int rv = trudp_SendQueueProcess(td, 0);
-            if(rv) debug("process send queue ... %d\n", rv);
+            if(rv) debug("Process send queue ... %d\n", rv);
         }
     }
 
