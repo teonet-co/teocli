@@ -127,7 +127,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
 }
 
 /**
- * Send packet to L0 server
+ * Send packet to L0 server/client
  *
  * @param sd L0 server socket
  * @param pkg Package to send
@@ -137,10 +137,10 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  */
 ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
     
-	ssize_t snd;
+    ssize_t snd;
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-	if ((snd = send(sd, pkg, (int)pkg_length, 0)) >= 0);
+    if ((snd = send(sd, pkg, (int)pkg_length, 0)) >= 0);
     #else
     if((snd = write(sd, pkg, pkg_length)) >= 0) {};
     #endif
