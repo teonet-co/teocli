@@ -316,6 +316,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
             fprintf(stderr,
               "Got TRU_RESET packet from channel %s\n",
               key);
+            
+            connected_flag = 0;
 
         } break;
 
