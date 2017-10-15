@@ -256,6 +256,35 @@ static int teo_time_diff(void *tv) {
 };
 
 /**
+ * Create package for Echo command
+ * @param msg_buf
+ * @param buf_len
+ * @param msg
+ * @return 
+ */
+size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name, const char *msg) {
+    
+    // Get current time to buffer
+    size_t time_length;
+    void *time_start = teo_time_get(&time_length);
+
+    const size_t msg_len = strlen(msg) + 1;
+    const size_t msg_buf_len = msg_len + time_length;
+    void *msg_buf = malloc(msg_buf_len);
+    //
+    // Fill message buffer
+    memcpy(msg_buf, msg, msg_len);
+    memcpy(msg_buf + msg_len, time_start, time_length);
+    
+    size_t package_len = teoLNullPacketCreate(buf, buf_len, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
+    
+    teo_time_free(time_start);
+    free(msg_buf);
+    
+    return package_len;
+}
+
+/**
  * Send ECHO command to L0 server
  *
  * Create L0 clients packet and send it to L0 server
@@ -272,24 +301,11 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
     // Add current time to the end of message (it should be return
     // back by server)
 
-    // Get current time to buffer
-    size_t time_length;
-    void *time_start = teo_time_get(&time_length);
-
-    const size_t msg_len = strlen(msg) + 1;
-    const size_t msg_buf_len = msg_len + time_length;
-    char *msg_buf = malloc(msg_buf_len);
-    //
-    // Fill message buffer
-    memcpy(msg_buf, msg, msg_len);
-    memcpy(msg_buf + msg_len, time_start, time_length);
-    //
+    char buf[L0_BUFFER_SIZE];
+    size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
+    
     // Send message with time
-    ssize_t snd = teoLNullSend(con, CMD_L_ECHO, peer_name, msg_buf,
-            msg_buf_len);
-
-    teo_time_free(time_start);
-    free(msg_buf);
+    ssize_t snd = teoLNullPacketSend((int)con->fd, buf, pkg_length);
 
     return snd;
 }

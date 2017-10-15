@@ -277,6 +277,7 @@ TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 // Low level functions
 TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
         const char* host_name);
+TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len, const char *peer_name, const char *msg);
 TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
 TEOCLI_API ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length);

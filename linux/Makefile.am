@@ -6,7 +6,7 @@ lib_LTLIBRARIES = libteocli.la libtrudp.la
 teocliincludedir=$(includedir)/teocli
 nobase_teocliinclude_HEADERS = ../libteol0/teonet_l0_client.h
 libteocli_la_SOURCES = ../libteol0/teonet_l0_client.c
-libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 2:0:0 
+libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 7:0:0 
 	
 libtrudp_la_SOURCES = \
 	../../trudp/src/hash.c \
