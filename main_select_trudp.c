@@ -411,9 +411,15 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         case GOT_DATA: {
 
             char *key = trudp_ChannelMakeKey(tcd);
-            debug("Got %d byte data at channel %s, id=%u\n", 
-                trudpPacketGetPacketLength(trudpPacketGetPacket(data))/*(int)data_length*/,
-                key, trudpPacketGetId(trudpPacketGetPacket(data)));
+            
+            teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
+            
+            debug("Got %d byte data at channel %s, id=%u, from: %s, data: %s\n", 
+                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
+                key, 
+                trudpPacketGetId(trudpPacketGetPacket(data)), 
+                cp->peer_name,
+                cp->peer_name + cp->peer_name_length );
 
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
 //                if(o.debug) {
@@ -680,6 +686,8 @@ int main(int argc, char** argv) {
         message = "hello_c"; 
         message_length = strlen(message) + 1;
 
+        trudpChannelData *tcd = NULL;
+                
         // Event loop
         while(!quit_flag) {
 
@@ -690,19 +698,25 @@ int main(int argc, char** argv) {
 
             // Connect
             if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-                connectToPeer(td, param.host_name);
+                tcd = connectToPeer(td, param.host_name);
                 tt_c = tt;
             }
             
-            trudpProcessKeepConnection(td);
+            if(connected_flag) {
+                if((tt - tt_s) > SEND_MESSAGE_AFTER*5) {
+
+                    char buf[BUFFER_SIZE];
+
+                    size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
+                    trudp_ChannelSendData(tcd, buf, pkg_length);
+
+                    tt_s = tt;
+                }
+                else {
+                    trudpProcessKeepConnection(td);
+                }
+            }
             
-//            if((tt - tt_s) > RECONNECT_AFTER /*SEND_MESSAGE_AFTER*/) {
-//
-//                if(td->stat.sendQueue.size_current < 1000) {
-//                    trudpSendDataToAll(td, message, message_length);
-//                }
-//                tt_s = tt;
-//            }
 
             num++;
         }
