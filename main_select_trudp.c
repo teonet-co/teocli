@@ -256,7 +256,9 @@ static int connected_flag = 0;
 static char *remote_address;
 static int remote_port_i;
 
-
+// Read buffer
+static char *buffer;
+static const int BUFFER_SIZE = 2048;
 
 /**
  * TR-UDP event callback
@@ -326,7 +328,6 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case SEND_RESET: {
 
-
             char *key = trudp_ChannelMakeKey(tcd);
             
             if(!data)
@@ -369,7 +370,6 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         case GOT_ACK_PING: {
 
             char *key = trudp_ChannelMakeKey(tcd);
-            //fprintf(stderr,
             debug(
               "Got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
               key, (char*)data,
@@ -412,17 +412,29 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_DATA: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            
+            char *key = trudp_ChannelMakeKey(tcd);            
             teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
-            
+                        
             debug("Got %d byte data at channel %s, id=%u, from: %s, data: %s\n", 
                 trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
                 key, 
                 trudpPacketGetId(trudpPacketGetPacket(data)), 
                 cp->peer_name,
                 cp->peer_name + cp->peer_name_length );
+            
+            // Process ECHO command
+            if(cp->cmd == CMD_L_ECHO) {
+                char *data = cp->peer_name + cp->peer_name_length;
+                
+//                char buf[BUFFER_SIZE];
+//                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length);
+                
+                cp->cmd = CMD_L_ECHO_ANSWER;
+                cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
+                trudp_ChannelSendData(tcd, cp, data_length);                
+            }
 
+            
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
 //                if(o.debug) {
 //                    printf("#%u at %.3f, cannel %s [%.3f(%.3f) ms] ",
@@ -499,10 +511,6 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         default: break;
     }
 }
-
-// Read buffer
-static char *buffer;
-static const int BUFFER_SIZE = 2048;
 
 /**
  * The TR-UDP cat network loop with select function
@@ -693,7 +701,8 @@ int main(int argc, char** argv) {
         // Event loop
         while(!quit_flag) {
 
-            network_select_loop(td, SEND_MESSAGE_AFTER < DELAY ? SEND_MESSAGE_AFTER : DELAY);
+            network_select_loop(td, SEND_MESSAGE_AFTER < DELAY ? 
+                SEND_MESSAGE_AFTER : DELAY);
             
             // Current timestamp
             tt = trudpGetTimestamp();
@@ -727,8 +736,7 @@ int main(int argc, char** argv) {
         trudpDestroy(td);         
         free(buffer);
     }
-    
-    
+        
     // Connect to L0 server
     teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
         event_cb, &param);
