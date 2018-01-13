@@ -15,13 +15,13 @@ CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux/package
 CND_PACKAGE_NAME_Debug=teocli.tar
 CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/teocli.tar
 # Release configuration
-CND_PLATFORM_Release=None-Generic
-CND_ARTIFACT_DIR_Release=dist/Release/None-Generic
+CND_PLATFORM_Release=GNU-Linux
+CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux
 CND_ARTIFACT_NAME_Release=teocli
-CND_ARTIFACT_PATH_Release=dist/Release/None-Generic/teocli
-CND_PACKAGE_DIR_Release=dist/Release/None-Generic/package
+CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux/teocli
+CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux/package
 CND_PACKAGE_NAME_Release=teocli.tar
-CND_PACKAGE_PATH_Release=dist/Release/None-Generic/package/teocli.tar
+CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/teocli.tar
 #
 # include compiler specific variables
 #
