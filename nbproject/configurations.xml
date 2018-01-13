@@ -12,7 +12,6 @@
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
     </logicalFolder>
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
-      <itemPath>linux/Makefile</itemPath>
       <itemPath>linux/Makefile.am</itemPath>
       <itemPath>linux/README.md</itemPath>
       <itemPath>linux/configure.ac</itemPath>
@@ -148,8 +147,6 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="linux/Makefile" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
@@ -278,8 +275,6 @@
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="linux/Makefile" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
