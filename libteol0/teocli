@@ -184,6 +184,15 @@ public:
     virtual ssize_t login() {
         return loginHost(clientName.c_str());
     }
+    
+    /**
+     * Set client name
+     * 
+     * @param client_name
+     */
+    void setClientName(const std::string &client_name) {
+      clientName = client_name;
+    }
 
     /**
      * Send command to L0 server
