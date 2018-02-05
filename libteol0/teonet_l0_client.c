@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#if !(defined(_WIN32) || defined(_WIN64))
+#if !defined(_WIN32) || defined(_WIN64)
 #include <unistd.h>
 #endif
 #include <fcntl.h>
@@ -274,8 +274,11 @@ size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name
     //
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
-    memcpy(msg_buf + msg_len, time_start, time_length);
-    
+#if (defined(_WIN32) || defined(_WIN64))
+    memcpy((char*)msg_buf + msg_len, time_start, time_length);
+#else
+	memcpy(msg_buf + msg_len, time_start, time_length);
+#endif
     size_t package_len = teoLNullPacketCreate(buf, buf_len, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
     
     teo_time_free(time_start);
@@ -320,8 +323,11 @@ int teoLNullProccessEchoAnswer(const char *msg) {
 
     // Get time from answers data
     size_t time_ptr = strlen(msg) + 1;
-    void *time_start = (void *)msg + time_ptr;
-
+#if (defined(_WIN32) || defined(_WIN64))
+    void *time_start = (char*)msg + time_ptr;
+#else
+	void *time_start = (void*)msg + time_ptr;
+#endif
     // Calculate trip time
     int trip_time = teo_time_diff(time_start);
 
