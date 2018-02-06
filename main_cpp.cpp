@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     if(teo->connected() > 0) {
         
         // Send (1) Initialization packet to L0 server
-        size_t snd = teo->login(host_name);
+        size_t snd = teo->loginHost(host_name);
         if(snd == -1) perror(strerror(errno));
         cout << "\nSend " << snd <<  
                 " bytes packet to L0 server, Initialization packet\n";
