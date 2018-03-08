@@ -8,7 +8,7 @@ without any plugins.
 
 ## Source files
 
-#- main_select.cpp - Native C++ Teonet client based at ../libteol0/teocli and ../libteol0/teonet_l0_client.c
+- main_select.cpp - Native C++ Teonet client based at ../libteol0/teocli and ../libteol0/teonet_l0_client.c
 - index.js - JavaScript example
     
 

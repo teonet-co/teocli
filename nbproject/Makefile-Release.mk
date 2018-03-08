@@ -42,6 +42,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main_select_cpp.o \
 	${OBJECTDIR}/main_select_trudp.o \
 	${OBJECTDIR}/nbind/main_select_cpp.o \
+	${OBJECTDIR}/nbind_ser/libteonet-js.o \
 	${OBJECTDIR}/nodejs/example/hello/hello.o \
 	${OBJECTDIR}/nodejs/src/connector.o \
 	${OBJECTDIR}/nodejs/src/errno_exeption.o \
@@ -110,6 +111,11 @@ ${OBJECTDIR}/nbind/main_select_cpp.o: nbind/main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}/nbind
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind/main_select_cpp.o nbind/main_select_cpp.cpp
+
+${OBJECTDIR}/nbind_ser/libteonet-js.o: nbind_ser/libteonet-js.cpp
+	${MKDIR} -p ${OBJECTDIR}/nbind_ser
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/libteonet-js.o nbind_ser/libteonet-js.cpp
 
 ${OBJECTDIR}/nodejs/example/hello/hello.o: nodejs/example/hello/hello.cc
 	${MKDIR} -p ${OBJECTDIR}/nodejs/example/hello
