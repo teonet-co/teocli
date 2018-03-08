@@ -19,6 +19,8 @@
                 <sourceRootElem>emscripten</sourceRootElem>
                 <sourceRootElem>build</sourceRootElem>
                 <sourceRootElem>nbind</sourceRootElem>
+                <sourceRootElem>perl</sourceRootElem>
+                <sourceRootElem>nbind_ser</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
