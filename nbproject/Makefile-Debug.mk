@@ -39,14 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main_cpp.o \
 	${OBJECTDIR}/main_select_cpp.o \
 	${OBJECTDIR}/main_select_trudp.o \
-	${OBJECTDIR}/nbind_ser/libteonet-js.o \
-	${OBJECTDIR}/nbind_ser/node_modules/nbind/src/common.o \
-	${OBJECTDIR}/nbind_ser/node_modules/nbind/src/em/Binding.o \
-	${OBJECTDIR}/nbind_ser/node_modules/nbind/src/reflect.o \
-	${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Binding.o \
-	${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Buffer.o \
-	${OBJECTDIR}/nbind_ser/node_modules/node-gyp/gyp/data/win/large-pdb-shim.o \
-	${OBJECTDIR}/nbind_ser/node_modules/node-gyp/src/win_delay_load_hook.o
+	${OBJECTDIR}/nbind_ser/libteonet-js.o
 
 
 # C Compiler Flags
@@ -97,41 +90,6 @@ ${OBJECTDIR}/nbind_ser/libteonet-js.o: nbind_ser/libteonet-js.cpp
 	${MKDIR} -p ${OBJECTDIR}/nbind_ser
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/libteonet-js.o nbind_ser/libteonet-js.cpp
-
-${OBJECTDIR}/nbind_ser/node_modules/nbind/src/common.o: nbind_ser/node_modules/nbind/src/common.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/nbind/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/common.o nbind_ser/node_modules/nbind/src/common.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/nbind/src/em/Binding.o: nbind_ser/node_modules/nbind/src/em/Binding.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/em
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/em/Binding.o nbind_ser/node_modules/nbind/src/em/Binding.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/nbind/src/reflect.o: nbind_ser/node_modules/nbind/src/reflect.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/nbind/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/reflect.o nbind_ser/node_modules/nbind/src/reflect.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Binding.o: nbind_ser/node_modules/nbind/src/v8/Binding.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Binding.o nbind_ser/node_modules/nbind/src/v8/Binding.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Buffer.o: nbind_ser/node_modules/nbind/src/v8/Buffer.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/nbind/src/v8/Buffer.o nbind_ser/node_modules/nbind/src/v8/Buffer.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/node-gyp/gyp/data/win/large-pdb-shim.o: nbind_ser/node_modules/node-gyp/gyp/data/win/large-pdb-shim.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/node-gyp/gyp/data/win
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/node-gyp/gyp/data/win/large-pdb-shim.o nbind_ser/node_modules/node-gyp/gyp/data/win/large-pdb-shim.cc
-
-${OBJECTDIR}/nbind_ser/node_modules/node-gyp/src/win_delay_load_hook.o: nbind_ser/node_modules/node-gyp/src/win_delay_load_hook.cc
-	${MKDIR} -p ${OBJECTDIR}/nbind_ser/node_modules/node-gyp/src
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbind_ser/node_modules/node-gyp/src/win_delay_load_hook.o nbind_ser/node_modules/node-gyp/src/win_delay_load_hook.cc
 
 # Subprojects
 .build-subprojects:
