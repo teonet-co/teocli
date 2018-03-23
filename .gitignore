@@ -73,3 +73,7 @@ node_modules/
 /linux/teocli_cpp
 /linux/teocli_s_trudp
 /nbind/package-lock.json
+/nbind_ser/build/
+/nbind_ser/auto-top.gypi
+/nbind_ser/auto.gypi
+/nbind_ser/package-lock.json
