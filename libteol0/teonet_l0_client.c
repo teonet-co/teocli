@@ -646,7 +646,7 @@ void set_nonblock(int sd) {
 
     iResult = ioctlsocket(sd, FIONBIO, &iMode);
     if (iResult != NO_ERROR)
-      printf("ioctlsocket failed with error: %ld\n", iResult);
+      printf("ioctlsocket failed with error: %d\n", iResult);
 
     #else
     int flags;
