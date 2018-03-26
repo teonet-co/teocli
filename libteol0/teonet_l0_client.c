@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#if !defined(_WIN32) || defined(_WIN64)
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #endif
 #include <fcntl.h>
