@@ -103,7 +103,7 @@ public:
      */
     Teocli(const char *client = "teocli++") : clientName(client) { init(); }
     Teocli(const char *server, int port) : Teocli() { connect(server, port); }
-    Teocli(const char *client, const char *server, int port, EventsCb event_cb, 
+    Teocli(const char *client, const char *server, int port, EventsCb event_cb,
       void *user_data) : Teocli(client) {
       connect(server, port, user_data, event_cb);
     }
@@ -115,15 +115,15 @@ public:
         disconnect();
         cleanup();
     }
-    
+
 public:
-  
+
     /**
      * Create TCP client and connect to server with event callback
      *
      * @param server Server IP or name
      * @param port Server port
-     * @param user_data Pointer to user data which will be send to event 
+     * @param user_data Pointer to user data which will be send to event
      *                  callback, may be NULL or Missed
      * @param event_cb Pointer to event callback function, may be NULL or Missed
      *
@@ -134,23 +134,23 @@ public:
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connect(const char *server, int port, 
+    inline int connect(const char *server, int port,
         void *user_data = NULL, EventsCb event_cb = NULL) {
 
-        eventCallBack = event_cb ? event_cb : 
-          [](teo::Teocli &cli, teo::Events event, void *data, 
+        eventCallBack = event_cb ? event_cb :
+          [](teo::Teocli &cli, teo::Events event, void *data,
             size_t data_length, void *user_data) {
             if(event != EV_L_TICK && event != EV_L_IDLE)
             cli.eventCb(event, data, data_length, user_data);
         };
         userData = user_data;
-        con = teoLNullConnectE(server, port, 
+        con = teoLNullConnectE(server, port,
                 eventCallBack == NULL ? NULL : callbackBind, this);
 
         return connected();
     }
 
-  
+
     /**
      * Check if this class is connected to L0 server
      *
@@ -164,7 +164,7 @@ public:
     inline int connected() const {
         return con == NULL ? 0 : con->fd;
     }
-    
+
     /**
      * Create initialize L0 client packet
      *
@@ -184,10 +184,10 @@ public:
     virtual ssize_t login() {
         return loginHost(clientName.c_str());
     }
-    
+
     /**
      * Set client name
-     * 
+     *
      * @param client_name
      */
     void setClientName(const std::string &client_name) {
@@ -292,7 +292,7 @@ public:
      * @return Pointer to ksnet_arp_data_ar
      */
     inline ksnet_arp_data_ar *packetArpData() const {
-        return (ksnet_arp_data_ar *) 
+        return (ksnet_arp_data_ar *)
                     (packet()->peer_name + packet()->peer_name_length);
     }
 
@@ -330,7 +330,7 @@ private:
         Teocli &cli = *(Teocli *) user_data;
 
         if(event == EV_L_CONNECTED) {
-          
+
             cli.setCon((teoLNullConnectData *)con);
             if(cli.connected() > 0) {
 
@@ -344,12 +344,12 @@ private:
 
         cli.getEventCallBack()(cli, event, data, data_len, cli.getUserData());
     }
-    
+
 public:
-  
-    virtual void eventCb(teo::Events event, void *data, size_t data_len, 
+
+    virtual void eventCb(teo::Events event, void *data, size_t data_len,
       void *user_data) {
-      
+
     }
 };
 
