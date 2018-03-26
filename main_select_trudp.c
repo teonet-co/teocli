@@ -523,7 +523,7 @@ static void network_select_loop(trudpData *td, int timeout) {
     int rv = 1;
     fd_set rfds, wfds;
     struct timeval tv;
-    uint64_t /*tt, next_et = UINT64_MAX,*/ ts = trudpGetTimestampFull();
+    uint64_t /*tt, next_et = UINT64_MAX,*/ ts = teoGetTimestampFull();
 
     // Watch server_socket to see when it has input.
     FD_ZERO(&wfds);
