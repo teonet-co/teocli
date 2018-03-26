@@ -136,7 +136,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length,
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length) {
-    
+
     ssize_t snd;
 
     #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
@@ -260,10 +260,10 @@ static int teo_time_diff(void *tv) {
  * @param msg_buf
  * @param buf_len
  * @param msg
- * @return 
+ * @return
  */
 size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name, const char *msg) {
-    
+
     // Get current time to buffer
     size_t time_length;
     void *time_start = teo_time_get(&time_length);
@@ -280,10 +280,10 @@ size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name
 	memcpy(msg_buf + msg_len, time_start, time_length);
 #endif
     size_t package_len = teoLNullPacketCreate(buf, buf_len, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
-    
+
     teo_time_free(time_start);
     free(msg_buf);
-    
+
     return package_len;
 }
 
@@ -306,7 +306,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
 
     char buf[L0_BUFFER_SIZE];
     size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
-    
+
     // Send message with time
     ssize_t snd = teoLNullPacketSend((int)con->fd, buf, pkg_length);
 
@@ -502,19 +502,19 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
 
 /**
  * Check received packet
- * 
+ *
  * @param con
  * @param buf
  * @param rc
- * 
- * @return 
+ *
+ * @return
  * @return Size of packet or Packet state code
  * @retval >0 Packet received
  * @retval -1 Packet not receiving yet (got part of packet)
  * @retval -2 Wrong packet received (dropped)
  */
 ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc) {
-    
+
     rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
 
     // Send echo answer to echo command
@@ -522,11 +522,11 @@ ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc) {
         teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
         if(cp->cmd == CMD_L_ECHO) {
             char *data = cp->peer_name + cp->peer_name_length;
-            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, 
+            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data,
                     cp->data_length );
         }
-    } 
-    
+    }
+
     return rc;
 }
 
@@ -716,7 +716,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
         send_l0_event(con, EV_L_IDLE, NULL, 0);
     }
-    
+
     // There is a data in sd
     else {
 
