@@ -6,7 +6,9 @@ typedef struct {
   int length;
 } msg_t;
 
-int do_msg_read(int sockfd, msg_t *msg, int offset, int length, struct sockaddr *addr, socklen_t *addrlen) {
+int do_msg_read(int sockfd, msg_t *msg, int offset, int length, 
+        struct sockaddr *addr, socklen_t *addrlen) {
+    
   int res;
 
   if (!msg->length) {
@@ -33,14 +35,18 @@ int do_msg_read(int sockfd, msg_t *msg, int offset, int length, struct sockaddr 
   if (res == -1) {
     assert(errno == EAGAIN);
     return res;
+  } else if (res == 0) {
+    printf("client disconnected\n\n");   
+  } else {
+    printf("do_msg_read: read %d bytes, %s\n", res, msg->buffer);
   }
-
-  printf("do_msg_read: read %d bytes\n", res);
 
   return res;
 }
 
-int do_msg_write(int sockfd, msg_t *msg, int offset, int length, struct sockaddr *addr, socklen_t addrlen) {
+int do_msg_write(int sockfd, msg_t *msg, int offset, int length, 
+        struct sockaddr *addr, socklen_t addrlen) {
+    
   int res;
 
   // send the message length first

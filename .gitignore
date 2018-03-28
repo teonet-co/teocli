@@ -73,3 +73,7 @@ node_modules/
 /linux/teocli_cpp
 /linux/teocli_s_trudp
 /nbind/package-lock.json
+/emscripten/test/echo_server/test_sockets_echo_server.js
+/emscripten/test/echo_server/package-lock.json
+/emscripten/test/echo_server/test_sockets_echo_server
+/emscripten/test/echo_server/test_sockets_echo_client

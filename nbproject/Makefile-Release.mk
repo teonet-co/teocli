@@ -35,6 +35,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_client.o \
+	${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_server.o \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/main_cpp.o \
@@ -75,6 +77,16 @@ LDLIBSOPTIONS=-lws2_32
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
+
+${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_client.o: emscripten/test/echo_server/test_sockets_echo_client.c
+	${MKDIR} -p ${OBJECTDIR}/emscripten/test/echo_server
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_client.o emscripten/test/echo_server/test_sockets_echo_client.c
+
+${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_server.o: emscripten/test/echo_server/test_sockets_echo_server.c
+	${MKDIR} -p ${OBJECTDIR}/emscripten/test/echo_server
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_server.o emscripten/test/echo_server/test_sockets_echo_server.c
 
 ${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0

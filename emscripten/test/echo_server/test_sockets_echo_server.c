@@ -106,7 +106,8 @@ void main_loop() {
     }
 
     socklen_t addrlen = sizeof(client.addr);
-    res = do_msg_read(fd, &client.msg, client.read, 0, (struct sockaddr *)&client.addr, &addrlen);
+    res = do_msg_read(fd, &client.msg, client.read, 0, 
+            (struct sockaddr *)&client.addr, &addrlen);
     if (res == -1) {
       return;
     } else if (res == 0) {
@@ -129,7 +130,8 @@ void main_loop() {
       return;
     }
 
-    res = do_msg_write(fd, &client.msg, client.wrote, 0, (struct sockaddr *)&client.addr, sizeof(client.addr));
+    res = do_msg_write(fd, &client.msg, client.wrote, 0, 
+            (struct sockaddr *)&client.addr, sizeof(client.addr));
     if (res == -1) {
       return;
     } else if (res == 0) {

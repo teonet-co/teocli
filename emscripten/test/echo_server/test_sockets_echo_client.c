@@ -44,7 +44,8 @@ void finish(int result) {
   }
 #ifdef __EMSCRIPTEN__
   //REPORT_RESULT();
-  puts("REPORT_RESULT(); was here ... !!!");
+  //puts("REPORT_RESULT(); was here ... !!!");
+  puts("disconnected");
   emscripten_force_exit(result);
 #else
   exit(result);
@@ -201,12 +202,14 @@ int main() {
       finish(EXIT_FAILURE);
     }
     char buffer[1000];
-    sprintf(buffer, "%s:%u", inet_ntoa(adr_inet.sin_addr), (unsigned)ntohs(adr_inet.sin_port));
+    sprintf(buffer, "%s:%u", inet_ntoa(adr_inet.sin_addr), 
+            (unsigned)ntohs(adr_inet.sin_port));
     // TODO: This is not the correct result: We should have a auto-bound address
     char *correct = "0.0.0.0:0";
-    printf("got (expected) socket: %s (%s), size %d (%d)\n", buffer, correct, strlen(buffer), strlen(correct));
-    assert(strlen(buffer) == strlen(correct));
-    assert(strcmp(buffer, correct) == 0);
+    printf("address to which the socket is bound: %s (%s), size %d (%d)\n", 
+            buffer, correct, strlen(buffer), strlen(correct));
+    //assert(strlen(buffer) == strlen(correct));
+    //assert(strcmp(buffer, correct) == 0);
   }
 
   {
@@ -219,12 +222,14 @@ int main() {
       finish(EXIT_FAILURE);
     }
     char buffer[1000];
-    sprintf(buffer, "%s:%u", inet_ntoa(adr_inet.sin_addr), (unsigned)ntohs(adr_inet.sin_port));
+    sprintf(buffer, "%s:%u", inet_ntoa(adr_inet.sin_addr), 
+            (unsigned)ntohs(adr_inet.sin_port));
     char correct[1000];
     sprintf(correct, "127.0.0.1:%u", SOCKK);
-    printf("got (expected) socket: %s (%s), size %d (%d)\n", buffer, correct, strlen(buffer), strlen(correct));
-    assert(strlen(buffer) == strlen(correct));
-    assert(strcmp(buffer, correct) == 0);
+    printf("peer connected to the socket: %s (%s), size %d (%d)\n", 
+            buffer, correct, strlen(buffer), strlen(correct));
+    //assert(strlen(buffer) == strlen(correct));
+    //assert(strcmp(buffer, correct) == 0);
   }
 
 #ifdef __EMSCRIPTEN__
