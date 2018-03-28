@@ -4,7 +4,7 @@
   "description": "",
   "main": "main_select.js",
   "dependencies": {
-    "ws": "^0.8.0"
+    "ws": "^2.0.0"
   },
   "devDependencies": {},
   "scripts": {
