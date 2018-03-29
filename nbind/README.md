@@ -8,18 +8,30 @@ without any plugins.
 
 ## Source files
 
-- main_select.cpp - Native C++ Teonet client based at ../libteol0/teocli and ../libteol0/teonet_l0_client.c
+- main_select.cpp - Native C++ Teonet client based at libteol0/teocli and libteol0/teonet_l0_client.c
 - index.js - JavaScript example
-    
 
-## Build example
+## Install sources from npm
 
-To build this example use:
+    # Create new folder with name of application
+    mkdir teoclinb
+    cd teoclinb
 
-    npm install
+    # Install from npm
+    npm i teocli-l0
+    npm i teocli-nbind
+    rm -r node_modules/teocli-nbind/node_modules
+    mv -f node_modules/teocli-nbind/* ./
 
-## Execute example
+    # Update projects package.json
+    npm init
 
-    npm test
+## Build this application
 
+To build this application use:
 
+    npm i
+
+## Execute this example
+
+    npm test teo-cli-nb 127.0.0.1 9010 teo-peers "Hello world!"

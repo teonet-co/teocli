@@ -77,3 +77,4 @@ node_modules/
 /emscripten/test/echo_server/package-lock.json
 /emscripten/test/echo_server/test_sockets_echo_server
 /emscripten/test/echo_server/test_sockets_echo_client
+/emscripten/test/echo_server/nbproject/private/

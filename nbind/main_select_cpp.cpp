@@ -41,14 +41,15 @@
 #include <emscripten.h>
 #endif
 
-#include "../libteol0/teocli"
+#include "teocli"
 
 class Teo;
 
-using ConnectCb = std::function<void ()>;
+using ConnectCb =  std::function<void (Teo *cli)>;
 using DisconnectCb = std::function<void ()>;
-using IntervalCb = std::function<void (Teo *cli)> ;
-using MessageCb = std::function<void (const char *from, int cmd, const char *data, size_t data_len)>;
+using IntervalCb = std::function<void ()> ;
+using MessageCb =  std::function<void (const char *from, int cmd, 
+        const char *data, size_t data_len)>;
 
 /**
  * Application parameters structure
@@ -87,9 +88,9 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
             if(cli.connected() > 0) {
 
-                param->on_connect();
-
                 std::cout << "Successfully connect to server\n";
+
+                param->on_connect(param->cli);
 
                 // Send (1) peer list request to peer, command CMD_L_PEERS
                 ssize_t snd = cli.send(CMD_L_PEERS, param->peer_name, NULL, 0);
@@ -119,8 +120,9 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
         case EV_L_DISCONNECTED: {
 
-            param->on_connect();
             std::cout << "Disconnected ...\n";
+            param->on_disconnect();
+            
         } break;
 
         case EV_L_RECEIVED: {
@@ -129,11 +131,14 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
             const size_t rc = data_len;
             teo::Packet *cp = cli.packet();
 
-            param->on_message(cp->peer_name, int(cp->cmd), (const char*)(cp->peer_name + cp->peer_name_length), cp->data_length);
-
             std::cout << "Receive " << rc << " bytes: " << cp->data_length <<
                 " bytes data from L0 server, "
                 "from peer '" << cp->peer_name << "', cmd = " << int(cp->cmd) << "\n";
+
+            // JS on_message callback
+            param->on_message(cp->peer_name, int(cp->cmd), 
+                    (const char*)(cp->peer_name + cp->peer_name_length), 
+                    cp->data_length);
 
             // Process commands
             switch(cp->cmd) {
@@ -205,8 +210,7 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
                     // Show data
                     std::cout << "Data: " << auth_data << "\n\n";
-                }
-                break;
+                } break;
 
                 case CMD_L_ECHO: {
 
@@ -223,9 +227,8 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
         } break;
 
-        case EV_L_IDLE: {
-            if(param->on_interval)
-                param->on_interval(param->cli);
+        case EV_L_IDLE: {            
+            if(param->on_interval) param->on_interval();
         } break;
 
         default:
@@ -247,7 +250,7 @@ public:
         IntervalCb on_interval = NULL, int interval = 1000) {
 
         std::cout << "Teo constructor\n";
-        main_select(client_name, tcp_server, tcp_port, peer_name, message,
+            main_select(client_name, tcp_server, tcp_port, peer_name, message,
                 on_connect, on_disconnect, on_message, on_interval, interval);
     }
 
@@ -271,8 +274,14 @@ public:
     inline ssize_t sendEcho(const char *peer_name, const char*msg) {
         return cli->sendEcho(peer_name, msg);
     }
+    
+    inline const std::string& getClientName() const {
+        return cli->getClientName();
+    }
 
 private:
+    
+    AppParameters parameters;
 
     /**
      * Main L0 Native client example function
@@ -292,7 +301,8 @@ private:
                 "example version " TL0CN_VERSION " (Native TCP Client)\n\n";
 
         // Teonet L0 server parameters
-        AppParameters parameters = {
+        //static AppParameters 
+        parameters = (AppParameters) {
             client_name, // This client name
             tcp_server, // L0 tcp_server
             tcp_port, // L0 tcp_port
@@ -306,35 +316,48 @@ private:
         };
 
         // Create Teocli object, Initialize L0 Client library and connect to L0 server
-        cli = std::make_unique<teo::Teocli>(parameters.client_name, parameters.tcp_server,
-                parameters.tcp_port, event_cb, &parameters);
+//        cli = new teo::Teocli(parameters.client_name, 
+//            parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
+                
+        cli = std::make_unique<teo::Teocli>(parameters.client_name, 
+            parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 
 //        cli.reset(new teo::Teocli(parameters.client_name, parameters.tcp_server,
 //                parameters.tcp_port, event_cb, &parameters));
 
-        if(cli->connected() > 0) {
+//        std::async(std::launch::async,[](teo::Teocli *cli, int interval) {
+        
+//        std::thread first( [this,interval] {
+        
+//            std::cout << "Async - 1: " << cli->getClientName() << "\n";
+            if(cli->connected() > 0) {
 
-            unsigned long num = 0;
-            //const int timeout = interval;
+                unsigned long num = 0;
+                //const int timeout = interval;
 
-            #ifdef __EMSCRIPTEN__
-            emscripten_set_main_loop_arg(cli->eventLoopE, &cli, 60, 0);
-            #else
-            // Event loop
-            while(cli->eventLoop(interval)) {
+                #ifdef __EMSCRIPTEN__
+                emscripten_set_main_loop_arg(cli->eventLoopE, cli.get(), 60, 0);
+                #else
+                // Event loop
+                while(cli->eventLoop(interval)) {
+                    // Send Echo command every second
+                    //if( !(num % (1000 / timeout)) )
+                    //    cli.sendEcho(parameters.peer_name, parameters.message);
 
-                // Send Echo command every second
-                //if( !(num % (1000 / timeout)) )
-                //    cli.sendEcho(parameters.peer_name, parameters.message);
+                    //if(on_interval) on_interval(this);
 
-                //if(on_interval) on_interval(this);
+                    num++;
+                }
+                #endif
 
-                num++;
             }
-            #endif
-
-        }
-
+            
+//        });
+//        first.detach();
+            
+            
+//        }, cli, interval);
+        
         return (EXIT_SUCCESS);
     }
 
@@ -345,8 +368,11 @@ private:
 NBIND_CLASS(Teo) {
 
   construct<const char *, const char *, int , const char *, const char *,
+        ConnectCb, DisconnectCb, MessageCb, IntervalCb>();
+  construct<const char *, const char *, int , const char *, const char *,
         ConnectCb, DisconnectCb, MessageCb, IntervalCb, int >();
 
   method(send);
   method(sendEcho);
+  method(getClientName);
 }
