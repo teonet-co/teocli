@@ -195,6 +195,15 @@ public:
     }
 
     /**
+     * Get client name
+     *
+     * @return client_name Client name string
+     */
+    const std::string& getClientName() const {
+      return clientName;
+    }
+    
+    /**
      * Send command to L0 server
      *
      * Create L0 clients packet and send it to L0 server

@@ -1,7 +1,7 @@
 {
   "name": "teocli-nbind",
-  "version": "0.0.1",
-  "description": "Teonet native C++ client build with Nbind",
+  "version": "0.0.4",
+  "description": "Teonet native C++ client build with NBind",
   "main": "index.js",
   "scripts": {
     "test": "node index.js",
@@ -20,8 +20,9 @@
   "author": "Kirill Scherba <kirill@scherba.ru>",
   "license": "MIT",
   "dependencies": {
+    "teocli-l0": "",
     "autogypi": "^0.2.2",
-    "nbind": "^0.3.12",
+    "nbind": "^0.3.15",
     "node-gyp": "^3.6.2"
   }
 }
