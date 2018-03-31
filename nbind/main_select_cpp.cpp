@@ -263,7 +263,7 @@ public:
      * @param data String with data
      *
      * @return Length of send data or -1 at error
-     */
+     */ 
     inline ssize_t send(int cmd, const char *peer_name, const char *data) {
         return cli->send(cmd, peer_name, (void*)data, strlen(data) + 1);
     }
