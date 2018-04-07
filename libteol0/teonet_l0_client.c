@@ -5,6 +5,12 @@
  * Created on October 12, 2015, 12:32 PM
  */
 
+#if defined(_WIN32) || defined(_WIN64)
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
