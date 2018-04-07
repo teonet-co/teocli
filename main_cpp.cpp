@@ -11,6 +11,12 @@
  * Created on January 7, 2017, 2:18 PM
  */
 
+#if defined(_WIN32) || defined(_WIN64)
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#endif
+
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
