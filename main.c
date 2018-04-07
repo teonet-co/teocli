@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     if(con->fd > 0) {
 
         // Send (1.1) Initialization packet to L0 server
-        size_t snd = teoLNullLogin(con, host_name);
+        ssize_t snd = teoLNullLogin(con, host_name);
         if(snd == -1) perror(strerror(errno));
         printf("\nSend %d bytes packet to L0 server, Initialization packet\n",
                 (int)snd);
