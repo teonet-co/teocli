@@ -197,7 +197,7 @@ public:
     /**
      * Get client name
      *
-     * @return client_name Client name string
+     * @return client_name Reference to client name string
      */
     const std::string& getClientName() const {
       return clientName;
@@ -346,8 +346,6 @@ private:
                 // Send (1) Initialization packet to L0 server, *** REQUERED ***
                 ssize_t snd = cli.login();
                 if(snd == -1) std::cout << "Can't send login to server\n";
-                //else std::cout << "\nSend " << snd <<
-                //        " bytes packet to L0 server, Initialization packet\n";
             }
         }
 
