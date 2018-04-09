@@ -280,11 +280,7 @@ size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name
     //
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
-#if (defined(_WIN32) || defined(_WIN64))
     memcpy((char*)msg_buf + msg_len, time_start, time_length);
-#else
-	memcpy(msg_buf + msg_len, time_start, time_length);
-#endif
     size_t package_len = teoLNullPacketCreate(buf, buf_len, CMD_L_ECHO, peer_name, msg_buf, msg_buf_len);
 
     teo_time_free(time_start);
