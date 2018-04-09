@@ -722,7 +722,6 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     // There is a data in sd
     else {
 
-        //printf("Data in sd\n");
         ssize_t rc;
         while((rc = teoLNullRecv(con)) != -1) {
 
@@ -730,6 +729,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
                 send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
             } else if(rc == 0) {
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+                con->fd = -1;
                 retval = 0;
                 break;
             }
