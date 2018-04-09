@@ -202,7 +202,7 @@ public:
     const std::string& getClientName() const {
       return clientName;
     }
-    
+
     /**
      * Send command to L0 server
      *
