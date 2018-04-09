@@ -41,7 +41,7 @@
 #include <emscripten.h>
 #endif
 
-#include "teocli"
+#include "../libteol0/teocli.hpp"
 
 class Teo;
 
