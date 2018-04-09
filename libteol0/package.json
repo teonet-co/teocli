@@ -1,0 +1,23 @@
+{
+  "name": "teocli-l0",
+  "version": "0.0.8",
+  "description": "Teonet native C/C++ client core",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.ksproject.org/teonet/teocli/tree/master/libteol0"
+  },
+  "keywords": [
+    "teonet",
+    "teocli",
+    "libteol0",
+    "c",
+    "c++",
+    "network"
+  ],
+  "author": "Kirill Scherba <kirill@scherba.ru>",
+  "license": "ISC"
+}
