@@ -238,28 +238,33 @@ int main(int argc, char** argv) {
 
     // Initialize L0 Client library
     teoLNullInit();
+    
+    while(1) {
+    
+        // Connect to L0 server
+        teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
+            event_cb, &param);
 
-    // Connect to L0 server
-    teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-        event_cb, &param);
+        if(con->fd > 0) {
 
-    if(con->fd > 0) {
+            unsigned long num = 0;
+            const int timeout = 50;
 
-        unsigned long num = 0;
-        const int timeout = 50;
+            // Event loop
+            while(teoLNullReadEventLoop(con, timeout)) {
 
-        // Event loop
-        while(teoLNullReadEventLoop(con, timeout)) {
+                // Send Echo command every second
+                if( !(num % (1000 / timeout)) )
+                    teoLNullSendEcho(con, param.peer_name, param.msg);
 
-            // Send Echo command every second
-            if( !(num % (1000 / timeout)) )
-                teoLNullSendEcho(con, param.peer_name, param.msg);
+                num++;
+            }
 
-            num++;
+            // Close connection
+            teoLNullDisconnect(con);
         }
-
-        // Close connection
-        teoLNullDisconnect(con);
+        
+        teoLNullSleep(1000);    
     }
 
     // Cleanup L0 Client library
