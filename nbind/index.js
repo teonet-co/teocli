@@ -15,10 +15,17 @@ let hello = argv[6] || 'Hello';
 var nbind = require('nbind');
 
 var lib = nbind.init().lib;
-var teo = new lib.Teo(name, addr, port, peer, hello, 
+var teo;
+new lib.Teo(name, addr, port, peer, hello, 
 
-    // On connected
-    (t) => { console.log("JS message: Connected"); teo = t; },
+    // On inited and connected
+    (connected, t) => {
+        if(!connected) {
+            teo = t;
+            console.log("JS message: Initialized");
+        }
+        else console.log("JS message: Connected");
+    },
 
     // On disconnected
     () => console.log("JS message: Disconnected"),
