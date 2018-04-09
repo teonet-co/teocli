@@ -23,7 +23,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "libteol0/teocli"
+#include "libteol0/teocli.hpp"
 
 using namespace std;
 

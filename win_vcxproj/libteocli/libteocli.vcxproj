@@ -135,15 +135,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\libteol0\teocli">
-      <FileType>Document</FileType>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\libteol0\teonet_l0_client.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libteol0\teonet_l0_client.h" />
+    <ClInclude Include="..\..\libteol0\teocli.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -38,7 +38,7 @@
 #include <emscripten.h>
 #endif
 
-#include "libteol0/teocli"
+#include "libteol0/teocli.hpp"
 
 /**
  * Application parameters structure

@@ -196,9 +196,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="libteol0/package.json" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
+      <item path="libteol0/teocli.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -244,7 +242,7 @@
       </item>
       <item path="nodejs/src/errno_exeption.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="nodejs/src/libteol0/teocli" ex="false" tool="3" flavor2="0">
+      <item path="nodejs/src/libteol0/teocli.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="nodejs/src/libteol0/teonet_l0_client.h"
             ex="false"
@@ -373,9 +371,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="libteol0/package.json" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
+      <item path="libteol0/teocli.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -437,7 +433,7 @@
       </item>
       <item path="nodejs/src/errno_exeption.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="nodejs/src/libteol0/teocli" ex="false" tool="3" flavor2="0">
+      <item path="nodejs/src/libteol0/teocli.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="nodejs/src/libteol0/teonet_l0_client.c"
             ex="false"
