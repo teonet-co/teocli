@@ -33,17 +33,13 @@ node_modules/
 /nbind/auto.gypi
 /nbind/auto-top.gypi
 /linux/config.guess
-/linux/autom4te.cache/requests
-/linux/autom4te.cache/output.1
+/linux/autom4te.cache
 /linux/COPYING
 /linux/compile
 /linux/INSTALL
-/linux/autom4te.cache/output.0
 /linux/config.log
 /linux/install-sh
 /linux/config.status
-/linux/autom4te.cache/traces.0
-/linux/autom4te.cache/traces.1
 /linux/config.sub
 /linux/aclocal.m4
 /linux/configure
@@ -86,3 +82,4 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
+package-lock.json

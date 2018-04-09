@@ -21,6 +21,7 @@
       <itemPath>emscripten/package.json</itemPath>
     </logicalFolder>
     <logicalFolder name="libteol0" displayName="libteol0" projectFiles="true">
+      <itemPath>libteol0/package.json</itemPath>
       <itemPath>libteol0/teocli</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
@@ -194,6 +195,8 @@
             ex="false"
             tool="3"
             flavor2="0">
+      </item>
+      <item path="libteol0/package.json" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
@@ -369,6 +372,8 @@
             ex="false"
             tool="3"
             flavor2="0">
+      </item>
+      <item path="libteol0/package.json" ex="false" tool="3" flavor2="0">
       </item>
       <item path="libteol0/teocli" ex="false" tool="3" flavor2="0">
       </item>
