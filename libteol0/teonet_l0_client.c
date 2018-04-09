@@ -886,4 +886,14 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
     }
 }
 
+/**
+ * Disconnect from server and free teoLNullConnectData
+ *
+ * @param con Pointer to teoLNullConnectData
+ */
+void teoLNullShutdown(teoLNullConnectData *con) {
+
+    if(con != NULL && con->fd > 0) shutdown(con->fd, SHUT_RDWR);
+}
+
 #undef DEBUG_MSG

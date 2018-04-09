@@ -66,7 +66,6 @@ private:
     inline void disconnect() {
         teoLNullDisconnect(con);
         con = NULL;
-        //std::cout << "Disconnected. Bye.\n";
     }
 
     /**
@@ -150,6 +149,12 @@ public:
         return connected();
     }
 
+    /**
+     * Shutdown connection (disconnect from server)
+     */
+    inline void shutdown() {
+      teoLNullShutdown(con);
+    }
 
     /**
      * Check if this class is connected to L0 server
