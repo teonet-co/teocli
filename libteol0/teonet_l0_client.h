@@ -17,7 +17,7 @@
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.11"
+#define TL0CN_VERSION "0.0.12"
 
 #include <stdint.h>
 
@@ -261,6 +261,7 @@ TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
 TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
+TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd,
