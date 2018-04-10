@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 #AC_PREREQ([2.69])
-AC_INIT([Teocli], [0.0.12])
+AC_INIT([Teocli], [0.0.14])
 
 # Checks for programs.
 AC_PROG_CXX

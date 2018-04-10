@@ -245,35 +245,39 @@ int main(int argc, char** argv) {
     teo::Teocli *cli = new teo::Teocli(parameters.client_name,
         parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 
-    auto reconnect = true;
-    unsigned long num = 0;
+        auto reconnect = true; // Reconnect this client if disconnected
+        unsigned long num = 0; // An index
+        const int timeout = 50; // Select tmeout
+        int attempt = 0; // Reconnect attempt count
 
-    while(reconnect) {
+        while(reconnect) {
 
-        if(cli->connected() > 0) {
+            if(cli->connected() > 0) {
+                
+                attempt = 0;
 
-            const int timeout = 50;
+                #ifdef __EMSCRIPTEN__
+                emscripten_set_main_loop_arg(cli->eventLoopE, cli, 60, 0);
+                #else
+                // Event loop
+                while(cli->eventLoop(timeout)) {
 
-            #ifdef __EMSCRIPTEN__
-            emscripten_set_main_loop_arg(cli->eventLoopE, cli, 60, 0);
-            #else
-            // Event loop
-            while(cli->eventLoop(timeout)) {
+                    // Send Echo command every second
+                    if( !(num % (1000 / timeout)) )
+                        cli->sendEcho(parameters.peer_name, parameters.message);
 
-                // Send Echo command every second
-                if( !(num % (1000 / timeout)) )
-                    cli->sendEcho(parameters.peer_name, parameters.message);
-
-                num++;
+                    num++;
+                }
+                std::cout << "Exit from event loop\n";
+                cli->disconnect();
+                #endif
             }
-            #endif
+            else {
+                std::cout << "Try to reconnect...\n";
+                if(attempt++) cli->sleep(1000);
+                cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb);
+            }
         }
-        else {
-            std::cout << "Try to reconnect...\n";
-            cli->sleep(1000);
-            cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb);
-        }
-    }
 
     #ifdef __EMSCRIPTEN__
     #else

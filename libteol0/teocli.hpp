@@ -60,15 +60,6 @@ private:
     inline void cleanup() { teoLNullCleanup(); }
 
     /**
-     * Disconnect from server and free teoLNullConnectData
-     *
-     */
-    inline void disconnect() {
-        teoLNullDisconnect(con);
-        con = NULL;
-    }
-
-    /**
      * Return pointer to user data
      *
      * @return Pointer to user data, or NULL if not set
@@ -149,6 +140,15 @@ public:
         return connected();
     }
 
+    /**
+     * Disconnect from server and free teoLNullConnectData
+     *
+     */
+    inline void disconnect() {
+        teoLNullDisconnect(con);
+        con = NULL;
+    }
+    
     /**
      * Shutdown connection (disconnect from server)
      */
