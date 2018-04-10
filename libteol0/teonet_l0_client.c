@@ -709,8 +709,11 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
     // Error
     if (rv == -1) {
-        printf("select(fd = %d) handle error %d: %s\n",
-                (int)con->fd , errno, strerror(errno));
+        if (errno == EINTR) {
+            // just an interrupted system call
+        }
+        else printf("select(fd = %d) handle error %d: %s\n", (int)con->fd , 
+                errno, strerror(errno));
     }
 
     // Timeout
@@ -878,8 +881,7 @@ teoLNullConnectData* teoLNullConnect(const char *server, int port) {
  */
 void teoLNullDisconnect(teoLNullConnectData *con) {
 
-    if(con != NULL) {
-
+    if(con != NULL) {        
         if(con->fd > 0) close_socket(con->fd);
         if(con->read_buffer != NULL) free(con->read_buffer);
         free(con);

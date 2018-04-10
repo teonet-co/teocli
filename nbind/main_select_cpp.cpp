@@ -54,6 +54,16 @@ using MessageCb =  std::function<void (const char *from, int cmd,
         const char *data, size_t data_len,  std::vector<uint8_t> &data_binaty)>;
 
 /**
+ * Structure to reconnect room client to another L0 server (command CMD_R_RECONNECT)
+ */
+typedef struct roomClientReconnect {
+
+    uint32_t port;      ///< Port number
+    char data[];        ///< Contain string with: { char IP[], char peer_name[] }
+
+} roomClientReconnect;
+
+/**
  * Application parameters structure
  */
 struct AppParameters {
@@ -134,8 +144,8 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
             std::cout << "Receive " << rc << " bytes: " << cp->data_length <<
                 " bytes data from L0 server, "
                 "from peer '" << cp->peer_name << "', cmd = " << int(cp->cmd) << "\n";
-            
-            
+
+
             const uint8_t *pointer = (const uint8_t*)cp->peer_name + cp->peer_name_length;
             std::vector<uint8_t> vec(pointer, pointer + cp->data_length);
 
@@ -222,6 +232,17 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
                 } break;
 
+                // CMD_L_RECONNECT_TO_L0
+                case 144: {
+                    data = cp->peer_name + cp->peer_name_length;
+                    auto d = (roomClientReconnect*)data;
+                    std::cout << "Got 'Reconnect to another L0 server' command " 
+                            << d->data << ":" << d->port 
+                            << ", peer: '" << d->data + strlen(d->data) + 1 
+                            << "'" << "\n";
+                    cli.shutdown(); 
+                } break;
+
                 default: {
 
                     //std::cout << "Got unknown command\n";
@@ -300,10 +321,10 @@ public:
 
     /**
      * Send echo command
-     * 
+     *
      * @param peer_name Peer name to send to
      * @param msg String with any text
-     * 
+     *
      * @return Length of send data or -1 at error
      */
     inline ssize_t sendEcho(const char *peer_name, const char*msg) {
@@ -312,7 +333,7 @@ public:
 
     /**
      * Send subscribe command to remote peer
-     * 
+     *
      * @param peer_name Peer name to send to
      * @param event Event number to subscribe to (should be more or equal to 0x8000)
      */
@@ -322,7 +343,7 @@ public:
 
     /**
      * Send unsubscribe command to remote peer
-     * 
+     *
      * @param peer_name Peer name to send to
      * @param event Event number to unsubscribe to (should be more or equal to 0x8000)
      */
@@ -332,11 +353,39 @@ public:
 
     /**
      * Get this client name
-     * 
+     *
      * @return  Reference to client name string
      */
     inline const std::string& getClientName() const {
         return cli->getClientName();
+    }
+
+    /**
+     * Send reconnect to l0 command to Test Server which resend it to L0 client
+     * 
+     * @param peer_name
+     * @param ip
+     * @param port
+     * @param peer
+     * @return 
+     */
+    ssize_t sendReconnectToL0(const char *peer_name, const char *ip,
+        uint32_t port, const char *peer) {
+        // Prepare output data
+        size_t ip_len = strlen(ip) + 1;
+        size_t peer_len = strlen(peer) + 1;
+        size_t out_data_len = ip_len + peer_len + sizeof(roomClientReconnect);
+        roomClientReconnect *out_data = (roomClientReconnect *)malloc(out_data_len);
+        out_data->port = port;
+        memcpy(out_data->data, ip, ip_len);
+        memcpy(out_data->data + ip_len, peer, peer_len);
+
+        auto retval = cli->send(144/*CMD_L_RECONNECT_L0*/, peer_name, 
+                (void*)out_data, out_data_len);
+        
+        free(out_data);
+
+        return retval;
     }
 
 private:
@@ -380,15 +429,18 @@ private:
             parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
 
         // Call JS "on connect" callback function with type 0 - initialized
-        on_connect(0, this); 
-        
-        auto reconnect = true;
-        unsigned long num = 0;
+        on_connect(0, this);
+
+        auto reconnect = true; // Reconnect this client if disconnected
+        unsigned long num = 0; // An index
+        int attempt = 0; // Reconnect attempt count
 
         while(reconnect) {
-            
+
             if(cli->connected() > 0) {
                 
+                attempt = 0;
+
                 // Call JS "on connect" callback function with type 0 - initialized
                 on_connect(1, this);
 
@@ -405,12 +457,12 @@ private:
                     num++;
                 }
                 std::cout << "Exit from event loop\n";
-
+                cli->disconnect();
                 #endif
             }
             else {
                 std::cout << "Try to reconnect...\n";
-                cli->sleep(1000);
+                if(attempt++) cli->sleep(1000);
                 cli->connect(tcp_server, tcp_port, &parameters, event_cb);
             }
         }
@@ -434,4 +486,5 @@ NBIND_CLASS(Teo) {
   method(subscribe);
   method(unsubscribe);
   method(getClientName);
+  method(sendReconnectToL0);
 }

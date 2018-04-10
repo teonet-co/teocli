@@ -263,8 +263,7 @@ int main(int argc, char** argv) {
             // Close connection
             teoLNullDisconnect(con);
         }
-        
-        teoLNullSleep(1000);    
+        else teoLNullSleep(1000);    
     }
 
     // Cleanup L0 Client library

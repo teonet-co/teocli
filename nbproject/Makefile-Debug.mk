@@ -36,7 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
-	${OBJECTDIR}/main_select.o
+	${OBJECTDIR}/main_select_cpp.o
 
 
 # C Compiler Flags
@@ -61,17 +61,17 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/teocli ${OBJECTFILES} ${LDLIBSOPTIONS}
 
 ${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0
 	${RM} "$@.d"
 	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_l0_client.o libteol0/teonet_l0_client.c
 
-${OBJECTDIR}/main_select.o: main_select.c
+${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.c
+	$(COMPILE.cc) -g -DHAVE_MINGW -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_cpp.o main_select_cpp.cpp
 
 # Subprojects
 .build-subprojects:

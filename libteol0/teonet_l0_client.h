@@ -17,7 +17,7 @@
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.12"
+#define TL0CN_VERSION "0.0.14"
 
 #include <stdint.h>
 
