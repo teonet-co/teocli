@@ -732,7 +732,6 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
                 send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
             } else if(rc == 0) {
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
-                con->fd = -1;
                 retval = 0;
                 break;
             }
