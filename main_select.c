@@ -31,13 +31,13 @@
  * Created on October 19, 2015, 3:51 PM
  */
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if !(defined(_WIN32) || defined(_WIN64))
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -173,14 +173,14 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     printf("Trip time: %d ms\n\n", trip_time);
 
                 } break;
-                
+
                 case CMD_L_AUTH_LOGIN_ANSWER: {
-                    
+
                     printf("Got answer from authentication server\n");
-                    
+
                     const char *auth_data = (const char *)
                             (cp->peer_name + cp->peer_name_length);
-                    
+
                     // Show data
                     printf("Data: %s\n\n", auth_data);
                 }
@@ -238,14 +238,14 @@ int main(int argc, char** argv) {
 
     // Initialize L0 Client library
     teoLNullInit();
-    
+
     while(1) {
-    
+
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
             event_cb, &param);
 
-        if(con->fd > 0) {
+        if(con->status > 0) {
 
             unsigned long num = 0;
             const int timeout = 50;
@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
             // Close connection
             teoLNullDisconnect(con);
         }
-        else teoLNullSleep(1000);    
+        else teoLNullSleep(1000);
     }
 
     // Cleanup L0 Client library

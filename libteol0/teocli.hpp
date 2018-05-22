@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "teonet_l0_client.h"
 
 namespace teo {
@@ -148,7 +150,7 @@ public:
         teoLNullDisconnect(con);
         con = NULL;
     }
-    
+
     /**
      * Shutdown connection (disconnect from server)
      */
@@ -167,7 +169,7 @@ public:
      * @retval -3 - Client-connect() error
      */
     inline int connected() const {
-        return con == NULL ? 0 : con->fd;
+        return con == NULL ? 0 : con->status;
     }
 
     /**

@@ -30,13 +30,13 @@
  * Created on October 19, 2015, 3:51 PM
  */
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if !(defined(_WIN32) || defined(_WIN64))
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 
     // Connect to L0 server
     teoLNullConnectData *con = teoLNullConnect(TCP_SERVER, TCP_PORT);
-    if(con->fd > 0) {
+    if(con->status > 0) {
 
         // Send (1.1) Initialization packet to L0 server
         ssize_t snd = teoLNullLogin(con, host_name);
