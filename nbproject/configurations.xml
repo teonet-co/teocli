@@ -25,6 +25,11 @@
       <itemPath>libteol0/teocli.hpp</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
+      <itemPath>libteol0/teonet_platform.h</itemPath>
+      <itemPath>libteol0/teonet_socket.c</itemPath>
+      <itemPath>libteol0/teonet_socket.h</itemPath>
+      <itemPath>libteol0/teonet_time.c</itemPath>
+      <itemPath>libteol0/teonet_time.h</itemPath>
     </logicalFolder>
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
       <itemPath>linux/Makefile.am</itemPath>
@@ -202,6 +207,16 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
@@ -374,6 +389,16 @@
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>

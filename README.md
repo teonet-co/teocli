@@ -1,5 +1,7 @@
 # Teonet L0 client library
 
+[![CodeFactor](https://www.codefactor.io/repository/github/teonet-co/teocli/badge/feature/teosock)](https://www.codefactor.io/repository/github/teonet-co/teocli/overview/feature/teosock)
+
 ## Library folders structure description
 
 ### Sources folder
