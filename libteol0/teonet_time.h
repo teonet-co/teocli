@@ -13,7 +13,7 @@
  *
  * @return current time in milliseconds since Unix Epoch.
  *
- * @note On 32-bit linux systems return valie is limited to maximum value of 32-bit signed integer.
+ * @note On 32-bit linux systems return value is limited to maximum value of 32-bit signed integer.
  */
 
 int64_t teotimeGetCurrentTime();
