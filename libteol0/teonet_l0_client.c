@@ -31,8 +31,8 @@
 #include "teonet_time.h"
 
 // Uncomment next line to show debug message
-#define CONNECT_MSG
-#define DEBUG_MSG
+//#define CONNECT_MSG
+//#define DEBUG_MSG
 
 // Internal functions
 //static ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length);
