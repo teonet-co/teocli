@@ -634,28 +634,26 @@ uint8_t get_byte_checksum(void *data, size_t data_length) {
  * @param sd Socket descriptor
  */
 void set_nonblock(int sd) {
-    #if defined(ALLOW_NONBLOCK)
-        #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-        //-------------------------
-        // Set the socket I/O mode: In this case FIONBIO
-        // enables or disables the blocking mode for the
-        // socket based on the numerical value of iMode.
-        // If iMode = 0, blocking is enabled;
-        // If iMode != 0, non-blocking mode is enabled.
+    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
+    //-------------------------
+    // Set the socket I/O mode: In this case FIONBIO
+    // enables or disables the blocking mode for the
+    // socket based on the numerical value of iMode.
+    // If iMode = 0, blocking is enabled;
+    // If iMode != 0, non-blocking mode is enabled.
 
-        int iResult;
-        u_long iMode = 1;
+    int iResult;
+    u_long iMode = 1;
 
-        iResult = ioctlsocket(sd, FIONBIO, &iMode);
-        if (iResult != NO_ERROR)
-          printf("ioctlsocket failed with error: %d\n", iResult);
+    iResult = ioctlsocket(sd, FIONBIO, &iMode);
+    if (iResult != NO_ERROR)
+      printf("ioctlsocket failed with error: %d\n", iResult);
 
-        #else
-        int flags;
+    #else
+    int flags;
 
-        flags = fcntl(sd, F_GETFL, 0);
-        fcntl(sd, F_SETFL, flags | O_NONBLOCK);
-        #endif
+    flags = fcntl(sd, F_GETFL, 0);
+    fcntl(sd, F_SETFL, flags | O_NONBLOCK);
     #endif
 }
 
