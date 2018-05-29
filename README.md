@@ -26,7 +26,7 @@ _See [README](python) in that folder to additional information._
 
 The ```TeocliJS``` suproject content code to connect to Teonet with websocket 
 from Java Script or Node.js.  
-_See the [TeocliJS](https://gitlab.ksproject.org/teonet/TeocliJS) project._
+_See the [TeocliJS](https://github.com/teonet-co/TeocliJS) project._
 
 The ```teonet-client``` project located at nodejs folder is native node.js 
 module.  
@@ -66,4 +66,4 @@ L0 client: ```examples/teol0cli C1 127.0.0.1 9000 teo-str "Hello world!"```
   
 ### L0 Client packet structure:  
   
-![l0-client-packet__1_](https://gitlab.ksproject.org/teonet/teonet/uploads/3db51c37f422e8dd91912a0de9122a0a/l0-client-packet__1_.png)
+![l0-client-packet__1_](https://raw.githubusercontent.com/wiki/teonet-co/teonet/images/l0-server-01.png?token=ABaIc0O_ceBJPp81FDpQpylfXfwagrTvks5bFwN2wA%3D%3D)
