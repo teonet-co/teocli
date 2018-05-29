@@ -35,10 +35,11 @@ teosockConnectResult teosockConnect(teonetSocket socket, const char* server, uin
     memset(&serveraddr, 0, sizeof(struct sockaddr_in));
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port = htons(port);
-    serveraddr.sin_addr.s_addr = inet_addr(server);
+
+    int result = inet_pton(AF_INET, server, &serveraddr.sin_addr);
 
     // Resolve host address if needed.
-    if (serveraddr.sin_addr.s_addr == (unsigned long)INADDR_NONE) {
+    if (result != 1) {
         struct hostent* hostp = gethostbyname(server);
         if (hostp == NULL) {
             return TEOSOCK_CONNECT_HOST_NOT_FOUND;
@@ -48,7 +49,7 @@ teosockConnectResult teosockConnect(teonetSocket socket, const char* server, uin
     }
 
     // Connect to server.
-    int result = connect(socket, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+    result = connect(socket, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
     if (result != 0 && errno != EINPROGRESS) {
         return TEOSOCK_CONNECT_FAILED;
     }
