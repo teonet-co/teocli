@@ -5,14 +5,9 @@
       <logicalFolder name="test" displayName="test" projectFiles="true">
         <logicalFolder name="echo_server" displayName="echo_server" projectFiles="true">
           <itemPath>emscripten/test/echo_server/emscripten.sh</itemPath>
-          <itemPath>emscripten/test/echo_server/package-lock.json</itemPath>
           <itemPath>emscripten/test/echo_server/package.json</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_client.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client.js</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_server.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server.js</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_msg.h</itemPath>
         </logicalFolder>
       </logicalFolder>
@@ -166,32 +161,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
             ex="false"
             tool="3"
             flavor2="0">
@@ -339,17 +309,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
             ex="false"
             tool="3"
             flavor2="0">
@@ -359,24 +319,9 @@
             tool="0"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/test_sockets_echo_server.c"
             ex="false"
             tool="0"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
-            ex="false"
-            tool="3"
             flavor2="0">
       </item>
       <item path="emscripten/test/echo_server/test_sockets_msg.h"
