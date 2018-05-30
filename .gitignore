@@ -1,12 +1,14 @@
+*.o
+*.la
+*.lo
+nbproject/private/
+package-lock.json
 .dep.inc
-/.deps/
+.deps/
 /.dirstamp
 /build/
 /dist/
 /docs/
-/main.o
-/main_select.o
-/nbproject/private/
 /linux/Makefile
 /linux/Makefile.in
 /libteol0/.deps/
@@ -82,4 +84,3 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
-package-lock.json
