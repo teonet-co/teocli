@@ -94,7 +94,7 @@ typedef struct teoLNullConnectData {
     void *read_buffer;          ///< Pointer to saved buffer
     size_t read_buffer_ptr;     ///< Pointer in read buffer
     size_t read_buffer_size;    ///< Read buffer size
-    size_t last_packet_ptr;     ///< Last recived packet pointer (length)
+    size_t last_packet_ptr;     ///< Last received packet pointer (length)
 
     teoLNullEventsCb event_cb;  ///< Event callback function
     void *user_data;            ///< User data
@@ -114,7 +114,7 @@ typedef struct ksnet_arp_data {
 //    char addr[48];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
-    double last_activity;           ///< Last time receved data from peer
+    double last_activity;           ///< Last time received data from peer
     double last_triptime_send;      ///< Last time when triptime request send
     double last_triptime_got;       ///< Last time when triptime received
 

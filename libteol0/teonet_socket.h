@@ -100,20 +100,20 @@ ssize_t teosockSend(teonetSocket socket, const char* data, size_t length);
 typedef enum teosockSelectReadResult {
     TEOSOCK_SELECT_READ_READY = 1,  ///< Socket have data ready to be read.
     TEOSOCK_SELECT_READ_TIMEOUT = 0,  ///< No data was received before reaching timeout.
-    TEOSOCK_SELECT_READ_ERROR = -1,  ///< An error occured.
+    TEOSOCK_SELECT_READ_ERROR = -1,  ///< An error occurred.
 } teosockSelectReadResult;
 
 /**
  * Determines the status of the socket, waiting if necessary, to perform synchronous read.
  *
  * @param socket Socket descriptor obtained using teosockCreateTcp() function.
- * @param timeout The amount of time to wait before rturning timeout in milliseconds.
+ * @param timeout The amount of time to wait before returning timeout, in milliseconds.
  *
  * @returns Result of operation.
  *
  * @retval TEOSOCK_SELECT_READ_READY if socket have data ready to be read.
  * @retval TEOSOCK_SELECT_READ_TIMEOUT if no data was received before reaching timeout.
- * @retval TEOSOCK_SELECT_READ_ERROR if an error occured.
+ * @retval TEOSOCK_SELECT_READ_ERROR if an error occurred.
  */
 teosockSelectReadResult teosockSelectRead(teonetSocket socket, int timeout);
 
@@ -124,7 +124,7 @@ teosockSelectReadResult teosockSelectRead(teonetSocket socket, int timeout);
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
 int teosockClose(teonetSocket socket);
@@ -148,7 +148,7 @@ typedef enum teosockShutdownMode {
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
 int teosockShutdown(teonetSocket socket, teosockShutdownMode mode);
@@ -160,7 +160,7 @@ int teosockShutdown(teonetSocket socket, teosockShutdownMode mode);
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
 int teosockSetNonblock(teonetSocket socket);
@@ -172,7 +172,7 @@ int teosockSetNonblock(teonetSocket socket);
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  *
  * @warning As stated here https://msdn.microsoft.com/en-us/library/ms740476(v=vs.85).aspx
@@ -191,7 +191,7 @@ int teosockSetTcpNodelay(teonetSocket socket);
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
 int teosockInit();
@@ -205,7 +205,7 @@ int teosockInit();
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successsfully.
+ * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
 int teosockCleanup();
