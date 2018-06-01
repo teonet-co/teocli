@@ -11,6 +11,7 @@
 // TODO: Stop using deprecated functions and remove this define.
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
 #include <fcntl.h>
