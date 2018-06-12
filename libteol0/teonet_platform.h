@@ -18,7 +18,10 @@
 #endif
 
 // Determine current compiler type.
-#if defined(__GNUC__)
+#if defined(__MINGW32__)
+// Defined if current compiler is MINGW. Use this for compiler-dependent code.
+#define TEONET_COMPILER_MINGW
+#elif defined(__GNUC__)
 // Defined if current compiler is GCC. Use this for compiler-dependent code.
 #define TEONET_COMPILER_GCC
 #elif defined(_MSC_VER)
@@ -37,6 +40,9 @@
 #define TEONET_OS_WINDOWS
 #undef TEONET_OS_WINDOWS
 
+// Defined if current compiler is MINGW. Use this for compiler-dependent code.
+#define TEONET_COMPILER_MINGW
+#undef TEONET_COMPILER_MINGW
 /// Defined if current compiler is GCC. Use this for compiler-dependent code.
 #define TEONET_COMPILER_GCC
 #undef TEONET_COMPILER_GCC
