@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if defined(TEONET_OS_LINUX)
+#if defined(TEONET_OS_LINUX) || defined(TEONET_OS_MACOS)
 #include <netdb.h>
 #include <unistd.h>
 #endif
