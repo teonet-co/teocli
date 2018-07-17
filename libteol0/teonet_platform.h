@@ -13,6 +13,13 @@
 #elif defined(_WIN32)
 // Defined if target OS is Windows.
 #define TEONET_OS_WINDOWS
+#elif defined(__APPLE__)
+#include <TargetConditionals.h>
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#define TEONET_OS_IOS
+#else
+#define TEONET_OS_MACOS
+#endif
 #else
 #error Unsupported target OS.
 #endif
