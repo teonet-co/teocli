@@ -24,6 +24,10 @@
 #include <unistd.h>
 #endif
 
+#if defined(TEONET_OS_IOS)
+#include <sys/time.h>  // To be able to use select() function.
+#endif
+
 // Creates a TCP socket.
 teonetSocket teosockCreateTcp() {
     return socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
