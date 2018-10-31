@@ -116,8 +116,17 @@ typedef struct ksnet_arp_data {
     double monitor_time;            ///< Monitor ping time
 
     double connected_time;          ///< Time when peer was connected to this peer
+    
+//    char *type;                     ///< Peer type
 
 } ksnet_arp_data;
+
+typedef struct ksnet_arp_data_ext {
+
+    ksnet_arp_data data;
+    char *type;
+    
+} ksnet_arp_data_ext;
 
 #define DIG_IN_TEO_VER 3
 
