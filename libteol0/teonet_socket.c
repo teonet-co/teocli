@@ -73,6 +73,97 @@ teosockConnectResult teosockConnect(teonetSocket socket, const char* server, uin
     return TEOSOCK_CONNECT_SUCCESS;
 }
 
+// Establishes a connection to a specified server.
+teosockConnectResult teosockConnectTimeout(teonetSocket socket, const char* server, uint16_t port, int timeout) {
+    struct sockaddr_in serveraddr;
+
+    memset(&serveraddr, 0, sizeof(struct sockaddr_in));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_port = htons(port);
+
+#if !defined(TEONET_COMPILER_MINGW)
+    int result = inet_pton(AF_INET, server, &serveraddr.sin_addr);
+
+    // Resolve host address if needed.
+    if (result != 1) {
+        struct hostent* hostp = gethostbyname(server);
+        if (hostp == NULL) {
+            return TEOSOCK_CONNECT_HOST_NOT_FOUND;
+        }
+
+        memcpy(&serveraddr.sin_addr, hostp->h_addr_list[0], sizeof(serveraddr.sin_addr));
+    }
+#else
+    // MinGW compiler still doest not support inet_pton().
+    serveraddr.sin_addr.s_addr = inet_addr(server);
+
+    // Resolve host address if needed.
+    if (serveraddr.sin_addr.s_addr == (unsigned long)INADDR_NONE) {
+        struct hostent* hostp = gethostbyname(server);
+        if (hostp == NULL) {
+            return TEOSOCK_CONNECT_HOST_NOT_FOUND;
+        }
+
+        memcpy(&serveraddr.sin_addr, hostp->h_addr_list[0], sizeof(serveraddr.sin_addr));
+    }
+#endif
+
+    int set_non_locking_result = teosockSetBlockingMode(socket, TEOSOCK_NON_BLOCKING_MODE);
+
+    if (set_non_locking_result == TEOSOCK_SOCKET_ERROR) {
+        teosockClose(socket);
+        return TEOSOCK_CONNECT_FAILED;
+    }
+
+    // Connect to server.
+    int connect_result = connect(socket, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+
+    if (connect_result == 0) {
+        return TEOSOCK_CONNECT_SUCCESS;
+    }
+    else {
+        int in_progress = 0;
+
+#if defined(TEONET_OS_WINDOWS)
+        int error_code = WSAGetLastError();
+
+        if (error_code == WSAEWOULDBLOCK) {
+            in_progress = 1;
+        }
+#else
+        int error_code = errno;
+
+        if (error_code == EINPROGRESS) {
+            in_progress = 1;
+        }
+#endif
+
+        if (in_progress != 1) {
+            teosockClose(socket);
+            return TEOSOCK_CONNECT_FAILED;
+        }
+    }
+
+    int select_result = teosockSelect(socket, TEOSOCK_SELECT_MODE_WRITE | TEOSOCK_SELECT_MODE_ERROR, timeout);
+
+    if (select_result == TEOSOCK_SELECT_TIMEOUT || select_result == TEOSOCK_SELECT_ERROR) {
+        teosockClose(socket);
+        return TEOSOCK_CONNECT_FAILED;
+    }
+
+    int error = 0;
+    socklen_t error_len = sizeof(error);
+
+    int getsockopt_result = getsockopt(socket, SOL_SOCKET, SO_ERROR, (char*)&error, &error_len);
+
+    if (getsockopt_result == TEOSOCK_SOCKET_ERROR || error != 0) {
+        teosockClose(socket);
+        return TEOSOCK_CONNECT_FAILED;
+    }
+
+    return TEOSOCK_CONNECT_SUCCESS;
+}
+
 // Receives data from a connected socket.
 ssize_t teosockRecv(teonetSocket socket, char* data, size_t length) {
 #if defined(TEONET_OS_WINDOWS)
@@ -101,28 +192,34 @@ ssize_t teosockSend(teonetSocket socket, const char* data, size_t length) {
 #endif
 }
 
-// Determines the status of the socket, waiting if necessary, to perform synchronous read.
-teosockSelectReadResult teosockSelectRead(teonetSocket socket, int timeout) {
-    fd_set readfds;
+// Determines the status of the socket, waiting if necessary, to perform synchronous operation.
+teosockSelectResult teosockSelect(teonetSocket socket, int status_mask, int timeout) {
+    fd_set socket_fd_set;
     struct timeval timeval_timeout;
 
-    memset(&readfds, 0, sizeof(readfds));
+    memset(&socket_fd_set, 0, sizeof(socket_fd_set));
     memset(&timeval_timeout, 0, sizeof(timeval_timeout));
-    timeval_timeout.tv_usec = timeout * 1000;
+
+    timeval_timeout.tv_sec = timeout / 1000;
+    timeval_timeout.tv_usec = (timeout % 1000) * 1000;
 
     // Create a descriptor set with specified socket.
-    FD_ZERO(&readfds);
-    FD_SET(socket, &readfds);
+    FD_ZERO(&socket_fd_set);
+    FD_SET(socket, &socket_fd_set);
+
+    fd_set* read_fd_set = (status_mask & TEOSOCK_SELECT_MODE_READ) ? &socket_fd_set : NULL;
+    fd_set* write_fd_set = (status_mask & TEOSOCK_SELECT_MODE_WRITE) ? &socket_fd_set : NULL;
+    fd_set* error_fd_set = (status_mask & TEOSOCK_SELECT_MODE_ERROR) ? &socket_fd_set : NULL;
 
 #if defined(TEONET_OS_WINDOWS)
-    int result = select(0, &readfds, NULL, NULL, &timeval_timeout);
+    int result = select(0, read_fd_set, write_fd_set, error_fd_set, &timeval_timeout);
 #else
-    int result = select(socket + 1, &readfds, NULL, NULL, &timeval_timeout);
+    int result = select(socket + 1, read_fd_set, write_fd_set, error_fd_set, &timeval_timeout);
 #endif
 
     // Make sure that return value is correct.
     if (result > 0) {
-        result = TEOSOCK_SELECT_READ_READY;
+        result = TEOSOCK_SELECT_READY;
     }
 
     return result;
@@ -142,10 +239,10 @@ int teosockShutdown(teonetSocket socket, teosockShutdownMode mode) {
     return shutdown(socket, mode);
 }
 
-// Enables nonblocking mode on specified socket.
-int teosockSetNonblock(teonetSocket socket) {
+// Sets blocking or non-blocking mode for specified socket.
+int teosockSetBlockingMode(teonetSocket socket, teosockBlockingMode blocking_mode) {
 #if defined(TEONET_OS_WINDOWS)
-    u_long mode = 1;  // != 0 to enable non-blocking mode.
+    u_long mode = (u_long)blocking_mode;
 
     return ioctlsocket(socket, FIONBIO, &mode);
 #else
@@ -154,7 +251,25 @@ int teosockSetNonblock(teonetSocket socket) {
     if (flags == -1) {
         return TEOSOCK_SOCKET_ERROR;
     } else {
-        return fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+        int new_flags;
+        if (blocking_mode == TEOSOCK_BLOCKING_MODE) {
+            new_flags = flags & ~O_NONBLOCK;
+        } else {
+            new_flags = flags | O_NONBLOCK;
+        }
+
+        int result;
+        if (new_flags == flags) {
+            result = TEOSOCK_SOCKET_SUCCESS;
+        } else {
+            result = fcntl(socket, F_SETFL, new_flags);
+
+            if (result != TEOSOCK_SOCKET_ERROR) {
+                result = TEOSOCK_SOCKET_SUCCESS;
+            }
+        }
+
+        return result;
     }
 #endif
 }

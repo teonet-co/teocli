@@ -518,10 +518,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
     int rv, retval = 1;
 
-    rv = teosockSelectRead(con->fd, timeout);
+    rv = teosockSelect(con->fd, TEOSOCK_SELECT_MODE_READ, timeout);
 
     // Error
-    if (rv == TEOSOCK_SELECT_READ_ERROR) {
+    if (rv == TEOSOCK_SELECT_ERROR) {
         int error = errno;
         if (error == EINTR) {
             // just an interrupted system call
@@ -531,7 +531,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     }
 
     // Timeout
-    else if(rv == TEOSOCK_SELECT_READ_TIMEOUT) { // Idle or Timeout event
+    else if(rv == TEOSOCK_SELECT_TIMEOUT) { // Idle or Timeout event
 
         send_l0_event(con, EV_L_IDLE, NULL, 0);
     }
@@ -607,7 +607,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, uint16_t port,
     printf("Connecting to the server %s at port %" PRIu16 " ...\n", server, port);
     #endif
 
-    result = teosockConnect(con->fd, server, port);
+    result = teosockConnectTimeout(con->fd, server, port, 5000);
 
     if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
         printf("HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
@@ -631,9 +631,6 @@ teoLNullConnectData* teoLNullConnectE(const char *server, uint16_t port,
         printf("Connection established ...\n");
         #endif
     }
-
-    // Set non block mode
-    teosockSetNonblock(con->fd);
 
     // Set TCP_NODELAY option
     teosockSetTcpNodelay(con->fd);

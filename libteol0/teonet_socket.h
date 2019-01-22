@@ -72,6 +72,24 @@ typedef enum teosockConnectResult {
 teosockConnectResult teosockConnect(teonetSocket socket, const char* server, uint16_t port);
 
 /**
+ * Establishes a connection to a specified server.
+ *
+ * @param socket Socket descriptor obtained using teosockCreateTcp() function.
+ * @param server Server IP address or domain name.
+ * @param port Port to connect to.
+ * @param timeout Maximum amount of time to wait before returning error, in milliseconds.
+ *
+ * @returns Result of operation.
+ *
+ * @retval TEOSOCK_CONNECT_SUCCESS if connection successfully established.
+ * @retval TEOSOCK_CONNECT_HOST_NOT_FOUND if failed to resolve host address.
+ * @retval TEOSOCK_CONNECT_FAILED if failed to connect to server.
+ *
+ * @note Socket will be left in non-blocking mode.
+ */
+teosockConnectResult teosockConnectTimeout(teonetSocket socket, const char* server, uint16_t port, int timeout);
+
+/**
  * Receives data from a connected socket.
  *
  * @param socket Socket descriptor obtained using teosockCreateTcp() function.
@@ -96,26 +114,34 @@ ssize_t teosockRecv(teonetSocket socket, char* data, size_t length);
  */
 ssize_t teosockSend(teonetSocket socket, const char* data, size_t length);
 
-/// Result enumeration for teosockSelectRead() function.
-typedef enum teosockSelectReadResult {
-    TEOSOCK_SELECT_READ_READY = 1,  ///< Socket have data ready to be read.
-    TEOSOCK_SELECT_READ_TIMEOUT = 0,  ///< No data was received before reaching timeout.
-    TEOSOCK_SELECT_READ_ERROR = -1,  ///< An error occurred.
-} teosockSelectReadResult;
+/// Enumeration with bit flags for status masks for teosockSelect function.
+typedef enum teosockSelectMode {
+    TEOSOCK_SELECT_MODE_READ = 1 << 0,  ///< Check socket for readability.
+    TEOSOCK_SELECT_MODE_WRITE = 1 << 1,  ///< Check socket for writability.
+    TEOSOCK_SELECT_MODE_ERROR = 1 << 2,  ///< Check socket for errors.
+} teosockSelectMode;
+
+/// Result enumeration for teosockSelect() function.
+typedef enum teosockSelectResult {
+    TEOSOCK_SELECT_READY = 1,  ///< Socket is ready or have data to be read.
+    TEOSOCK_SELECT_TIMEOUT = 0,  ///< Socket is not ready or no data was received before reaching timeout.
+    TEOSOCK_SELECT_ERROR = -1,  ///< An error occurred.
+} teosockSelectResult;
 
 /**
- * Determines the status of the socket, waiting if necessary, to perform synchronous read.
+ * Determines the status of the socket, waiting if necessary, to perform synchronous operation.
  *
  * @param socket Socket descriptor obtained using teosockCreateTcp() function.
+ * @param status_mask A combination of teosockSelectMode flags defining modes to check.
  * @param timeout The amount of time to wait before returning timeout, in milliseconds.
  *
  * @returns Result of operation.
  *
- * @retval TEOSOCK_SELECT_READ_READY if socket have data ready to be read.
- * @retval TEOSOCK_SELECT_READ_TIMEOUT if no data was received before reaching timeout.
- * @retval TEOSOCK_SELECT_READ_ERROR if an error occurred.
+ * @retval TEOSOCK_SELECT_READY if socket have data ready to be read.
+ * @retval TEOSOCK_SELECT_TIMEOUT if no data was received before reaching timeout.
+ * @retval TEOSOCK_SELECT_ERROR if an error occurred.
  */
-teosockSelectReadResult teosockSelectRead(teonetSocket socket, int timeout);
+teosockSelectResult teosockSelect(teonetSocket socket, int status_mask, int timeout);
 
 /**
  * Closes a socket.
@@ -153,17 +179,26 @@ typedef enum teosockShutdownMode {
  */
 int teosockShutdown(teonetSocket socket, teosockShutdownMode mode);
 
+/// Enumeration for specifying socket blocking mode in teosockShutdown() function.
+typedef enum teosockBlockingMode {
+    /// Set socket to blocking mode.
+    TEOSOCK_BLOCKING_MODE = 0,
+    /// Set socket to non-blocking mode.
+    TEOSOCK_NON_BLOCKING_MODE = 1,
+} teosockBlockingMode;
+
 /**
- * Enables nonblocking mode on a socket.
+ * Set blocking or non-blocking mode on a socket.
  *
  * @param socket Socket descriptor obtained using teosockCreateTcp() function.
+ * @param blocking_mode Blocking mode to set socket to.
  *
  * @returns Result of operation.
  *
  * @retval TEOSOCK_SOCKET_SUCCESS if operation completed successfully.
  * @retval TEOSOCK_SOCKET_ERROR if operation failed.
  */
-int teosockSetNonblock(teonetSocket socket);
+int teosockSetBlockingMode(teonetSocket socket, teosockBlockingMode blocking_mode);
 
 /**
  * Set TCP_NODELAY option on a socket.
