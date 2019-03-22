@@ -36,6 +36,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
+	${OBJECTDIR}/libteol0/teonet_socket.o \
+	${OBJECTDIR}/libteol0/teonet_time.o \
 	${OBJECTDIR}/main_select_cpp.o
 
 
@@ -67,6 +69,16 @@ ${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0
 	${RM} "$@.d"
 	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_l0_client.o libteol0/teonet_l0_client.c
+
+${OBJECTDIR}/libteol0/teonet_socket.o: libteol0/teonet_socket.c
+	${MKDIR} -p ${OBJECTDIR}/libteol0
+	${RM} "$@.d"
+	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_socket.o libteol0/teonet_socket.c
+
+${OBJECTDIR}/libteol0/teonet_time.o: libteol0/teonet_time.c
+	${MKDIR} -p ${OBJECTDIR}/libteol0
+	${RM} "$@.d"
+	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_time.o libteol0/teonet_time.c
 
 ${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}

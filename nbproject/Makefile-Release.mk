@@ -38,6 +38,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_client.o \
 	${OBJECTDIR}/emscripten/test/echo_server/test_sockets_echo_server.o \
 	${OBJECTDIR}/libteol0/teonet_l0_client.o \
+	${OBJECTDIR}/libteol0/teonet_socket.o \
+	${OBJECTDIR}/libteol0/teonet_time.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/main_cpp.o \
 	${OBJECTDIR}/main_select.o \
@@ -92,6 +94,16 @@ ${OBJECTDIR}/libteol0/teonet_l0_client.o: libteol0/teonet_l0_client.c
 	${MKDIR} -p ${OBJECTDIR}/libteol0
 	${RM} "$@.d"
 	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_l0_client.o libteol0/teonet_l0_client.c
+
+${OBJECTDIR}/libteol0/teonet_socket.o: libteol0/teonet_socket.c
+	${MKDIR} -p ${OBJECTDIR}/libteol0
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_socket.o libteol0/teonet_socket.c
+
+${OBJECTDIR}/libteol0/teonet_time.o: libteol0/teonet_time.c
+	${MKDIR} -p ${OBJECTDIR}/libteol0
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libteol0/teonet_time.o libteol0/teonet_time.c
 
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}

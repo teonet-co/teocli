@@ -5,14 +5,9 @@
       <logicalFolder name="test" displayName="test" projectFiles="true">
         <logicalFolder name="echo_server" displayName="echo_server" projectFiles="true">
           <itemPath>emscripten/test/echo_server/emscripten.sh</itemPath>
-          <itemPath>emscripten/test/echo_server/package-lock.json</itemPath>
           <itemPath>emscripten/test/echo_server/package.json</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_client.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client.js</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_server.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server.js</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_msg.h</itemPath>
         </logicalFolder>
       </logicalFolder>
@@ -25,6 +20,11 @@
       <itemPath>libteol0/teocli.hpp</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
+      <itemPath>libteol0/teonet_platform.h</itemPath>
+      <itemPath>libteol0/teonet_socket.c</itemPath>
+      <itemPath>libteol0/teonet_socket.h</itemPath>
+      <itemPath>libteol0/teonet_time.c</itemPath>
+      <itemPath>libteol0/teonet_time.h</itemPath>
     </logicalFolder>
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
       <itemPath>linux/Makefile.am</itemPath>
@@ -161,32 +161,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
             ex="false"
             tool="3"
             flavor2="0">
@@ -201,6 +176,16 @@
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
@@ -324,17 +309,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
             ex="false"
             tool="3"
             flavor2="0">
@@ -344,24 +319,9 @@
             tool="0"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/test_sockets_echo_server.c"
             ex="false"
             tool="0"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
-            ex="false"
-            tool="3"
             flavor2="0">
       </item>
       <item path="emscripten/test/echo_server/test_sockets_msg.h"
@@ -374,6 +334,16 @@
       <item path="libteol0/teonet_l0_client.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>

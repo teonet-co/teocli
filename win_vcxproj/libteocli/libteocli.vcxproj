@@ -18,6 +18,18 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\libteol0\teocli.hpp" />
+    <ClInclude Include="..\..\libteol0\teonet_l0_client.h" />
+    <ClInclude Include="..\..\libteol0\teonet_platform.h" />
+    <ClInclude Include="..\..\libteol0\teonet_socket.h" />
+    <ClInclude Include="..\..\libteol0\teonet_time.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\libteol0\teonet_l0_client.c" />
+    <ClCompile Include="..\..\libteol0\teonet_socket.c" />
+    <ClCompile Include="..\..\libteol0\teonet_time.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A13FB07-1FC3-4DFF-A546-711B0780D65A}</ProjectGuid>
     <RootNamespace>libteocli</RootNamespace>
@@ -71,7 +83,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <UndefinePreprocessorDefinitions>TEOCLI_EXPORTS</UndefinePreprocessorDefinitions>
@@ -86,7 +98,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <UndefinePreprocessorDefinitions>TEOCLI_EXPORTS</UndefinePreprocessorDefinitions>
@@ -134,13 +146,6 @@
       <AdditionalDependencies>Ws2_32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\libteol0\teonet_l0_client.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\libteol0\teonet_l0_client.h" />
-    <ClInclude Include="..\..\libteol0\teocli.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
