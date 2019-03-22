@@ -4,8 +4,8 @@ AM_CXXFLAGS = -std=c++11
 
 lib_LTLIBRARIES = libteocli.la # libtrudp.la
 teocliincludedir=$(includedir)/teocli
-nobase_teocliinclude_HEADERS = ../libteol0/teonet_l0_client.h
-libteocli_la_SOURCES = ../libteol0/teonet_l0_client.c
+nobase_teocliinclude_HEADERS = ../libteol0/teonet_l0_client.h ../libteol0/teonet_socket.h ../libteol0/teonet_time.h ../libteol0/teonet_platform.h
+libteocli_la_SOURCES = ../libteol0/teonet_l0_client.c  ../libteol0/teonet_socket.c ../libteol0/teonet_time.c
 libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 7:0:0 
 	
 #libtrudp_la_SOURCES = \

@@ -1,6 +1,6 @@
 {
   "name": "teocli-l0",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "description": "Teonet native C/C++ client core",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.ksproject.org/teonet/teocli/tree/master/libteol0"
+    "url": "https://github.com/teonet-co/teocli/tree/master/libteol0"
   },
   "keywords": [
     "teonet",

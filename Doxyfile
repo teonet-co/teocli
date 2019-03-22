@@ -24,7 +24,7 @@ PROJECT_NAME           = "Teonet L0 client connector library"
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.0.1 
+PROJECT_NUMBER         = 0.0.17
 #$(VERSION)
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
