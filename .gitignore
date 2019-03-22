@@ -6,7 +6,7 @@
 /docs/
 /main.o
 /main_select.o
-/nbproject/private/
+nbproject/
 /linux/Makefile
 /linux/Makefile.in
 /libteol0/.deps/
