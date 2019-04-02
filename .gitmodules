@@ -1,0 +1,3 @@
+[submodule "libtrudp"]
+	path = libtrudp
+	url = https://github.com/teonet-co/trudp.git
