@@ -56,6 +56,10 @@
 #define RECONNECT_AFTER 3000000 // uSec (mSec * 1000)
 #define SHOW_STATISTIC_AFTER 500000 // uSec (mSec * 1000)
 
+// Send L0 event to L0 event loop
+void* _param = NULL;
+#define send_l0_event(tcd, event, data, data_length, user_data) \
+event_cb(tcd, event, data, data_length, _param);
 
 /**
  * Show error and exit
@@ -106,6 +110,8 @@ struct app_parameters {
 
 };
 
+static const int BUFFER_SIZE = 2048;
+
 /**
  * Teonet L0 client event callback
  *
@@ -115,7 +121,7 @@ struct app_parameters {
  * @param data_len
  * @param user_data
  */
-void event_cb(void *con, teoLNullEvents event, void *data,
+void event_cb(void *tcd, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) {
 
     const struct app_parameters *param = user_data;
@@ -129,29 +135,35 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
                 printf("Successfully connect to server\n");
 
-                // Send (1) Initialization packet to L0 server
-                ssize_t snd = teoLNullLogin(con, param->host_name);
-                if(snd == -1) perror(strerror(errno));
-                printf("\nSend %d bytes packet to L0 server, "
-                       "Initialization packet\n",
-                       (int)snd);
+//                // Send (1) Initialization packet to L0 server
+//                ssize_t snd = teoLNullLogin(con, param->host_name);
+//                if(snd == -1) perror(strerror(errno));
+//                printf("\nSend %d bytes packet to L0 server, "
+//                       "Initialization packet\n",
+//                       (int)snd);
 
                 // Send (2) peer list request to peer, command CMD_L_PEERS
-                snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+                //snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+                
+                //ssize_t snd = 0;
+                char buf[BUFFER_SIZE];
+                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_PEERS, param->peer_name, "", 1);                
+                ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);                
+                                
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
 
-                // Send (3) echo request to peer, command CMD_L_ECHO
-                //
-                // Add current time to the end of message (it should be return
-                // back by server)
-                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                if(snd == -1) perror(strerror(errno));
-                printf("Send %d bytes packet to L0 server to peer %s, "
-                       "cmd = %d (CMD_L_ECHO), "
-                       "data: %s\n",
-                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+//                // Send (3) echo request to peer, command CMD_L_ECHO
+//                //
+//                // Add current time to the end of message (it should be return
+//                // back by server)
+//                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
+//                if(snd == -1) perror(strerror(errno));
+//                printf("Send %d bytes packet to L0 server to peer %s, "
+//                       "cmd = %d (CMD_L_ECHO), "
+//                       "data: %s\n",
+//                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
 
                 // Show empty line
                 printf("\n");
@@ -258,7 +270,6 @@ static int remote_port_i;
 
 // Read buffer
 static char *buffer;
-static const int BUFFER_SIZE = 2048;
 
 /**
  * TR-UDP event callback
@@ -432,6 +443,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
                 trudpChannelSendData(tcd, cp, data_length);                
             }
+            else send_l0_event(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + cp->data_length + cp->peer_name_length, NULL);
             
             
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
@@ -622,6 +634,8 @@ static trudpChannelData *trudpLNullConnect(trudpData *td, const char * host_name
     fprintf(stderr, "Connecting to %s:%u:%u\n", remote_address, remote_port_i, 0);
     connected_flag = 1;
     
+    tcd->fd = 1;
+    send_l0_event(tcd, EV_L_CONNECTED, &tcd->fd, sizeof(tcd->fd), NULL);
     //if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
 
     // Free buffer
@@ -678,6 +692,7 @@ int main(int argc, char** argv) {
     
     // Connect to L0 TR-UDP server
     // Bind UDP port and get FD (start listening at port)
+    _param = &param;
     int port = 9090; //atoi(o_local_port);
     int fd = trudpUdpBindRaw(&port, 1);
     if(fd <= 0) die("Can't bind UDP port ...\n");
