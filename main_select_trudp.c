@@ -269,8 +269,8 @@ static const int BUFFER_SIZE = 2048;
  * @param data_length
  * @param user_data
  */
-static void event_cb_trudp(void *tcd_pointer, int event, void *data, 
-        size_t data_length, void *user_data) {
+static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
+        void *user_data) {
 
     trudpChannelData *tcd = (trudpChannelData *)tcd_pointer;
 
@@ -318,9 +318,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
             fprintf(stderr,
               "Got TRU_RESET packet from channel %s\n",
               key);
-            
-            connected_flag = 0;
 
+            //connected_flag = 0;
         } break;
 
         // SEND_RESET event
@@ -412,7 +411,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_DATA: {
 
-            char *key = trudpChannelMakeKey(tcd);            
+            char *key = trudpChannelMakeKey(tcd);
             teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
                         
             debug("Got %d byte data at channel %s, id=%u, from: %s, data: %s\n", 
@@ -433,7 +432,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
                 trudpChannelSendData(tcd, cp, data_length);                
             }
-
+            
             
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
 //                if(o.debug) {
@@ -503,7 +502,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
             }
 
             #if USE_LIBEV
-            trudp_start_send_queue_cb(&psd, 0);
+            trudpSendQueueCbStart(&psd, 0);
             #endif
             
         } break;
@@ -518,7 +517,7 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
  * @param td Pointer to trudpData
  * @param delay Default read data timeout
  */
-static void network_select_loop(trudpData *td, int timeout) {
+static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
 
     int rv = 1;
     fd_set rfds, wfds;
@@ -601,7 +600,7 @@ static void network_select_loop(trudpData *td, int timeout) {
  * @param td
  * @return
  */
-static trudpChannelData *connectToPeer(trudpData *td, const char * host_name) {
+static trudpChannelData *trudpLNullConnect(trudpData *td, const char * host_name) {
 
     trudpChannelData *tcd = NULL;
     
@@ -687,7 +686,7 @@ int main(int argc, char** argv) {
     // Initialize TR-UDP
     remote_address = (char*)param.tcp_server;
     remote_port_i = param.tcp_port;
-    trudpData *td = trudpInit(fd, port, event_cb_trudp, NULL);
+    trudpData *td = trudpInit(fd, port, trudpEventCback, NULL);
     if(td->fd > 0) {
         
         printf("TR-UDP port created\n");
@@ -710,7 +709,7 @@ int main(int argc, char** argv) {
         // Event loop
         while(!quit_flag) {
 
-            network_select_loop(td, SEND_MESSAGE_AFTER < DELAY ? 
+            trudpNetworkSelectLoop(td, SEND_MESSAGE_AFTER < DELAY ? 
                 SEND_MESSAGE_AFTER : DELAY);
             
             // Current timestamp
@@ -718,26 +717,24 @@ int main(int argc, char** argv) {
 
             // Connect
             if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-                tcd = connectToPeer(td, param.host_name);
+                tcd = trudpLNullConnect(td, param.host_name);
                 tt_c = tt;
             }
-            
+
+            // When connected
             if(connected_flag) {
+                // Send Echo command every 5 second
                 if((tt - tt_s) > SEND_MESSAGE_AFTER*5) {
 
                     char buf[BUFFER_SIZE];
-
                     size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
                     trudpChannelSendData(tcd, buf, pkg_length);
 
                     tt_s = tt;
                 }
-                else {
-                    trudpProcessKeepConnection(td);
-                }
+                else trudpProcessKeepConnection(td);
             }
             
-
             num++;
         }
         
@@ -746,27 +743,27 @@ int main(int argc, char** argv) {
         free(buffer);
     }
         
-    // Connect to L0 server
-    teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-        event_cb, &param);
-    if(con->fd > 0) {
-
-        unsigned long num = 0;
-        const int timeout = 50;
-
-        // Event loop
-        while(teoLNullReadEventLoop(con, timeout)) {
-
-            // Send Echo command every second
-            if( !(num % (1000 / timeout)) )
-                teoLNullSendEcho(con, param.peer_name, param.msg);
-
-            num++;
-        }
-
-        // Close connection
-        teoLNullDisconnect(con);        
-    }
+//    // Connect to L0 server
+//    teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
+//        event_cb, &param);
+//    if(con->fd > 0) {
+//
+//        unsigned long num = 0;
+//        const int timeout = 50;
+//
+//        // Event loop
+//        while(teoLNullReadEventLoop(con, timeout)) {
+//
+//            // Send Echo command every second
+//            if( !(num % (1000 / timeout)) )
+//                teoLNullSendEcho(con, param.peer_name, param.msg);
+//
+//            num++;
+//        }
+//
+//        // Close connection
+//        teoLNullDisconnect(con);        
+//    }
 
     // Cleanup L0 Client library
     teoLNullCleanup();
