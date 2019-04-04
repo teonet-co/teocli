@@ -147,7 +147,7 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                 
                 //ssize_t snd = 0;
                 char buf[BUFFER_SIZE];
-                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_PEERS, param->peer_name, "", 1);                
+                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_PEERS, param->peer_name, NULL, 0);                
                 ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);                
                                 
                 printf("Send %d bytes packet to L0 server to peer %s, "
@@ -685,7 +685,7 @@ int main(int argc, char** argv) {
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
-    else param.msg = "Hello";
+    else param.msg = "Hello from TRUdp client :)";
 
     // Initialize L0 Client library
     teoLNullInit();
@@ -741,8 +741,14 @@ int main(int argc, char** argv) {
                 // Send Echo command every 5 second
                 if((tt - tt_s) > SEND_MESSAGE_AFTER*5) {
 
+                    printf("tick...\n");
+                    
                     char buf[BUFFER_SIZE];
-                    size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
+                    // Send ping
+                    size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, "teo-mm"/*param.peer_name*/, param.msg);
+                    trudpChannelSendData(tcd, buf, pkg_length);
+                    // Send cmd 129
+                    pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, 129, "teo-wg-users"/*param.peer_name*/, NULL, 0);                
                     trudpChannelSendData(tcd, buf, pkg_length);
 
                     tt_s = tt;
