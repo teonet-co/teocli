@@ -47,7 +47,7 @@
 #include "../trudp/src/trudp.h"
 #include "../trudp/src/utils.h"
 
-#define DEBUG 0
+#define DEBUG 1
 #define TL0CNS_VERSION "0.0.2"
 
 // Application constants
@@ -148,12 +148,22 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
 
                 //ssize_t snd = 0;
                 char buf[BUFFER_SIZE];
-                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, 79  /*CMD_L_PEERS*/, param->peer_name, NULL, 0);
+                
+                // Send peers request
+                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, /*79*/  CMD_L_PEERS, param->peer_name, NULL, 0);
                 ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);
-
+                //
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
+
+                // Send lients request
+                pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
+                snd = trudpChannelSendData(tcd, buf, pkg_length);
+                //
+                printf("Send %d bytes packet to L0 server to peer %s, "
+                       "cmd = %d (CMD_L_L0_CLIENTS)\n",
+                       (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
 
 //                // Send (3) echo request to peer, command CMD_L_ECHO
 //                //
@@ -345,6 +355,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
+            
+            connected_flag = 0;
 
         } break;
 
@@ -429,13 +441,24 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // Got DATA event
         // @param data Pointer to data
         // @param data_length Length of data
-        // @param user_data NULL
+        // @param user_data NULL Pointer to teoLNullConnectData
         case GOT_DATA: {
 
+            teoLNullConnectData *con = user_data;
+            ssize_t rc = teoLNullRecvCheck(con, data, data_length);
+            if(!(rc > 0)) {
+                debug(tru, DEBUG, "got %d byte data to buffer\n", data_length);
+                break;
+            }
+            
+            data_length = rc;
+            data = con->read_buffer;
+            
             teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,
-                "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: %s, cmd: %d, data: %s\n",
+                "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, "
+                "peer: %s, cmd: %d, data length: %d, data: %s\n",
                 trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
                 key,
                 (double)tcd->triptime / 1000.0,
@@ -443,6 +466,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 trudpPacketGetId(trudpPacketGetPacket(data)),
                 cp->peer_name,
                 cp->cmd,
+                cp->data_length,
                 cp->peer_name + cp->peer_name_length);
 
             // Process ECHO command
@@ -456,7 +480,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
                 trudpChannelSendData(tcd, cp, data_length);
             }
-            else send_l0_event(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + cp->data_length + cp->peer_name_length, NULL);
+            // Send other commands to L0 event loop
+            else send_l0_event(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
+                    cp->data_length + cp->peer_name_length, NULL);
 
 
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
@@ -625,7 +651,7 @@ static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
  * @param td
  * @return
  */
-static trudpChannelData *trudpLNullConnect(trudpData *td, const char * host_name) {
+static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) {
 
     trudpChannelData *tcd = NULL;
 
@@ -667,6 +693,30 @@ static trudpChannelData *trudpLNullConnect(trudpData *td, const char * host_name
     return tcd;
 }
 
+static teoLNullConnectData* trudpLNullConnect(void *user_data) {
+
+    int result;
+    teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    if(con == NULL) return con;
+
+    con->last_packet_ptr = 0;
+    con->read_buffer = NULL;
+    con->read_buffer_ptr = 0;
+    con->read_buffer_size = 0;
+    con->event_cb = event_cb;
+    con->user_data = user_data;
+    
+    con->fd = 0;
+    
+    return con;
+}
+
+static void trudpLNullFree(teoLNullConnectData* con) {
+    if(con) {
+        free(con);
+    }
+}
+
 /**
  * Main L0 Native client example function
  *
@@ -701,23 +751,25 @@ int main(int argc, char** argv) {
     else param.msg = "Hello"; // from TRUdp client :)";
 
     // Initialize L0 Client library
-    teoLNullInit();
+    //teoLNullInit();
 
     // Connect to L0 TR-UDP server
     // Bind UDP port and get FD (start listening at port)
     _param = &param;
-    int port = 9090; //atoi(o_local_port);
+    int port = 9090; //atoi(o_local_port); // Local port
     int fd = trudpUdpBindRaw(&port, 1);
     if(fd <= 0) die("Can't bind UDP port ...\n");
     else fprintf(stderr, "Start listening at UDP port %d\n", port);
 
-    // Initialize TR-UDP
-    remote_address = (char*)param.tcp_server;
-    remote_port_i = param.tcp_port;
-    trudpData *td = trudpInit(fd, port, trudpEventCback, NULL);
-    if(td->fd > 0) {
+    if(fd > 0) {
+        
+        // Initialize TR-UDP
+        remote_port_i = param.tcp_port;
+        remote_address = (char*)param.tcp_server;
+        teoLNullConnectData* con = trudpLNullConnect(NULL);
+        trudpData *td = trudpInit(fd, port, trudpEventCback, con);
 
-        printf("TR-UDP port created\n");
+        printf("TR-UDP port created, fd = %d\n", td->fd);
 
         // Create read buffer
         buffer = malloc(BUFFER_SIZE);
@@ -745,7 +797,7 @@ int main(int argc, char** argv) {
 
             // Connect
             if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-                tcd = trudpLNullConnect(td, param.host_name);
+                tcd = trudpLNullLogin(td, param.host_name);
                 tt_c = tt;
             }
 
@@ -774,6 +826,7 @@ int main(int argc, char** argv) {
         }
 
         // Destroy TR-UDP
+        trudpLNullFree(con);
         trudpDestroy(td);
         free(buffer);
     }
@@ -799,9 +852,9 @@ int main(int argc, char** argv) {
 //        // Close connection
 //        teoLNullDisconnect(con);
 //    }
-
+    
     // Cleanup L0 Client library
-    teoLNullCleanup();
+    //teoLNullCleanup();
 
     return (EXIT_SUCCESS);
 }
