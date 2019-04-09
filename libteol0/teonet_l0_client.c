@@ -392,7 +392,7 @@ ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc) {
     rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
 
     // Send echo answer to echo command
-    if(rc > 0) {
+    if(rc > 0 && con->fd) {
         teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
         if(cp->cmd == CMD_L_ECHO) {
             char *data = cp->peer_name + cp->peer_name_length;
