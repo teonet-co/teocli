@@ -35,20 +35,20 @@ import (
 )
 
 // Application parameters structure
-type app_parameters struct {
-	host_name  string
-	tcp_server string
-	tcp_port   int
-	peer_name  string
-	msg        string
+type appParameters struct {
+	hostName  string
+	tcpServer string
+	tcpPort   int
+	peerName  string
+	msg       string
 }
 
-// Teonet event loop callback
-//export AGo_event_cb
-func AGo_event_cb(con *C.teoLNullConnectData, event C.teoLNullEvents,
-	data unsafe.Pointer, data_len C.size_t, user_data unsafe.Pointer) {
+//AGoEventCb Teonet event loop callback
+//export AGoEventCb
+func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
+	data unsafe.Pointer, dataLen C.size_t, userData unsafe.Pointer) {
 
-	param := (*app_parameters)(user_data)
+	param := (*appParameters)(userData)
 
 	switch event {
 
@@ -56,11 +56,11 @@ func AGo_event_cb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 	case C.EV_L_CONNECTED:
 		fd := (*C.int)(data)
 		if *fd > 0 {
-			host_name := C.CString(param.host_name)
-			defer C.free(unsafe.Pointer(host_name))
+			hostName := C.CString(param.hostName)
+			defer C.free(unsafe.Pointer(hostName))
 			fmt.Println("Successfully connect to server")
 			// Send (1) Initialization packet to L0 server
-			C.teoLNullLogin(con, host_name)
+			C.teoLNullLogin(con, hostName)
 		}
 
 	// Disconnected from teonet
@@ -69,7 +69,7 @@ func AGo_event_cb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 
 	// Receive answer from server
 	case C.EV_L_RECEIVED:
-		rc := data_len
+		rc := dataLen
 		cp := (*C.teoLNullCPacket)(data)
 
 		fmt.Printf("Receive %d bytes: %d bytes data from L0 server, "+
@@ -83,14 +83,14 @@ func AGo_event_cb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 		case C.CMD_L_ECHO_ANSWER:
 			fmt.Println("Got echo answer command")
 			data := C.AC_get_cmd_data(cp)
-			trip_time := C.teoLNullProccessEchoAnswer(data)
-			fmt.Printf("Data: %s\n", C.GoString(data))    // Show data
-			fmt.Printf("Trip time: %d ms\n\n", trip_time) // Show trip time
+			tripTime := C.teoLNullProccessEchoAnswer(data)
+			fmt.Printf("Data: %s\n", C.GoString(data))   // Show data
+			fmt.Printf("Trip time: %d ms\n\n", tripTime) // Show trip time
 
 		case C.CMD_L_AUTH_LOGIN_ANSWER:
 			fmt.Println("Got answer from authentication server")
-			auth_data := C.AC_get_cmd_data(cp)
-			fmt.Printf("Data: %s\n\n", C.GoString(auth_data)) // Show data
+			authData := C.AC_get_cmd_data(cp)
+			fmt.Printf("Data: %s\n\n", C.GoString(authData)) // Show data
 
 		case C.CMD_L_ECHO:
 			fmt.Println("Got echo command")
@@ -102,8 +102,8 @@ func AGo_event_cb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 }
 
 // Parce application command line parameters
-func parse_params() (*app_parameters, bool) {
-	param := new(app_parameters)
+func parseParams() (*appParameters, bool) {
+	param := new(appParameters)
 
 	// Check application parameters
 	if len(os.Args) < 5 {
@@ -113,15 +113,15 @@ func parse_params() (*app_parameters, bool) {
 	}
 
 	// Teonet L0 server parameters
-	param.host_name = os.Args[1]       // Host name
-	param.tcp_server = os.Args[2]      // Server name or ip
+	param.hostName = os.Args[1]        // Host name
+	param.tcpServer = os.Args[2]       // Server name or ip
 	i, err := strconv.Atoi(os.Args[3]) // Server port
 	if err != nil {
-		param.tcp_port = 9000
+		param.tcpPort = 9000
 	} else {
-		param.tcp_port = i
+		param.tcpPort = i
 	}
-	param.peer_name = os.Args[4] // Peer name to send ping to
+	param.peerName = os.Args[4] // Peer name to send ping to
 	if len(os.Args) > 5 {
 		param.msg = os.Args[5]
 	} else {
@@ -131,22 +131,22 @@ func parse_params() (*app_parameters, bool) {
 }
 
 // Start teonet
-func start_teonet(param *app_parameters) {
+func startTeonet(param *appParameters) {
 	// Initialize L0 Client library
 	C.teoLNullInit()
 
 	// Connect to L0 server
-	tcp_server := C.CString(param.tcp_server)
-	defer C.free(unsafe.Pointer(tcp_server))
-	con := C.AC_teoLNullConnectE(tcp_server, C.int(param.tcp_port),
+	tcpServer := C.CString(param.tcpServer)
+	defer C.free(unsafe.Pointer(tcpServer))
+	con := C.AC_teoLNullConnectE(tcpServer, C.int(param.tcpPort),
 		unsafe.Pointer(param))
 	if con.fd > 0 {
 		num := 0
 		timeout := 50
 		msg := C.CString(param.msg)
-		peer_name := C.CString(param.peer_name)
+		peerName := C.CString(param.peerName)
 		defer C.free(unsafe.Pointer(msg))
-		defer C.free(unsafe.Pointer(peer_name))
+		defer C.free(unsafe.Pointer(peerName))
 
 		// Event loop
 		for C.teoLNullReadEventLoop(con, C.int(timeout)) != 0 {
@@ -154,7 +154,7 @@ func start_teonet(param *app_parameters) {
 			// Send Echo command every second
 			if (num % (1000 / timeout)) == 0 {
 				fmt.Println("Send ping...")
-				C.teoLNullSendEcho(con, peer_name, msg)
+				C.teoLNullSendEcho(con, peerName, msg)
 			}
 			num++
 		}
@@ -170,14 +170,14 @@ func start_teonet(param *app_parameters) {
 // Main function
 func main() {
 	// Welcome message
-	fmt.Println("Teonet chat Go client version 0.0.1 (Native TCP Client)\n")
+	fmt.Println("Teonet chat Go client version 0.0.1 (Native TCP Client)" + "\n")
 
 	// Parse application parameters
-	param, err := parse_params()
+	param, err := parseParams()
 	if err {
 		return
 	}
 
 	// Start teonet
-	start_teonet(param)
+	startTeonet(param)
 }
