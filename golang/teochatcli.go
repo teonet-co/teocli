@@ -87,11 +87,21 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 			fmt.Printf("Data: %s\n", C.GoString(data))   // Show data
 			fmt.Printf("Trip time: %d ms\n\n", tripTime) // Show trip time
 
+		// Auth server ansver
 		case C.CMD_L_AUTH_LOGIN_ANSWER:
 			fmt.Println("Got answer from authentication server")
 			authData := C.AC_get_cmd_data(cp)
 			fmt.Printf("Data: %s\n\n", C.GoString(authData)) // Show data
+			// Send CMD_L_PEERS command
+			snd := C.teoLNullSend(con, C.CMD_L_PEERS, C.CString(param.peerName), nil, 0)
+			fmt.Printf("Send %d bytes packet to L0 server to peer %s, cmd = %d (CMD_L_PEERS)\n",
+				snd, param.peerName, C.CMD_L_PEERS)
 
+		// Peers command answer
+		case C.CMD_L_PEERS_ANSWER:
+			fmt.Println("Got answer to CMD_L_PEERS command from peer", C.GoString(C.AC_peer_name(cp)))
+
+		// Echo answer
 		case C.CMD_L_ECHO:
 			fmt.Println("Got echo command")
 
