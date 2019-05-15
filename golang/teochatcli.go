@@ -21,6 +21,8 @@ const char * AC_peer_name(teoLNullCPacket *cp);
 
 const char * AC_get_cmd_data(teoLNullCPacket *cp);
 
+const char * AC_show_peers(teoLNullCPacket *cp);
+
 #cgo CFLAGS:  -I../libteol0 -std=c11
 #cgo LDFLAGS: -L../libteol0 libteocli.a
 
@@ -100,6 +102,9 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 		// Peers command answer
 		case C.CMD_L_PEERS_ANSWER:
 			fmt.Println("Got answer to CMD_L_PEERS command from peer", C.GoString(C.AC_peer_name(cp)))
+			peers := C.AC_show_peers(cp)
+			fmt.Println(C.GoString(peers))
+			C.free(unsafe.Pointer(peers))
 
 		// Echo answer
 		case C.CMD_L_ECHO:

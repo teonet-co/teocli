@@ -88,3 +88,5 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
+
+golang/libteocli\.a
