@@ -44,8 +44,8 @@
 #include <stdarg.h>
 
 #include "libteol0/teonet_l0_client.h"
-#include "../trudp/src/trudp.h"
-#include "../trudp/src/utils.h"
+#include "libtrudp/src/trudp.h"
+#include "libtrudp/src/utils.h"
 
 #define DEBUG 1
 #define TL0CNS_VERSION "0.0.2"
