@@ -1,5 +1,6 @@
 To create make file (first time after clone this project) use:
 
+    git submodule update --init --recursive
     touch AUTHORS NEWS README ChangeLog
     ./autogen.sh
 
