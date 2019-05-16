@@ -1,5 +1,7 @@
 # Linux make file
 
+SUBDIRS = ../libtrudp
+
 AM_CXXFLAGS = -std=c++11
 
 lib_LTLIBRARIES = libteocli.la # libtrudp.la

@@ -32,4 +32,8 @@ AC_CHECK_LIB([teocli], [main])
 LT_INIT
 
 AC_CONFIG_FILES([Makefile])
+
+# Call trudp ./configure script recursively.
+AC_CONFIG_SUBDIRS([../libtrudp])
+
 AC_OUTPUT
