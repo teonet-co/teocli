@@ -11,20 +11,11 @@ package main
 #include <stdlib.h>
 #include "teonet_l0_client.h"
 
-void AC_event_cb(void *con, teoLNullEvents event, void *data,
+void _AGoEventCb(void *con, teoLNullEvents event, void *data,
             size_t data_len, void *user_data);
 
-teoLNullConnectData* AC_teoLNullConnectE(const char *server, int port,
-	void *user_data);
-
-const char * AC_peer_name(teoLNullCPacket *cp);
-
-const char * AC_get_cmd_data(teoLNullCPacket *cp);
-
-const char * AC_show_peers(teoLNullCPacket *cp);
-
 #cgo CFLAGS:  -I../libteol0 -std=c11
-#cgo LDFLAGS: -L../libteol0 libteocli.a
+#cgo LDFLAGS: teocli/libteocli.a
 
 */
 import "C"
@@ -34,6 +25,8 @@ import (
 	"os"
 	"strconv"
 	"unsafe"
+
+	"./teocli"
 )
 
 // Application parameters structure
@@ -73,10 +66,12 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 	case C.EV_L_RECEIVED:
 		rc := dataLen
 		cp := (*C.teoLNullCPacket)(data)
+		_cp := teocli.CPacket(data)
 
 		fmt.Printf("Receive %d bytes: %d bytes data from L0 server, "+
 			"from peer %s, cmd = %d\n",
-			rc, cp.data_length, C.GoString(C.AC_peer_name(cp)), cp.cmd)
+			rc, cp.data_length,
+			teocli.PeerName(_cp), cp.cmd)
 
 		// Process commands
 		switch cp.cmd {
@@ -84,16 +79,16 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 		// Echo answer command
 		case C.CMD_L_ECHO_ANSWER:
 			fmt.Println("Got echo answer command")
-			data := C.AC_get_cmd_data(cp)
-			tripTime := C.teoLNullProccessEchoAnswer(data)
-			fmt.Printf("Data: %s\n", C.GoString(data))   // Show data
-			fmt.Printf("Trip time: %d ms\n\n", tripTime) // Show trip time
+			// data := teocli.GetCmdData(_cp)
+			// tripTime := C.teoLNullProccessEchoAnswer(data)
+			// fmt.Printf("Data: %s\n", C.GoString(data))   // Show data
+			// fmt.Printf("Trip time: %d ms\n\n", tripTime) // Show trip time
 
 		// Auth server ansver
 		case C.CMD_L_AUTH_LOGIN_ANSWER:
 			fmt.Println("Got answer from authentication server")
-			authData := C.AC_get_cmd_data(cp)
-			fmt.Printf("Data: %s\n\n", C.GoString(authData)) // Show data
+			// authData := teocli.GetCmdData(cp)
+			// fmt.Printf("Data: %s\n\n", C.GoString(authData)) // Show data
 			// Send CMD_L_PEERS command
 			snd := C.teoLNullSend(con, C.CMD_L_PEERS, C.CString(param.peerName), nil, 0)
 			fmt.Printf("Send %d bytes packet to L0 server to peer %s, cmd = %d (CMD_L_PEERS)\n",
@@ -101,10 +96,8 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 
 		// Peers command answer
 		case C.CMD_L_PEERS_ANSWER:
-			fmt.Println("Got answer to CMD_L_PEERS command from peer", C.GoString(C.AC_peer_name(cp)))
-			peers := C.AC_show_peers(cp)
-			fmt.Println(C.GoString(peers))
-			C.free(unsafe.Pointer(peers))
+			fmt.Println("Got answer to CMD_L_PEERS command from peer", teocli.PeerName(cp))
+			fmt.Println(teocli.ShowPeers(_cp))
 
 		// Echo answer
 		case C.CMD_L_ECHO:
@@ -151,10 +144,11 @@ func startTeonet(param *appParameters) {
 	C.teoLNullInit()
 
 	// Connect to L0 server
-	tcpServer := C.CString(param.tcpServer)
-	defer C.free(unsafe.Pointer(tcpServer))
-	con := C.AC_teoLNullConnectE(tcpServer, C.int(param.tcpPort),
-		unsafe.Pointer(param))
+	// tcpServer := C.CString(param.tcpServer)
+	// defer C.free(unsafe.Pointer(tcpServer))
+	// con := C.AC_teoLNullConnectE(tcpServer, C.int(param.tcpPort),
+	// 	unsafe.Pointer(param))
+	con := teocli.LNullConnectE(param.tcpServer, param.tcpPort, AGoEventCb, unsafe.Pointer(param))
 	if con.fd > 0 {
 		num := 0
 		timeout := 50

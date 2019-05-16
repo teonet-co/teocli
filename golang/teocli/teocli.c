@@ -3,17 +3,20 @@
 #include "utils.h"
 #include "teonet_l0_client.h"
 
-extern void AGoEventCb(void *con, teoLNullEvents event, void *data,
-            size_t data_len, void *user_data);
+void _AGoEventCb(void *con, teoLNullEvents event, void *data, size_t data_len, void *user_data);
+
+typedef void (*fptr)(void *con, teoLNullEvents event, void *data, size_t data_len, void *user_data);
+
+fptr getAGoEventCb();
 
 teoLNullConnectData* AC_teoLNullConnectE(const char *server, int port,
 	void *user_data) {
-	return teoLNullConnectE(server, port, AGoEventCb, user_data);
+	return teoLNullConnectE(server, port, getAGoEventCb(), user_data);
 }
 
 void AC_event_cb(void *con, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) {
-		AGoEventCb(con, event, data, data_len, user_data);
+		getAGoEventCb()(con, event, data, data_len, user_data);
 }
 
 const char * AC_peer_name(teoLNullCPacket *cp) {
