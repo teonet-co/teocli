@@ -445,6 +445,10 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         case GOT_DATA: {
 
             teoLNullConnectData *con = user_data;
+
+            uint32_t id = trudpPacketGetId(trudpPacketGetPacket(data));
+            size_t length = trudpPacketGetPacketLength(trudpPacketGetPacket(data));
+
             ssize_t rc = teoLNullRecvCheck(con, data, data_length);
             if(!(rc > 0)) {
                 debug(tru, DEBUG, "got %d byte data to buffer\n", data_length);
@@ -459,11 +463,13 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             debug(tru, DEBUG,
                 "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, "
                 "peer: %s, cmd: %d, data length: %d, data: %s\n",
-                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
+                length,
+//                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
                 key,
                 (double)tcd->triptime / 1000.0,
                 (double)tcd->triptimeMiddle / 1000.0,
-                trudpPacketGetId(trudpPacketGetPacket(data)),
+                id,
+//                trudpPacketGetId(trudpPacketGetPacket(data)),
                 cp->peer_name,
                 cp->cmd,
                 cp->data_length,
@@ -537,9 +543,16 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
                 if(!(type = trudpPacketGetType(data))) {
                     teoLNullCPacket *cp = trudpPacketGetData(data);
-                    debug(tru, DEBUG,  "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
-                        (int)data_length, id, addr, port,
-                        tcd->triptime / 1000.0, tcd->triptimeMiddle / 1000.0, cp->peer_name, cp->cmd, cp->peer_name + cp->peer_name_length);
+                    debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
+                        (int)data_length,
+                        id,
+                        addr,
+                        port,
+                        tcd->triptime / 1000.0,
+                        tcd->triptimeMiddle / 1000.0,
+                        cp->peer_name,
+                        cp->cmd,
+                        (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
                 }
                 else {
                     debug(tru, DEBUG,  "send %d bytes %s id=%u, to %s:%d\n",
@@ -805,6 +818,10 @@ int main(int argc, char** argv) {
 
             // Connect
             if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
+                if (tcd) {
+                    trudpChannelDestroy(tcd);
+                    tcd = NULL;
+                }
                 tcd = trudpLNullLogin(td, param.host_name);
                 tt_c = tt;
             }
@@ -836,6 +853,7 @@ int main(int argc, char** argv) {
         // Destroy TR-UDP
         teoLNullDisconnect(con);
         trudpChannelDestroy(tcd);
+
         trudpDestroy(td);
         free(buffer);
     }
