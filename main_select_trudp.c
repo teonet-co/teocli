@@ -670,7 +670,7 @@ static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) 
 
     tcd = trudpChannelNew(td, remote_address, remote_port_i, 0);
     trudpChannelSendData(tcd, buf, pkg_length);
-    fprintf(stderr, "Connecting to %s:%u:%u\n", remote_address, remote_port_i, 0);
+    fprintf(stderr, "Connecting to %s:%d:%u\n", remote_address, remote_port_i, 0);
     //connected_flag = 1;
 
     tcd->fd = 1;
@@ -717,6 +717,15 @@ static void trudpLNullFree(teoLNullConnectData* con) {
     }
 }
 
+#include  <signal.h>
+volatile sig_atomic_t quit_flag = 0;
+
+void INThandler(int sig)
+{
+    printf("Catch CTRL-C SIGNAL !!!\n");
+    quit_flag = 1;
+}
+
 /**
  * Main L0 Native client example function
  *
@@ -726,7 +735,7 @@ static void trudpLNullFree(teoLNullConnectData* con) {
  * @return
  */
 int main(int argc, char** argv) {
-
+   signal(SIGINT, INThandler); 
     // Welcome message
     printf("Teonet L0 client with Select and Event Loop Callback example "
            "version " TL0CN_VERSION " (Native TCP/UDP Client)\n\n");
@@ -777,7 +786,6 @@ int main(int argc, char** argv) {
         uint32_t tt, tt_s = 0, tt_c = 0, tt_ss = 0;
         const int DELAY = 500000; // uSec
         unsigned long num = 0;
-        int quit_flag = 0;
 
         char *message;
         size_t message_length;
@@ -826,7 +834,8 @@ int main(int argc, char** argv) {
         }
 
         // Destroy TR-UDP
-        trudpLNullFree(con);
+        teoLNullDisconnect(con);
+        trudpChannelDestroy(tcd);
         trudpDestroy(td);
         free(buffer);
     }
