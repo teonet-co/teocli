@@ -30,7 +30,8 @@ extern int usleep (__useconds_t __useconds);
 #endif
 
 #include "teonet_socket.h"
-
+#include "../libtrudp/src/trudp.h"
+extern int connected_flag;
 /**
  * L0 System commands
  */
@@ -313,6 +314,8 @@ TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
+TEOCLI_API void trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
+        void *user_data);
 
 #ifdef	__cplusplus
 }

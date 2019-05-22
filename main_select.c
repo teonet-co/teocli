@@ -56,7 +56,7 @@ struct app_parameters {
     int tcp_port;
     const char *peer_name;
     const char *msg;
-
+    
 };
 
 /**
@@ -111,7 +111,6 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
             }
             else {
-
                 printf("Can't connect to server\n");
             }
 
@@ -219,11 +218,8 @@ int main(int argc, char** argv) {
 
     // Check application parameters
     if(argc < 5) {
-
-        printf("Usage: "
-               "%s <client_name> <server_address> <server_port> <peer_name> "
+        printf("Usage: %s <client_name> <server_address> <server_port> <peer_name> "
                "[message]\n", argv[0]);
-
         exit(EXIT_SUCCESS);
     }
 

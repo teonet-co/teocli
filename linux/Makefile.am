@@ -2,7 +2,8 @@
 
 SUBDIRS = ../libtrudp
 
-AM_CXXFLAGS = -std=c++11
+AM_CXXFLAGS = -std=c++11 -I../libtrudp/src/ -I../libtrudp/embedded/teoccl/src/
+AM_CFLAGS = -I../libtrudp/src/ -I../libtrudp/embedded/teoccl/src/
 
 lib_LTLIBRARIES = libteocli.la
 libteocli_la_SOURCES = ../libteol0/teonet_l0_client.c  ../libteol0/teonet_socket.c ../libteol0/teonet_time.c
@@ -21,13 +22,13 @@ teocli_s_LDADD = libteocli.la
 
 noinst_PROGRAMS += teocli_cpp  
 teocli_cpp_SOURCES = ../main_cpp.cpp
-teocli_cpp_LDADD = libteocli.la
+teocli_cpp_LDADD = libteocli.la 
 
 noinst_PROGRAMS += teocli_s_cpp
 teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
 teocli_s_cpp_LDADD = libteocli.la
 
-AM_CFLAGS = -I../libtrudp/src/ -I../libtrudp/embedded/teoccl/src/
+
 LIBS = ../libtrudp/src/.libs/libtrudp.a ../libtrudp/embedded/teoccl/src/.libs/libteoccl.a
 
 noinst_PROGRAMS += teocli_s_trudp
