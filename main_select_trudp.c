@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
 
     // Connect to L0 TR-UDP server
     // Bind UDP port and get FD (start listening at port)
-//    _param = &param;
+
     int port = 9090; //atoi(o_local_port); // Local port
     int fd = trudpUdpBindRaw(&port, 1);
     if(fd <= 0) die("Can't bind UDP port ...\n");
@@ -351,8 +351,6 @@ int main(int argc, char** argv) {
         const int DELAY = 500000; // uSec
         unsigned long num = 0;
 
-        char *message = "hello_c";
-        size_t message_length = strlen(message) + 1;
 
         trudpChannelData *tcd = NULL;
 

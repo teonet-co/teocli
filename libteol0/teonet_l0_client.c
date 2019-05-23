@@ -39,7 +39,6 @@ char *buffer;
 char *remote_address;
 int remote_port_i;
 // Send L0 event to L0 event loop
-//void* _param = NULL;
 
 /*, user_data) \ */
 //#if defined(TRUDP_PROTOCOL)
