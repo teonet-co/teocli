@@ -31,7 +31,11 @@ extern int usleep (__useconds_t __useconds);
 
 #include "teonet_socket.h"
 #include "../libtrudp/src/trudp.h"
+#include "../libtrudp/src/utils.h"
 extern int connected_flag;
+extern char *buffer;
+extern char *remote_address;
+extern int remote_port_i;
 /**
  * L0 System commands
  */
@@ -312,10 +316,16 @@ TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8
         const char * peer, const void* data, size_t data_length);
 TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length);
 
-// Teonet utils functions
-uint8_t get_byte_checksum(void *data, size_t data_length);
+// Tr-udp functions
 TEOCLI_API void trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
         void *user_data);
+TEOCLI_API void trudpNetworkSelectLoop(trudpData *td, int timeout);
+TEOCLI_API trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name);
+TEOCLI_API teoLNullConnectData *trudpLNullConnect(teoLNullEventsCb event_cb, void *user_data);
+TEOCLI_API void trudpLNullFree(teoLNullConnectData *con);
+
+// Util function
+uint8_t get_byte_checksum(void *data, size_t data_length);
 
 #ifdef	__cplusplus
 }

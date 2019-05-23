@@ -32,8 +32,12 @@
 #include "teonet_time.h"
 
 //#define TRUDP_PROTOCOL 
-#define DEBUG 1
+#define DEBUG 0
 int connected_flag = 0;
+static const int BUFFER_SIZE = 2048;
+char *buffer;
+char *remote_address;
+int remote_port_i;
 // Send L0 event to L0 event loop
 //void* _param = NULL;
 
@@ -1028,6 +1032,153 @@ trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
         } break;
 
         default: break;
+    }
+}
+
+
+/**
+ * The TR-UDP cat network loop with select function
+ *
+ * @param td Pointer to trudpData
+ * @param delay Default read data timeout
+ */
+void
+trudpNetworkSelectLoop(trudpData *td, int timeout)
+{
+    int rv = 1;
+    fd_set rfds, wfds;
+    struct timeval tv;
+    uint64_t ts = teoGetTimestampFull();
+
+//    while(rv > 0) {
+    // Watch server_socket to see when it has input.
+    FD_ZERO(&wfds);
+    FD_ZERO(&rfds);
+    FD_SET(td->fd, &rfds);
+
+    // Process write queue
+    if (trudpGetWriteQueueSize(td)) {
+        FD_SET(td->fd, &wfds);
+    }
+
+    uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
+
+    // Wait up to ~50 ms. */
+    uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
+    usecToTv(&tv, t);
+
+    rv = select((int)td->fd + 1, &rfds, &wfds, NULL, &tv);
+
+    if (rv == -1) {
+        fprintf(stderr, "select() handle error\n");
+        return;
+    } else if(!rv) { // Idle or Timeout event
+        // Process send queue
+        if(timeout_sq != UINT32_MAX) {
+            int rv = trudpProcessSendQueue(td, 0);
+            printf("process send queue ... %d\n", rv);
+        }
+    } else {  // There is a data in fd
+        // Process read fd
+        if(FD_ISSET(td->fd, &rfds)) {
+
+            struct sockaddr_in remaddr; // remote address
+            socklen_t addr_len = sizeof(remaddr);
+            ssize_t recvlen = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
+                    (__SOCKADDR_ARG)&remaddr, &addr_len);
+
+            // Process received packet
+            if(recvlen > 0) {
+                size_t data_length;
+                trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+                trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
+            }
+        }
+
+        // Process write fd
+        if(FD_ISSET(td->fd, &wfds)) {
+            // Process write queue
+            while(trudpProcessWriteQueue(td));
+            //trudpProcessWriteQueue(td);
+        }
+    }
+}
+
+/**
+ * Connect (login) to peer
+ *
+ * @param td
+ * @return
+ */
+trudpChannelData *
+trudpLNullLogin(trudpData *td, const char * host_name)
+{
+    trudpChannelData *tcd = NULL;
+
+    ssize_t snd;
+    const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
+
+    // Buffer
+    #if defined(_WIN32) || defined(_WIN64)
+    char *buf = malloc(buf_len);
+    #else
+    char buf[buf_len];
+    #endif
+
+    size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
+    if(!pkg_length) return NULL;
+
+    tcd = trudpChannelNew(td, remote_address, remote_port_i, 0);
+    trudpChannelSendData(tcd, buf, pkg_length);
+    fprintf(stderr, "Connecting to %s:%d:%u\n", remote_address, remote_port_i, 0);
+    //connected_flag = 1;
+
+    tcd->fd = 1;
+    //send_l0_event(tcd, EV_L_CONNECTED, &tcd->fd, sizeof(tcd->fd), NULL);
+    //if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
+
+    // Free buffer
+    #if defined(_WIN32) || defined(_WIN64)
+    free(buf);
+    #endif
+
+//    // Start connection and Send "connect" packet
+//    char *connect = "Connect with TR-UDP!";
+//    size_t connect_length = strlen(connect) + 1;
+//    tcd = trudp_ChannelNew(td, remote_address, remote_port_i, 0);
+//    trudp_ChannelSendData(tcd, connect, connect_length);
+//    fprintf(stderr, "Connecting to %s:%u:%u\n", remote_address, remote_port_i, 0);
+//    connected_flag = 1;
+
+    return tcd;
+}
+
+
+teoLNullConnectData*
+trudpLNullConnect(teoLNullEventsCb event_cb, void *user_data)
+{
+    int result;
+    teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    if(con == NULL) return con;
+
+    con->last_packet_ptr = 0;
+    con->read_buffer = NULL;
+    con->read_buffer_ptr = 0;
+    con->read_buffer_size = 0;
+    con->event_cb = event_cb;
+    con->user_data = user_data;
+    
+    con->fd = 0;
+    
+    return con;
+}
+
+
+void
+trudpLNullFree(teoLNullConnectData *con)
+{
+    if(con) {
+        free(con);
     }
 }
 
