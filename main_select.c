@@ -47,19 +47,6 @@
 #define TL0CNS_VERSION "0.0.1"
 
 /**
- * Application parameters structure
- */
-struct app_parameters {
-
-    const char *host_name;
-    const char *tcp_server;
-    int tcp_port;
-    const char *peer_name;
-    const char *msg;
-    
-};
-
-/**
  * Teonet L0 client event callback
  *
  * @param con
@@ -238,8 +225,7 @@ int main(int argc, char** argv) {
     while(1) {
 
         // Connect to L0 server
-        teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-            event_cb, &param);
+        teoLNullConnectData* con = l0_connect(event_cb, &param, TCP);
 
         if(con->status > 0) {
 

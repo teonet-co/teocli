@@ -79,19 +79,6 @@ static void die(char *fmt, ...)
 }
 
 
-/**
- * Application parameters structure
- */
-struct app_parameters {
-
-    const char *host_name;
-    const char *tcp_server;
-    int tcp_port;
-    const char *peer_name;
-    const char *msg;
-
-};
-
 static const int BUFFER_SIZE = 2048;
 
 /**
@@ -325,6 +312,7 @@ int main(int argc, char** argv) {
     // Initialize L0 Client library
     teoLNullInit();
      
+    teoLNullConnectData* con = l0_connect(event_cb, &param, TR_UDP);
 
     // Connect to L0 TR-UDP server
     // Bind UDP port and get FD (start listening at port)
@@ -339,7 +327,7 @@ int main(int argc, char** argv) {
         // Initialize TR-UDP
         remote_port_i = param.tcp_port;
         remote_address = (char*)param.tcp_server;
-        teoLNullConnectData* con = trudpLNullConnect(event_cb, &param);
+//        teoLNullConnectData* con = trudpLNullConnect(event_cb, &param);
         trudpData *td = trudpInit(fd, port, trudpEventCback, con);
 
         printf("TR-UDP port created, fd = %d\n", td->fd);
@@ -389,8 +377,6 @@ int main(int argc, char** argv) {
                 }
                 else trudpProcessKeepConnection(td);
             }
-
-            num++;
         }
 
         // Destroy TR-UDP

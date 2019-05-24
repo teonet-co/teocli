@@ -36,6 +36,25 @@ extern int connected_flag;
 extern char *buffer;
 extern char *remote_address;
 extern int remote_port_i;
+
+
+/**
+ * Application parameters structure
+ */
+struct app_parameters {
+
+    const char *host_name;
+    const char *tcp_server;
+    int tcp_port;
+    const char *peer_name;
+    const char *msg;
+
+};
+
+typedef enum PROTOCOL {
+  TR_UDP,
+  TCP
+} PROTOCOL;
 /**
  * L0 System commands
  */
@@ -285,12 +304,16 @@ extern "C" {
 #endif
 
 
+    
 // Hight level functions
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
+TEOCLI_API teoLNullConnectData *l0_connect(teoLNullEventsCb event_cb, void *params,
+    PROTOCOL protocol);
+
 TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, uint16_t port);
-TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, uint16_t port,
+TEOCLI_API teoLNullConnectData *teoLNullConnectE(const char *server, uint16_t port,
         teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);

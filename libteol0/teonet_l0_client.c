@@ -40,6 +40,7 @@ char *remote_address;
 int remote_port_i;
 // Send L0 event to L0 event loop
 
+
 /*, user_data) \ */
 //#if defined(TRUDP_PROTOCOL)
     #define send_l0_event_udp(tcd, event, data, data_length, u_data) \
@@ -213,6 +214,30 @@ teoLNullConnectE(const char *server, uint16_t port, teoLNullEventsCb event_cb, v
     return con;
 }
 
+
+teoLNullConnectData *
+l0_connect(teoLNullEventsCb event_cb, void *params, PROTOCOL protocol)
+{
+    struct app_parameters *l_params = (struct app_parameters *)params;
+
+    teoLNullConnectData *con = NULL;
+
+    switch (protocol) {
+        case TR_UDP: {
+            printf("PROTOCOL %s\n", "TRUDP");
+            con = trudpLNullConnect(event_cb, params);
+            break;
+        }
+        case TCP: {
+            printf("PROTOCOL %s\n", "TCP");
+            con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
+                    event_cb, params);
+             break;
+        }
+    }
+
+    return con;
+}
 
 /**
  * Disconnect from server and free teoLNullConnectData
@@ -1110,11 +1135,10 @@ trudpNetworkSelectLoop(trudpData *td, int timeout)
  * @return
  */
 trudpChannelData *
-trudpLNullLogin(trudpData *td, const char * host_name)
+trudpLNullLogin(trudpData *td, const char *host_name)
 {
     trudpChannelData *tcd = NULL;
 
-    ssize_t snd;
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
     // Buffer
@@ -1153,7 +1177,7 @@ trudpLNullLogin(trudpData *td, const char * host_name)
 }
 
 
-teoLNullConnectData*
+teoLNullConnectData *
 trudpLNullConnect(teoLNullEventsCb event_cb, void *user_data)
 {
     int result;
