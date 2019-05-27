@@ -102,7 +102,7 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
             int *fd = data;
             if(*fd > 0) {
 
-                printf("Successfully connect to server\n");
+                printf("Successfully connect to server!!!!!!\n");
 
 //                // Send (1) Initialization packet to L0 server
 //                ssize_t snd = teoLNullLogin(con, param->host_name);
@@ -313,79 +313,62 @@ int main(int argc, char** argv) {
     teoLNullInit();
      
     teoLNullConnectData* con = l0_connect(event_cb, &param, TR_UDP);
+    trudpData *td = trudp_init(&param, con);
 
-    // Connect to L0 TR-UDP server
-    // Bind UDP port and get FD (start listening at port)
+    // Create read buffer
+    buffer = malloc(BUFFER_SIZE);
 
-    int port = 9090; //atoi(o_local_port); // Local port
-    int fd = trudpUdpBindRaw(&port, 1);
-    if(fd <= 0) die("Can't bind UDP port ...\n");
-    else printf("Start listening at UDP port %d\n", port);
-
-    if(fd > 0) {
-        
-        // Initialize TR-UDP
-        remote_port_i = param.tcp_port;
-        remote_address = (char*)param.tcp_server;
-//        teoLNullConnectData* con = trudpLNullConnect(event_cb, &param);
-        trudpData *td = trudpInit(fd, port, trudpEventCback, con);
-
-        printf("TR-UDP port created, fd = %d\n", td->fd);
-
-        // Create read buffer
-        buffer = malloc(BUFFER_SIZE);
-
-        uint32_t tt, tt_s = 0, tt_c = 0, tt_ss = 0;
-        const int DELAY = 500000; // uSec
-        unsigned long num = 0;
+    uint32_t tt = 0, tt_s = 0, tt_c = 0, tt_ss = 0;
+    const int DELAY = 500000; // uSec
+    unsigned long num = 0;
 
 
-        trudpChannelData *tcd = NULL;
+    trudpChannelData *tcd = NULL;
 
-        // Event loop
-        while(!quit_flag) {
+    // Event loop
+    while(!quit_flag) {
 
-            trudpNetworkSelectLoop(td, SEND_MESSAGE_AFTER < DELAY ?
-                SEND_MESSAGE_AFTER : DELAY);
+        trudpNetworkSelectLoop(td, SEND_MESSAGE_AFTER < DELAY ?
+            SEND_MESSAGE_AFTER : DELAY);
 
-            // Current timestamp
-            tt = trudpGetTimestamp();
+        // Current timestamp
+        tt = trudpGetTimestamp();
 
-            // Connect
-            if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-                if (tcd) {
-                    trudpChannelDestroy(tcd);
-                    tcd = NULL;
-                }
-                tcd = trudpLNullLogin(td, param.host_name);
-                tt_c = tt;
+        // Connect
+        if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
+            if (tcd) {
+                trudpChannelDestroy(tcd);
+                tcd = NULL;
             }
-
-            // When connected
-            if(connected_flag) {
-                // Send Echo command every 1 second
-                if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
-
-                    //printf("tick...\n");
-
-                    char buf[BUFFER_SIZE];
-                    // Send ping
-                    size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
-                    trudpChannelSendData(tcd, buf, pkg_length);
-                    
-                    tt_s = tt;
-                }
-                else trudpProcessKeepConnection(td);
-            }
+            tcd = trudpLNullLogin(td, param.host_name);
+            tt_c = tt;
         }
 
-        // Destroy TR-UDP
-        teoLNullDisconnect(con);
-        trudpChannelDestroy(tcd);
+        // When connected
+        if(connected_flag) {
+            // Send Echo command every 1 second
+            if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
 
-        trudpDestroy(td);
-        free(buffer);
+                //printf("tick...\n");
+
+                char buf[BUFFER_SIZE];
+                // Send ping
+                size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
+                trudpChannelSendData(tcd, buf, pkg_length);
+                
+                tt_s = tt;
+            }
+            else trudpProcessKeepConnection(td);
+        }
     }
+
+    // Destroy TR-UDP
+    teoLNullDisconnect(con);
+    trudpChannelDestroy(tcd);
+
+    trudpDestroy(td);
+    free(buffer);
+    
 
     return (EXIT_SUCCESS);
 }

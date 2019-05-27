@@ -1137,6 +1137,7 @@ trudpNetworkSelectLoop(trudpData *td, int timeout)
 trudpChannelData *
 trudpLNullLogin(trudpData *td, const char *host_name)
 {
+    printf("trudpLNullLogin!!!!!!!!!\n");
     trudpChannelData *tcd = NULL;
 
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
@@ -1205,6 +1206,36 @@ trudpLNullFree(teoLNullConnectData *con)
     }
 }
 
+trudpData *
+trudp_init(struct app_parameters *ap,  teoLNullConnectData *con)
+{
+    // Connect to L0 TR-UDP server
+    // Bind UDP port and get FD (start listening at port)
+
+    int port = 9090; //atoi(o_local_port); // Local port
+    int fd = trudpUdpBindRaw(&port, 1);
+    if(fd <= 0) {
+        (void)fprintf(stderr, "Can't bind UDP port ...\n");
+        exit(1);
+    }
+    else {
+        printf("Start listening at UDP port %d\n", port);
+    }
+
+    trudpData *td = NULL;
+
+    if(fd > 0) {
+                // Initialize TR-UDP
+        remote_port_i = ap->tcp_port;
+        remote_address = (char*)ap->tcp_server;
+        td = trudpInit(fd, port, trudpEventCback, con);
+
+        printf("TR-UDP port created, fd = %d\n", td->fd);
+
+    }
+
+    return td;
+}
 /**
  * Set socket or SD to non blocking mode
  *

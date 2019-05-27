@@ -347,6 +347,8 @@ TEOCLI_API trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_na
 TEOCLI_API teoLNullConnectData *trudpLNullConnect(teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void trudpLNullFree(teoLNullConnectData *con);
 
+TEOCLI_API trudpData *trudp_init(struct app_parameters *ap,  teoLNullConnectData *con);
+
 // Util function
 uint8_t get_byte_checksum(void *data, size_t data_length);
 
