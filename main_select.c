@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 
                 // Send Echo command every second
                 if( !(num % (1000 / timeout)) )
-                    teoLNullSendEcho(con, param.peer_name, param.msg);
+                    L0_SEND_ECHO(con, param.peer_name, param.msg);
 
                 num++;
             }

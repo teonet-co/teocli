@@ -57,11 +57,6 @@
 #define SHOW_STATISTIC_AFTER 500000 // uSec (mSec * 1000)
 
 #define DEBUG 1
-#define send_l0_event_udp(tcd, event, data, data_length, u_data) \
-if (((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->event_cb != NULL) { \
-    ((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->event_cb(tcd, event, data, data_length, ((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->user_data); \
-}
-
 /**
  * Show error and exit
  *
@@ -348,14 +343,7 @@ int main(int argc, char** argv) {
         if(connected_flag) {
             // Send Echo command every 1 second
             if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
-
-                //printf("tick...\n");
-
-                char buf[BUFFER_SIZE];
-                // Send ping
-                size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
-                trudpChannelSendData(tcd, buf, pkg_length);
-                
+                L0_SEND_ECHO(tcd, param.peer_name, param.msg);
                 tt_s = tt;
             }
             else trudpProcessKeepConnection(td);

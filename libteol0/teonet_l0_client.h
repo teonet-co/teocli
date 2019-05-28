@@ -303,8 +303,22 @@ extern "C" {
     #define teoLNullSleep(ms) usleep(ms * 1000)
 #endif
 
+#define send_l0_event_udp(tcd, event, data, data_length, u_data) \
+  if (((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->event_cb != NULL) { \
+    ((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->event_cb(tcd, event, data, data_length, ((teoLNullConnectData*)((trudpData *)((trudpChannelData *)tcd)->td)->user_data)->user_data); \
+}
+#define send_l0_event(con, event, data, data_length) \
+  if(con->event_cb != NULL) { \
+    con->event_cb(con, event, data, data_length, con->user_data); \
+}
 
-    
+//Send echo macros
+#define L0_SEND_ECHO(X,Y,Z) _Generic((X), \
+              teoLNullConnectData *: teoLNullSendEcho, \
+              trudpChannelData *: trudpLNullSendEcho  \
+)(X,Y,Z)
+
+
 // Hight level functions
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
@@ -346,6 +360,7 @@ TEOCLI_API void trudpNetworkSelectLoop(trudpData *td, int timeout);
 TEOCLI_API trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name);
 TEOCLI_API teoLNullConnectData *trudpLNullConnect(teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void trudpLNullFree(teoLNullConnectData *con);
+TEOCLI_API ssize_t trudpLNullSendEcho(trudpChannelData *tcd, const char *peer_name, const char *msg);
 
 TEOCLI_API trudpData *trudp_init(struct app_parameters *ap,  teoLNullConnectData *con);
 

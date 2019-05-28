@@ -38,23 +38,6 @@ static const int BUFFER_SIZE = 2048;
 char *buffer;
 char *remote_address;
 int remote_port_i;
-// Send L0 event to L0 event loop
-
-
-/*, user_data) \ */
-//#if defined(TRUDP_PROTOCOL)
-    #define send_l0_event_udp(tcd, event, data, data_length, u_data) \
-    if (((teoLNullConnectData*)((trudpData *)tcd->td)->user_data)->event_cb != NULL) { \
-        ((teoLNullConnectData*)((trudpData *)tcd->td)->user_data)->event_cb(tcd, event, data, data_length, ((teoLNullConnectData*)((trudpData *)tcd->td)->user_data)->user_data); \
-    }
-//#else
-    // Send connected event
-    #define send_l0_event(con, event, data, data_length) \
-        if(con->event_cb != NULL) { \
-            con->event_cb(con, event, data, data_length, con->user_data); \
-        }
-//#endif
-
 /**
  * Show debug message
  *
@@ -351,7 +334,7 @@ teoLNullSend(teoLNullConnectData *con, uint8_t cmd, const char *peer_name,
  * Create L0 clients packet and send it to L0 server
  *
  * @param con Pointer to teoLNullConnectData
- * @param peer_name Peer name to send to
+ teoLNullSendEcho* @param peer_name Peer name to send to
  * @param msg Message
  *
  * @return Length of send data or -1 at error
@@ -1205,6 +1188,16 @@ trudpLNullFree(teoLNullConnectData *con)
         free(con);
     }
 }
+
+
+ssize_t
+trudpLNullSendEcho(trudpChannelData *tcd, const char *peer_name, const char *msg)
+{
+    char buf[L0_BUFFER_SIZE];
+    size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
+    trudpChannelSendData(tcd, buf, pkg_length);
+}
+
 
 trudpData *
 trudp_init(struct app_parameters *ap,  teoLNullConnectData *con)
