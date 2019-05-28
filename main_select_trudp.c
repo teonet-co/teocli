@@ -201,8 +201,8 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                     const char *ln = "--------------------------------------------"
                                      "---------\n";
                     printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
-                    int i;
-                    for(i = 0; i < (int)client_data_ar->length; i++) {
+                    int i = 0;
+                    for(i = 0; i < (int)client_data_ar->length; ++i) {
 
                         printf("%-12s\n", client_data_ar->client_data[i].name);
                     }
@@ -240,7 +240,7 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                     // Show data
                     printf("Data: %s\n\n", auth_data);
 
-                    connected_flag = 1;
+                    ((trudpChannelData *)tcd)->connected_f = 1;
                     send_l0_event_udp(tcd, EV_L_CONNECTED, &((trudpChannelData *)tcd)->fd, sizeof(((trudpChannelData *)tcd)->fd), NULL);
                 }
                 break;
@@ -310,52 +310,54 @@ int main(int argc, char** argv) {
     teoLNullConnectData* con = l0_connect(event_cb, &param, TR_UDP);
     trudpData *td = trudp_init(&param, con);
 
-    // Create read buffer
-    buffer = malloc(BUFFER_SIZE);
-
     uint32_t tt = 0, tt_s = 0, tt_c = 0, tt_ss = 0;
     const int DELAY = 500000; // uSec
     unsigned long num = 0;
 
 
-    trudpChannelData *tcd = NULL;
+    trudpChannelData *tcd = trudpLNullLogin(td, param.host_name);
+    
+    connection_interface_t connection;
+    trudp_ci_init(&connection, tcd);
 
     // Event loop
     while(!quit_flag) {
 
-        trudpNetworkSelectLoop(td, SEND_MESSAGE_AFTER < DELAY ?
-            SEND_MESSAGE_AFTER : DELAY);
+        trudpNetworkSelectLoop(tcd->td, SEND_MESSAGE_AFTER);
 
         // Current timestamp
         tt = trudpGetTimestamp();
 
         // Connect
-        if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-            if (tcd) {
-                trudpChannelDestroy(tcd);
-                tcd = NULL;
-            }
+        if(!connection.get_connection_status(&connection) && (tt - tt_c) > RECONNECT_AFTER) {
+
+            trudpChannelDestroy(tcd);
+            tcd = NULL;
+            trudp_ci_free(&connection);
+
             tcd = trudpLNullLogin(td, param.host_name);
+            trudp_ci_init(&connection, tcd);
             tt_c = tt;
         }
 
         // When connected
-        if(connected_flag) {
+        if(tcd->connected_f) {
+
             // Send Echo command every 1 second
             if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
-                L0_SEND_ECHO(tcd, param.peer_name, param.msg);
+               // L0_SEND_ECHO(tcd, param.peer_name, param.msg);
+                connection.send_echo(&connection, param.peer_name, param.msg);
                 tt_s = tt;
             }
-            else trudpProcessKeepConnection(td);
+            else trudpProcessKeepConnection(tcd->td);
         }
     }
 
     // Destroy TR-UDP
     teoLNullDisconnect(con);
     trudpChannelDestroy(tcd);
-
     trudpDestroy(td);
-    free(buffer);
+
     
 
     return (EXIT_SUCCESS);

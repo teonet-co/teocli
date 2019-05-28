@@ -33,9 +33,9 @@
 
 //#define TRUDP_PROTOCOL 
 #define DEBUG 0
-int connected_flag = 0;
+
 static const int BUFFER_SIZE = 2048;
-char *buffer;
+//char *buffer;
 char *remote_address;
 int remote_port_i;
 /**
@@ -811,7 +811,7 @@ trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
             }
             else debug(tru, DEBUG,  "Disconnected channel %s\n", key);
 
-            connected_flag = 0;
+            tcd->connected_f = 0;
 
         } break;
 
@@ -823,7 +823,7 @@ trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
             
-            connected_flag = 0;
+            tcd->connected_f = 0;
 
         } break;
 
@@ -1052,10 +1052,12 @@ trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
 void
 trudpNetworkSelectLoop(trudpData *td, int timeout)
 {
+
     int rv = 1;
     fd_set rfds, wfds;
     struct timeval tv;
     uint64_t ts = teoGetTimestampFull();
+
 
 //    while(rv > 0) {
     // Watch server_socket to see when it has input.
@@ -1063,18 +1065,23 @@ trudpNetworkSelectLoop(trudpData *td, int timeout)
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
 
+
     // Process write queue
     if (trudpGetWriteQueueSize(td)) {
         FD_SET(td->fd, &wfds);
     }
 
+
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
+
 
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
     usecToTv(&tv, t);
 
+
     rv = select((int)td->fd + 1, &rfds, &wfds, NULL, &tv);
+
 
     if (rv == -1) {
         fprintf(stderr, "select() handle error\n");
@@ -1088,18 +1095,23 @@ trudpNetworkSelectLoop(trudpData *td, int timeout)
     } else {  // There is a data in fd
         // Process read fd
         if(FD_ISSET(td->fd, &rfds)) {
-
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
+            char *buffer = malloc(BUFFER_SIZE);
             ssize_t recvlen = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
                     (__SOCKADDR_ARG)&remaddr, &addr_len);
 
             // Process received packet
             if(recvlen > 0) {
-                size_t data_length;
+
+               size_t data_length;
                 trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
+
             }
+
+            free(buffer);
         }
 
         // Process write fd
@@ -1193,6 +1205,7 @@ trudpLNullFree(teoLNullConnectData *con)
 ssize_t
 trudpLNullSendEcho(trudpChannelData *tcd, const char *peer_name, const char *msg)
 {
+    printf("trudpLNullSendEcho\n");
     char buf[L0_BUFFER_SIZE];
     size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
     trudpChannelSendData(tcd, buf, pkg_length);
@@ -1247,4 +1260,42 @@ inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKI
 int set_tcp_nodelay(int sd) __attribute_deprecated__;
 inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
+
+
+#define PREPARE_IMPL(c) \
+  trudp_impl_t* impl = (trudp_impl_t*)c->impl_;
+
+int trudp_connection_status(connection_interface_t *ci)
+{
+    PREPARE_IMPL(ci)
+    return impl->tcd->connected_f;
+}
+
+ssize_t trudp_send_echo(struct connection_interface_t *ci, const char *peer_name,
+        const char *msg)
+{
+    PREPARE_IMPL(ci)
+    trudpLNullSendEcho(impl->tcd, peer_name, msg);
+}
+
+void
+trudp_ci_init(connection_interface_t *ci, trudpChannelData *tcd)
+{
+    ci->impl_ = malloc(sizeof(trudp_impl_t));
+    trudp_impl_t *impl = (trudp_impl_t *)ci->impl_;
+
+    impl->tcd = tcd;
+    impl->z1488 = 1488;
+
+    ci->send_echo = &trudp_send_echo;
+    ci->get_connection_status = &trudp_connection_status;
+}
+
+
+void
+trudp_ci_free(connection_interface_t *ci)
+{
+    PREPARE_IMPL(ci)
+    free(impl);
+}
 #undef DEBUG_MSG

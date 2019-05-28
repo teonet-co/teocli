@@ -7,7 +7,7 @@ AM_CFLAGS = -I../libtrudp/src/ -I../libtrudp/embedded/teoccl/src/
 
 lib_LTLIBRARIES = libteocli.la
 libteocli_la_SOURCES = ../libteol0/teonet_l0_client.c  ../libteol0/teonet_socket.c ../libteol0/teonet_time.c
-include_HEADERS = ../libteol0/teonet_l0_client.h ../libteol0/teonet_socket.h ../libteol0/teonet_time.h ../libteol0/teonet_platform.h
+include_HEADERS = ../libteol0/teonet_l0_client.h ../libteol0/teonet_socket.h ../libteol0/teonet_time.h ../libteol0/teonet_platform.h ../libteol0/connection_interface.h
 libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 7:0:0 
 
 noinst_PROGRAMS =
