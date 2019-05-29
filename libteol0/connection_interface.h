@@ -11,6 +11,8 @@ typedef struct connection_interface_t {
 
   ssize_t (*send_echo)(struct connection_interface_t*, const char *peer_name, const char *msg);
   int (*get_connection_status)(struct connection_interface_t*);
+  int (*read_event_loop)(struct connection_interface_t*, int timeout);
+
   void *impl_;
 
 } connection_interface_t;

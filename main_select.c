@@ -225,25 +225,26 @@ int main(int argc, char** argv) {
     while(1) {
 
         // Connect to L0 server
-        teoLNullConnectData* con = l0_connect(event_cb, &param, TCP);
-
-        if(con->status > 0) {
+        connection_interface_t connection;
+        tcp_ci_init(&connection, event_cb, &param);
+        if(connection.get_connection_status(&connection) > 0) {
 
             unsigned long num = 0;
             const int timeout = 50;
 
             // Event loop
-            while(teoLNullReadEventLoop(con, timeout)) {
+            while(connection.read_event_loop(&connection, timeout)) {
 
                 // Send Echo command every second
                 if( !(num % (1000 / timeout)) )
-                    L0_SEND_ECHO(con, param.peer_name, param.msg);
+                    //L0_SEND_ECHO(con, param.peer_name, param.msg);
+                    connection.send_echo(&connection, param.peer_name, param.msg); 
 
                 num++;
             }
 
             // Close connection
-            teoLNullDisconnect(con);
+            tcp_ci_free(&connection);
         }
         else teoLNullSleep(1000);
     }

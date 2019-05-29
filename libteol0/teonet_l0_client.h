@@ -383,6 +383,8 @@ typedef struct {
 
 TEOCLI_API void trudp_ci_init(connection_interface_t *ci, trudpChannelData *tcd);
 TEOCLI_API void trudp_ci_free(connection_interface_t *ci);
+TEOCLI_API void tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
+TEOCLI_API void tcp_ci_free(connection_interface_t *ci);
 // CALLBACKS
 
 #ifdef	__cplusplus

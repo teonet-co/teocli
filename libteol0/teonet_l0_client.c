@@ -1262,19 +1262,22 @@ inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 
 
-#define PREPARE_IMPL(c) \
+// TR-UDP
+#define PREPARE_IMPL_TRUDP(c) \
   trudp_impl_t* impl = (trudp_impl_t*)c->impl_;
 
-int trudp_connection_status(connection_interface_t *ci)
+int
+trudp_connection_status(connection_interface_t *ci)
 {
-    PREPARE_IMPL(ci)
+    PREPARE_IMPL_TRUDP(ci)
     return impl->tcd->connected_f;
 }
 
-ssize_t trudp_send_echo(struct connection_interface_t *ci, const char *peer_name,
+ssize_t
+trudp_send_echo(struct connection_interface_t *ci, const char *peer_name,
         const char *msg)
 {
-    PREPARE_IMPL(ci)
+    PREPARE_IMPL_TRUDP(ci)
     trudpLNullSendEcho(impl->tcd, peer_name, msg);
 }
 
@@ -1295,7 +1298,81 @@ trudp_ci_init(connection_interface_t *ci, trudpChannelData *tcd)
 void
 trudp_ci_free(connection_interface_t *ci)
 {
-    PREPARE_IMPL(ci)
+    PREPARE_IMPL_TRUDP(ci)
+    free(impl);
+}
+
+// TCP
+#define PREPARE_IMPL_TCP(c) \
+  tcp_impl_t* impl = (tcp_impl_t*)c->impl_;
+
+int
+tcp_connection_status(connection_interface_t *ci)
+{
+    PREPARE_IMPL_TCP(ci)
+    return impl->con->status;
+}
+
+ssize_t
+tcp_send_echo(struct connection_interface_t *ci, const char *peer_name,
+        const char *msg)
+{
+    PREPARE_IMPL_TCP(ci)
+    teoLNullSendEcho(impl->con, peer_name, msg);
+}
+
+int
+tcp_read_event_loop(struct connection_interface_t *ci, int timeout)
+{
+    PREPARE_IMPL_TCP(ci)
+    return teoLNullReadEventLoop(impl->con, timeout);
+}
+
+void
+tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
+{
+    ci->impl_ = malloc(sizeof(tcp_impl_t));
+    tcp_impl_t *impl = (tcp_impl_t *)ci->impl_;
+/*
+teoLNullConnectData *
+l0_connect(teoLNullEventsCb event_cb, void *params, PROTOCOL protocol)
+{
+    struct app_parameters *l_params = (struct app_parameters *)params;
+
+    teoLNullConnectData *con = NULL;
+
+    switch (protocol) {
+        case TR_UDP: {
+            printf("PROTOCOL %s\n", "TRUDP");
+            con = trudpLNullConnect(event_cb, params);
+            break;
+        }
+        case TCP: {
+            printf("PROTOCOL %s\n", "TCP");
+            con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
+                    event_cb, params);
+             break;
+        }
+    }
+
+    return con;
+}
+*/
+    struct app_parameters *l_params = (struct app_parameters *)params;
+    impl->con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
+                    event_cb, params);
+    impl->z228 = 228;
+
+    ci->send_echo = &tcp_send_echo;
+    ci->get_connection_status = &tcp_connection_status;
+    ci->read_event_loop = &tcp_read_event_loop;
+}
+
+void
+tcp_ci_free(connection_interface_t *ci)
+{
+    PREPARE_IMPL_TCP(ci)
+    teoLNullDisconnect(impl->con);
     free(impl);
 }
 #undef DEBUG_MSG
