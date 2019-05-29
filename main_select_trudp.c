@@ -98,18 +98,7 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
             if(*fd > 0) {
 
                 printf("Successfully connect to server!!!!!!\n");
-
-//                // Send (1) Initialization packet to L0 server
-//                ssize_t snd = teoLNullLogin(con, param->host_name);
-//                if(snd == -1) perror(strerror(errno));
-//                printf("\nSend %d bytes packet to L0 server, "
-//                       "Initialization packet\n",
-//                       (int)snd);
-
-                // Send (2) peer list request to peer, command CMD_L_PEERS
-                //snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
-
-                //ssize_t snd = 0;
+ 
                 char buf[BUFFER_SIZE];
                 
                 // Send peers request
@@ -128,31 +117,17 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                        "cmd = %d (CMD_L_L0_CLIENTS)\n",
                        (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
 
-//                // Send (3) echo request to peer, command CMD_L_ECHO
-//                //
-//                // Add current time to the end of message (it should be return
-//                // back by server)
-//                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-//                if(snd == -1) perror(strerror(errno));
-//                printf("Send %d bytes packet to L0 server to peer %s, "
-//                       "cmd = %d (CMD_L_ECHO), "
-//                       "data: %s\n",
-//                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
-
-                // Show empty line
                 printf("\n");
 
-            }
-            else {
-
+            } else {
                 printf("Can't connect to server\n");
             }
-
         } break;
 
         case EV_L_DISCONNECTED:
+        {
             printf("Disconnected ...\n");
-            break;
+        } break;
 
         case EV_L_RECEIVED:
         {
@@ -203,23 +178,18 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                     printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
                     int i = 0;
                     for(i = 0; i < (int)client_data_ar->length; ++i) {
-
                         printf("%-12s\n", client_data_ar->client_data[i].name);
                     }
                     printf("%s", ln);
-
                 } break;
 
                 case CMD_L_ECHO_ANSWER:
                 {
                     printf("Got echo answer command\n");
                     data = cp->peer_name + cp->peer_name_length;
-                    int trip_time = teoLNullProccessEchoAnswer(data);
-
-                    // Show data
                     printf("Data: %s\n", (char*)data);
 
-                    // Show trip time
+                    int trip_time = teoLNullProccessEchoAnswer(data);
                     printf("Trip time: %d ms\n\n", trip_time);
 
                 } break;
@@ -227,30 +197,22 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                 case CMD_L_ECHO:
                 {
                     printf("Got echo command\n");
-
                 } break;
 
-                case CMD_L_AUTH_LOGIN_ANSWER: {
-
+                case CMD_L_AUTH_LOGIN_ANSWER:
+                {
                     printf("Got answer from authentication server\n");
-
-                    const char *auth_data = (const char *)
-                            (cp->peer_name + cp->peer_name_length);
-
-                    // Show data
+                    const char *auth_data = (const char *) (cp->peer_name + cp->peer_name_length);
                     printf("Data: %s\n\n", auth_data);
 
                     ((trudpChannelData *)tcd)->connected_f = 1;
                     send_l0_event_udp(tcd, EV_L_CONNECTED, &((trudpChannelData *)tcd)->fd, sizeof(((trudpChannelData *)tcd)->fd), NULL);
-                }
-                break;
+                } break;
 
-
-                default:
+                default: {
                     printf("Got unknown command\n");
-                    break;
+                } break;
             }
-
         } break;
 
         default:
@@ -283,7 +245,7 @@ void INThandler(int sig)
  * @return
  */
 int main(int argc, char** argv) {
-   signal(SIGINT, INThandler); 
+    signal(SIGINT, INThandler); 
     // Welcome message
     printf("Teonet L0 client with Select and Event Loop Callback example "
            "version " TL0CN_VERSION " (Native TCP/UDP Client)\n\n");
@@ -307,58 +269,43 @@ int main(int argc, char** argv) {
     // Initialize L0 Client library
     teoLNullInit();
      
-    teoLNullConnectData* con = l0_connect(event_cb, &param, TR_UDP);
-    trudpData *td = trudp_init(&param, con);
-
     uint32_t tt = 0, tt_s = 0, tt_c = 0, tt_ss = 0;
     const int DELAY = 500000; // uSec
     unsigned long num = 0;
-
-
-    trudpChannelData *tcd = trudpLNullLogin(td, param.host_name);
-    
+   
     connection_interface_t connection;
-    trudp_ci_init(&connection, tcd);
+    trudp_ci_init(&connection, event_cb, &param);
 
     // Event loop
     while(!quit_flag) {
 
-        trudpNetworkSelectLoop(tcd->td, SEND_MESSAGE_AFTER);
-
+        connection.read_event_loop(&connection, SEND_MESSAGE_AFTER);
         // Current timestamp
         tt = trudpGetTimestamp();
 
         // Connect
         if(!connection.get_connection_status(&connection) && (tt - tt_c) > RECONNECT_AFTER) {
-
-            trudpChannelDestroy(tcd);
-            tcd = NULL;
-            trudp_ci_free(&connection);
-
-            tcd = trudpLNullLogin(td, param.host_name);
-            trudp_ci_init(&connection, tcd);
+            trudp_ci_clear_channel(&connection, &param);
             tt_c = tt;
         }
 
         // When connected
-        if(tcd->connected_f) {
-
+        if(connection.get_connection_status(&connection)) {
             // Send Echo command every 1 second
             if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
                // L0_SEND_ECHO(tcd, param.peer_name, param.msg);
                 connection.send_echo(&connection, param.peer_name, param.msg);
                 tt_s = tt;
             }
-            else trudpProcessKeepConnection(tcd->td);
+            else connection.keep_connection(&connection);
         }
     }
 
     // Destroy TR-UDP
-    teoLNullDisconnect(con);
-    trudpChannelDestroy(tcd);
-    trudpDestroy(td);
-
+    trudp_ci_free(&connection);
     
+    // Cleanup L0 Client library
+    teoLNullCleanup();
 
     return (EXIT_SUCCESS);
 }

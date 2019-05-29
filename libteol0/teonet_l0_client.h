@@ -325,9 +325,6 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *l0_connect(teoLNullEventsCb event_cb, void *params,
-    PROTOCOL protocol);
-
 TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, uint16_t port);
 TEOCLI_API teoLNullConnectData *teoLNullConnectE(const char *server, uint16_t port,
         teoLNullEventsCb event_cb, void *user_data);
@@ -376,12 +373,14 @@ typedef struct {
 
 typedef struct {
     trudpChannelData *tcd;
+    trudpData *td;
     int z1488;
 } trudp_impl_t;
 
 #include "connection_interface.h"
 
-TEOCLI_API void trudp_ci_init(connection_interface_t *ci, trudpChannelData *tcd);
+TEOCLI_API void trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
+TEOCLI_API void trudp_ci_clear_channel(connection_interface_t *ci, void *params);
 TEOCLI_API void trudp_ci_free(connection_interface_t *ci);
 TEOCLI_API void tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
 TEOCLI_API void tcp_ci_free(connection_interface_t *ci);

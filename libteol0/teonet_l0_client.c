@@ -197,31 +197,6 @@ teoLNullConnectE(const char *server, uint16_t port, teoLNullEventsCb event_cb, v
     return con;
 }
 
-
-teoLNullConnectData *
-l0_connect(teoLNullEventsCb event_cb, void *params, PROTOCOL protocol)
-{
-    struct app_parameters *l_params = (struct app_parameters *)params;
-
-    teoLNullConnectData *con = NULL;
-
-    switch (protocol) {
-        case TR_UDP: {
-            printf("PROTOCOL %s\n", "TRUDP");
-            con = trudpLNullConnect(event_cb, params);
-            break;
-        }
-        case TCP: {
-            printf("PROTOCOL %s\n", "TCP");
-            con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
-                    event_cb, params);
-             break;
-        }
-    }
-
-    return con;
-}
-
 /**
  * Disconnect from server and free teoLNullConnectData
  *
@@ -1205,7 +1180,6 @@ trudpLNullFree(teoLNullConnectData *con)
 ssize_t
 trudpLNullSendEcho(trudpChannelData *tcd, const char *peer_name, const char *msg)
 {
-    printf("trudpLNullSendEcho\n");
     char buf[L0_BUFFER_SIZE];
     size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
     trudpChannelSendData(tcd, buf, pkg_length);
@@ -1223,8 +1197,7 @@ trudp_init(struct app_parameters *ap,  teoLNullConnectData *con)
     if(fd <= 0) {
         (void)fprintf(stderr, "Can't bind UDP port ...\n");
         exit(1);
-    }
-    else {
+    } else {
         printf("Start listening at UDP port %d\n", port);
     }
 
@@ -1237,7 +1210,6 @@ trudp_init(struct app_parameters *ap,  teoLNullConnectData *con)
         td = trudpInit(fd, port, trudpEventCback, con);
 
         printf("TR-UDP port created, fd = %d\n", td->fd);
-
     }
 
     return td;
@@ -1261,8 +1233,10 @@ int set_tcp_nodelay(int sd) __attribute_deprecated__;
 inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 
+/*******************
+ * TRUDP INTERFACE *
+ *******************/
 
-// TR-UDP
 #define PREPARE_IMPL_TRUDP(c) \
   trudp_impl_t* impl = (trudp_impl_t*)c->impl_;
 
@@ -1281,28 +1255,63 @@ trudp_send_echo(struct connection_interface_t *ci, const char *peer_name,
     trudpLNullSendEcho(impl->tcd, peer_name, msg);
 }
 
+int
+trudp_read_event_loop(struct connection_interface_t *ci, int timeout)
+{
+    PREPARE_IMPL_TRUDP(ci)
+    trudpNetworkSelectLoop(impl->tcd->td, timeout);
+    return 1;//just for seems interface
+}
+size_t
+trudp_keep_connection(struct connection_interface_t *ci)
+{
+    PREPARE_IMPL_TRUDP(ci)
+    return trudpProcessKeepConnection(impl->tcd->td);
+}
+
 void
-trudp_ci_init(connection_interface_t *ci, trudpChannelData *tcd)
+trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
 {
     ci->impl_ = malloc(sizeof(trudp_impl_t));
     trudp_impl_t *impl = (trudp_impl_t *)ci->impl_;
 
-    impl->tcd = tcd;
+    struct app_parameters *l_params = (struct app_parameters *)params;
+    teoLNullConnectData* con = trudpLNullConnect(event_cb, params);
+    impl->td = trudp_init(l_params, con);
+
+    impl->tcd = trudpLNullLogin(impl->td, l_params->host_name);
     impl->z1488 = 1488;
 
     ci->send_echo = &trudp_send_echo;
     ci->get_connection_status = &trudp_connection_status;
+    ci->read_event_loop = &trudp_read_event_loop;
+    ci->keep_connection = &trudp_keep_connection;
 }
 
+void 
+trudp_ci_clear_channel(connection_interface_t *ci, void *params)
+{
+    struct app_parameters *l_params = (struct app_parameters *)params;
+    PREPARE_IMPL_TRUDP(ci)
+    trudpChannelDestroy(impl->tcd);
+    impl->tcd = trudpLNullLogin(impl->td, l_params->host_name);
+}
 
 void
 trudp_ci_free(connection_interface_t *ci)
 {
     PREPARE_IMPL_TRUDP(ci)
+
+    teoLNullConnectData *con = (teoLNullConnectData *)(impl->td)->user_data;
+    teoLNullDisconnect(con);
+    trudpChannelDestroy(impl->tcd);
+    trudpDestroy(impl->td);
     free(impl);
 }
 
-// TCP
+/*****************
+ * TCP INTERFACE *
+ *****************/
 #define PREPARE_IMPL_TCP(c) \
   tcp_impl_t* impl = (tcp_impl_t*)c->impl_;
 
@@ -1333,31 +1342,6 @@ tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
 {
     ci->impl_ = malloc(sizeof(tcp_impl_t));
     tcp_impl_t *impl = (tcp_impl_t *)ci->impl_;
-/*
-teoLNullConnectData *
-l0_connect(teoLNullEventsCb event_cb, void *params, PROTOCOL protocol)
-{
-    struct app_parameters *l_params = (struct app_parameters *)params;
-
-    teoLNullConnectData *con = NULL;
-
-    switch (protocol) {
-        case TR_UDP: {
-            printf("PROTOCOL %s\n", "TRUDP");
-            con = trudpLNullConnect(event_cb, params);
-            break;
-        }
-        case TCP: {
-            printf("PROTOCOL %s\n", "TCP");
-            con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
-                    event_cb, params);
-             break;
-        }
-    }
-
-    return con;
-}
-*/
     struct app_parameters *l_params = (struct app_parameters *)params;
     impl->con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
                     event_cb, params);
@@ -1366,6 +1350,7 @@ l0_connect(teoLNullEventsCb event_cb, void *params, PROTOCOL protocol)
     ci->send_echo = &tcp_send_echo;
     ci->get_connection_status = &tcp_connection_status;
     ci->read_event_loop = &tcp_read_event_loop;
+    ci->keep_connection = NULL;
 }
 
 void
