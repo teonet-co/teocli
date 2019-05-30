@@ -37,6 +37,10 @@ extern int usleep (__useconds_t __useconds);
 extern char *remote_address;
 extern int remote_port_i;
 
+typedef enum PROTOCOL {
+  TR_UDP,
+  TCP
+} PROTOCOL;
 
 /**
  * Application parameters structure
@@ -48,13 +52,9 @@ struct app_parameters {
     int tcp_port;
     const char *peer_name;
     const char *msg;
-
+    PROTOCOL proto;
 };
 
-typedef enum PROTOCOL {
-  TR_UDP,
-  TCP
-} PROTOCOL;
 /**
  * L0 System commands
  */
@@ -331,7 +331,7 @@ TEOCLI_API teoLNullConnectData *teoLNullConnectE(const char *server, uint16_t po
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
-TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
+TEOCLI_API ssize_t teoLNullLogin(void *connection, const char* host_name, PROTOCOL proto);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
         const char *peer_name, void *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
@@ -368,16 +368,19 @@ uint8_t get_byte_checksum(void *data, size_t data_length);
 
 typedef struct {
     teoLNullConnectData *con;
-    int z228;
 } tcp_impl_t;
 
 typedef struct {
     trudpChannelData *tcd;
     trudpData *td;
-    int z1488;
 } trudp_impl_t;
 
 #include "connection_interface.h"
+
+TEOCLI_API ssize_t l0_send_msg(void *connection, uint8_t cmd, const char *peer_name,
+    void *data, size_t data_length, PROTOCOL proto);
+TEOCLI_API ssize_t l0_send_echo(void *connection, const char *peer_name, const char *msg,
+    PROTOCOL proto);
 
 TEOCLI_API void trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
 TEOCLI_API void trudp_ci_clear_channel(connection_interface_t *ci, void *params);

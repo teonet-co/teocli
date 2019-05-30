@@ -99,26 +99,49 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
 
                 printf("Successfully connect to server!!!!!!\n");
  
-                char buf[BUFFER_SIZE];
-                
-                // Send peers request
-                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, /*79*/  CMD_L_PEERS, param->peer_name, NULL, 0);
-                ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);
-                //
-                printf("Send %d bytes packet to L0 server to peer %s, "
+                // Send (1) Initialization packet to L0 server
+/*                ssize_t snd = teoLNullLogin(tcd, param->host_name, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("\nSend %d bytes packet to L0 server Initialization packet\n", (int)snd);
+                }
+  */             
+                // Send (2) peer list request to peer, command CMD_L_PEERS
+                ssize_t snd = l0_send_msg(tcd, CMD_L_PEERS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
+                }
 
-                // Send lients request
-                pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
-                snd = trudpChannelSendData(tcd, buf, pkg_length);
-                //
-                printf("Send %d bytes packet to L0 server to peer %s, "
+                // Send (3) clients list request
+                snd = l0_send_msg(tcd, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_L0_CLIENTS)\n",
                        (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
+                }
+
+                // Send (3) echo request to peer, command CMD_L_ECHO
+                //
+                // Add current time to the end of message (it should be return
+                // back by server)
+                snd = l0_send_echo(tcd, param->peer_name, param->msg, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
+                       "cmd = %d (CMD_L_ECHO), "
+                       "data: %s\n",
+                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+                }
 
                 printf("\n");
-
             } else {
                 printf("Can't connect to server\n");
             }
@@ -187,11 +210,10 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                 {
                     printf("Got echo answer command\n");
                     data = cp->peer_name + cp->peer_name_length;
-                    printf("Data: %s\n", (char*)data);
-
                     int trip_time = teoLNullProccessEchoAnswer(data);
-                    printf("Trip time: %d ms\n\n", trip_time);
 
+                    printf("Data: %s\n", (char*)data);
+                    printf("Trip time: %d ms\n\n", trip_time);
                 } break;
 
                 case CMD_L_ECHO:
@@ -263,6 +285,7 @@ int main(int argc, char** argv) {
     param.tcp_server = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
+    param.proto = TR_UDP;
     if(argc > 5) param.msg = argv[5];
     else param.msg = "Hello"; // from TRUdp client :)";
 

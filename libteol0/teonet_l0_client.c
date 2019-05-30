@@ -238,7 +238,7 @@ teoLNullShutdown(teoLNullConnectData *con)
  * @return Length of send data or -1 at error
  */
 ssize_t
-teoLNullLogin(teoLNullConnectData *con, const char* host_name)
+teoLNullLogin(void *connection, const char* host_name, PROTOCOL proto)
 {
     ssize_t snd;
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
@@ -258,7 +258,13 @@ teoLNullLogin(teoLNullConnectData *con, const char* host_name)
         #endif
         return 0;
     }
-    snd = teosockSend(con->fd, buf, pkg_length);
+    if (proto == TCP) {
+        teoLNullConnectData *con = (teoLNullConnectData *)connection;
+        snd = teosockSend(con->fd, buf, pkg_length);
+    } else if (proto == TR_UDP) {
+        trudpChannelData *con = (trudpChannelData *)connection;
+        snd = trudpChannelSendData(con, buf, pkg_length);
+    }
 
     // Free buffer
     #if defined(_WIN32)
@@ -1233,6 +1239,38 @@ int set_tcp_nodelay(int sd) __attribute_deprecated__;
 inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 
+ssize_t
+l0_send_msg(void *connection, uint8_t cmd, const char *peer_name,
+    void *data, size_t data_length, PROTOCOL proto)
+{
+    if (proto == TCP) {
+        teoLNullConnectData *con = (teoLNullConnectData *)connection; 
+        return teoLNullSend(con, cmd, peer_name, data, data_length);
+    } else if (proto == TR_UDP) {
+        char buf[BUFFER_SIZE];
+        size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, cmd, peer_name, data, data_length);
+        trudpChannelData *con = (trudpChannelData *)connection;
+
+        return trudpChannelSendData(con, buf, pkg_length);
+    }
+
+    return -1;
+}
+
+ssize_t
+l0_send_echo(void *connection, const char *peer_name, const char *msg, PROTOCOL proto)
+{
+    if (proto == TCP) {
+        teoLNullConnectData *con = (teoLNullConnectData *)connection;
+        return teoLNullSendEcho(con, peer_name, msg);
+    } else if (proto == TR_UDP) {
+        trudpChannelData *con = (trudpChannelData *)connection;
+        return trudpLNullSendEcho(con, peer_name, msg);
+    }
+
+    return -1;
+}
+
 /*******************
  * TRUDP INTERFACE *
  *******************/
@@ -1280,7 +1318,6 @@ trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *param
     impl->td = trudp_init(l_params, con);
 
     impl->tcd = trudpLNullLogin(impl->td, l_params->host_name);
-    impl->z1488 = 1488;
 
     ci->send_echo = &trudp_send_echo;
     ci->get_connection_status = &trudp_connection_status;
@@ -1345,7 +1382,6 @@ tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
     struct app_parameters *l_params = (struct app_parameters *)params;
     impl->con = teoLNullConnectE(l_params->tcp_server, l_params->tcp_port,
                     event_cb, params);
-    impl->z228 = 228;
 
     ci->send_echo = &tcp_send_echo;
     ci->get_connection_status = &tcp_connection_status;

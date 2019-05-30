@@ -70,37 +70,50 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 printf("Successfully connect to server\n");
 
                 // Send (1) Initialization packet to L0 server
-                ssize_t snd = teoLNullLogin(con, param->host_name);
-                if(snd == -1) perror(strerror(errno));
-                printf("\nSend %d bytes packet to L0 server, "
-                       "Initialization packet\n",
-                       (int)snd);
+                ssize_t snd = teoLNullLogin(con, param->host_name, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("\nSend %d bytes packet to L0 server Initialization packet\n", (int)snd);
+                }
 
                 // Send (2) peer list request to peer, command CMD_L_PEERS
-                snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
-                printf("Send %d bytes packet to L0 server to peer %s, "
-                       "cmd = %d (CMD_L_PEERS)\n",
+                snd = l0_send_msg(con, CMD_L_PEERS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
+                }
+
+                // Send (3) clients list request
+                snd = l0_send_msg(con, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
+                       "cmd = %d (CMD_L_L0_CLIENTS)\n",
+                       (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
+                }
 
                 // Send (3) echo request to peer, command CMD_L_ECHO
                 //
                 // Add current time to the end of message (it should be return
                 // back by server)
-                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                if(snd == -1) perror(strerror(errno));
-                printf("Send %d bytes packet to L0 server to peer %s, "
+                snd = l0_send_echo(con, param->peer_name, param->msg, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_ECHO), "
                        "data: %s\n",
                        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+                }
 
-                // Show empty line
                 printf("\n");
-
-            }
-            else {
+            } else {
                 printf("Can't connect to server\n");
             }
-
         } break;
 
         case EV_L_DISCONNECTED:
@@ -146,18 +159,29 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     }
                 } break;
 
+                case CMD_L_L0_CLIENTS_ANSWER: {
+
+                    // Show peer list
+                    teonet_client_data_ar *client_data_ar = (teonet_client_data_ar *)
+                            (cp->peer_name + cp->peer_name_length);
+                    const char *ln = "--------------------------------------------"
+                                     "---------\n";
+                    printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
+                    int i = 0;
+                    for(i = 0; i < (int)client_data_ar->length; ++i) {
+                        printf("%-12s\n", client_data_ar->client_data[i].name);
+                    }
+                    printf("%s", ln);
+                } break;
+
                 case CMD_L_ECHO_ANSWER:
                 {
                     printf("Got echo answer command\n");
                     data = cp->peer_name + cp->peer_name_length;
                     int trip_time = teoLNullProccessEchoAnswer(data);
 
-                    // Show data
                     printf("Data: %s\n", (char*)data);
-
-                    // Show trip time
                     printf("Trip time: %d ms\n\n", trip_time);
-
                 } break;
 
                 case CMD_L_AUTH_LOGIN_ANSWER: {
@@ -167,20 +191,17 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     const char *auth_data = (const char *)
                             (cp->peer_name + cp->peer_name_length);
 
-                    // Show data
                     printf("Data: %s\n\n", auth_data);
-                }
-                break;
+                } break;
 
                 case CMD_L_ECHO:
                 {
                     printf("Got echo command\n");
-
                 } break;
 
-                default:
+                default: {
                     printf("Got unknown command\n");
-                    break;
+                } break;
             }
 
         } break;
@@ -225,6 +246,7 @@ int main(int argc, char** argv) {
     param.tcp_server = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
+    param.proto = TCP;
     if(argc > 5) param.msg = argv[5];
     else param.msg = "Hello";
 
