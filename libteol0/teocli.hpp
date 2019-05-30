@@ -180,7 +180,7 @@ public:
      * @return Length of send data or -1 at error
      */
     ssize_t loginHost(const char* host_name) {
-        return teoLNullLogin(con, host_name);
+        return teoLNullLogin(con, host_name, TCP);
     }
 
     /**

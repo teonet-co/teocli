@@ -20,5 +20,4 @@ typedef struct connection_interface_t {
 
 } connection_interface_t;
 
-
 #endif	/* CONNECTION_INTERFACE_H */

@@ -20,13 +20,13 @@ noinst_PROGRAMS += teocli_s
 teocli_s_SOURCES = ../main_select.c
 teocli_s_LDADD = libteocli.la
 
-#noinst_PROGRAMS += teocli_cpp  
-#teocli_cpp_SOURCES = ../main_cpp.cpp
-#teocli_cpp_LDADD = libteocli.la 
+noinst_PROGRAMS += teocli_cpp  
+teocli_cpp_SOURCES = ../main_cpp.cpp
+teocli_cpp_LDADD = libteocli.la 
 
-#noinst_PROGRAMS += teocli_s_cpp
-#teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
-#teocli_s_cpp_LDADD = libteocli.la
+noinst_PROGRAMS += teocli_s_cpp
+teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
+teocli_s_cpp_LDADD = libteocli.la
 
 
 LIBS = ../libtrudp/src/.libs/libtrudp.a ../libtrudp/embedded/teoccl/src/.libs/libteoccl.a
