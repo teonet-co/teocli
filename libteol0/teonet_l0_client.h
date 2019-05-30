@@ -384,10 +384,11 @@ TEOCLI_API ssize_t l0_send_echo(void *connection, const char *peer_name, const c
 
 TEOCLI_API void trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
 TEOCLI_API void trudp_ci_clear_channel(connection_interface_t *ci, void *params);
-TEOCLI_API void trudp_ci_free(connection_interface_t *ci);
+//TEOCLI_API void trudp_ci_free(connection_interface_t *ci);
 TEOCLI_API void tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
-TEOCLI_API void tcp_ci_free(connection_interface_t *ci);
-// CALLBACKS
+//TEOCLI_API void tcp_ci_free(connection_interface_t *ci);
+
+TEOCLI_API void ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params);
 
 #ifdef	__cplusplus
 }

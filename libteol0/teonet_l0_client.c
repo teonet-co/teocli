@@ -1308,6 +1308,27 @@ trudp_keep_connection(struct connection_interface_t *ci)
 }
 
 void
+trudp_free_connection(connection_interface_t *ci)
+{
+    PREPARE_IMPL_TRUDP(ci)
+
+    teoLNullConnectData *con = (teoLNullConnectData *)(impl->td)->user_data;
+    teoLNullDisconnect(con);
+    trudpChannelDestroy(impl->tcd);
+    trudpDestroy(impl->td);
+    free(impl);
+}
+
+void 
+trudp_channel_free(connection_interface_t *ci, void *params)
+{
+    struct app_parameters *l_params = (struct app_parameters *)params;
+    PREPARE_IMPL_TRUDP(ci)
+    trudpChannelDestroy(impl->tcd);
+    impl->tcd = trudpLNullLogin(impl->td, l_params->host_name);
+}
+
+void
 trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
 {
     ci->impl_ = malloc(sizeof(trudp_impl_t));
@@ -1323,28 +1344,11 @@ trudp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *param
     ci->get_connection_status = &trudp_connection_status;
     ci->read_event_loop = &trudp_read_event_loop;
     ci->keep_connection = &trudp_keep_connection;
+    ci->free_connection = &trudp_free_connection;
+    ci->channel_free    = &trudp_channel_free;
 }
 
-void 
-trudp_ci_clear_channel(connection_interface_t *ci, void *params)
-{
-    struct app_parameters *l_params = (struct app_parameters *)params;
-    PREPARE_IMPL_TRUDP(ci)
-    trudpChannelDestroy(impl->tcd);
-    impl->tcd = trudpLNullLogin(impl->td, l_params->host_name);
-}
 
-void
-trudp_ci_free(connection_interface_t *ci)
-{
-    PREPARE_IMPL_TRUDP(ci)
-
-    teoLNullConnectData *con = (teoLNullConnectData *)(impl->td)->user_data;
-    teoLNullDisconnect(con);
-    trudpChannelDestroy(impl->tcd);
-    trudpDestroy(impl->td);
-    free(impl);
-}
 
 /*****************
  * TCP INTERFACE *
@@ -1375,6 +1379,25 @@ tcp_read_event_loop(struct connection_interface_t *ci, int timeout)
 }
 
 void
+tcp_channel_free(struct connection_interface_t *ci)
+{
+}
+
+size_t
+tcp_keep_connection(struct connection_interface_t *ci)
+{
+    return 1;
+}
+
+void
+tcp_free_connection(connection_interface_t *ci)
+{
+    PREPARE_IMPL_TCP(ci)
+    teoLNullDisconnect(impl->con);
+    free(impl);
+}
+
+void
 tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
 {
     ci->impl_ = malloc(sizeof(tcp_impl_t));
@@ -1386,14 +1409,23 @@ tcp_ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
     ci->send_echo = &tcp_send_echo;
     ci->get_connection_status = &tcp_connection_status;
     ci->read_event_loop = &tcp_read_event_loop;
-    ci->keep_connection = NULL;
+    ci->keep_connection = &tcp_keep_connection;
+    ci->free_connection = &tcp_free_connection;
+    ci->channel_free    = &tcp_channel_free;
 }
 
+
 void
-tcp_ci_free(connection_interface_t *ci)
+ci_init(connection_interface_t *ci, teoLNullEventsCb event_cb, void *params)
 {
-    PREPARE_IMPL_TCP(ci)
-    teoLNullDisconnect(impl->con);
-    free(impl);
+    struct app_parameters *l_params = (struct app_parameters *)params;
+    if (l_params->proto == TCP) {
+        tcp_ci_init(ci, event_cb, params);
+    } else if (l_params->proto == TR_UDP) {
+        trudp_ci_init(ci, event_cb, params);
+    } else {
+        fprintf(stderr, "%s", "Undefined protocol!\n"); 
+    }
 }
+
 #undef DEBUG_MSG

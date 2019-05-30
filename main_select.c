@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
 
         // Connect to L0 server
         connection_interface_t connection;
-        tcp_ci_init(&connection, event_cb, &param);
+        ci_init(&connection, event_cb, &param);
         if(connection.get_connection_status(&connection) > 0) {
 
             unsigned long num = 0;
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
             teoLNullSleep(1000);
         }
         // Close connection
-        tcp_ci_free(&connection);
+        connection.free_connection(&connection);
     }
 
     // Cleanup L0 Client library

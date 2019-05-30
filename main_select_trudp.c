@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
     unsigned long num = 0;
    
     connection_interface_t connection;
-    trudp_ci_init(&connection, event_cb, &param);
+    ci_init(&connection, event_cb, &param);
 
     // Event loop
     while(!quit_flag) {
@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
 
         // Connect
         if(!connection.get_connection_status(&connection) && (tt - tt_c) > RECONNECT_AFTER) {
-            trudp_ci_clear_channel(&connection, &param);
+            connection.channel_free(&connection, &param);
             tt_c = tt;
         }
 
@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
     }
 
     // Destroy TR-UDP
-    trudp_ci_free(&connection);
+    connection.free_connection(&connection);
     
     // Cleanup L0 Client library
     teoLNullCleanup();
