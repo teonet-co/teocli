@@ -256,8 +256,6 @@ void INThandler(int sig)
     quit_flag = 1;
 }
 
-
-
 /**
  * Main L0 Native client example function
  *

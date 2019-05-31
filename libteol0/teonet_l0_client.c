@@ -1113,7 +1113,6 @@ trudpNetworkSelectLoop(trudpData *td, int timeout)
 trudpChannelData *
 trudpLNullLogin(trudpData *td, const char *host_name)
 {
-    printf("trudpLNullLogin!!!!!!!!!\n");
     trudpChannelData *tcd = NULL;
 
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
