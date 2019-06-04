@@ -1378,7 +1378,7 @@ tcp_read_event_loop(struct connection_interface_t *ci, int timeout)
 }
 
 void
-tcp_channel_free(struct connection_interface_t *ci)
+tcp_channel_free(struct connection_interface_t *ci, void *param)
 {
 }
 

@@ -246,6 +246,13 @@ public:
      //   return teoLNullSendEcho(con, peer_name, msg);
     }
 
+    void channel_clean(void *param) {
+      m_connection.channel_free(&m_connection, param);
+    }
+
+    size_t keep_con() {
+      return m_connection.keep_connection(&m_connection);
+    }
     /**
      * Process echo answer data
      * @return Trip time in ms

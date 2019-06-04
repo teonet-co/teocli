@@ -31,6 +31,10 @@ teocli_s_cpp_LDADD = libteocli.la
 
 LIBS = ../libtrudp/src/.libs/libtrudp.a ../libtrudp/embedded/teoccl/src/.libs/libteoccl.a
 
+noinst_PROGRAMS += teocli_s_trudp_cpp
+teocli_s_trudp_cpp_SOURCES = ../main_select_trudp_cpp.cpp ../libteol0/teocli.cpp
+teocli_s_trudp_cpp_LDADD = libteocli.la
+
 noinst_PROGRAMS += teocli_s_trudp
 teocli_s_trudp_SOURCES = ../main_select_trudp.c
 teocli_s_trudp_LDADD = libteocli.la
