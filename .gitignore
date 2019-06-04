@@ -90,3 +90,5 @@ ipch/
 
 
 golang/libteocli\.a
+
+linux/teocli_s_common

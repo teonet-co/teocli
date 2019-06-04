@@ -67,6 +67,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/main_cpp.o \
 	${OBJECTDIR}/main_select.o \
+	${OBJECTDIR}/main_select_common.o \
 	${OBJECTDIR}/main_select_cpp.o \
 	${OBJECTDIR}/main_select_trudp.o \
 	${OBJECTDIR}/nbind/main_select_cpp.o \
@@ -263,6 +264,11 @@ ${OBJECTDIR}/main_select.o: main_select.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select.o main_select.c
+
+${OBJECTDIR}/main_select_common.o: main_select_common.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -DHAVE_MINGW -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_common.o main_select_common.c
 
 ${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}

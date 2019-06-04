@@ -30,6 +30,8 @@ extern int usleep (__useconds_t __useconds);
 #endif
 
 #include "teonet_socket.h"
+#include "../libtrudp/src/trudp.h"
+#include "../libtrudp/src/utils.h"
 
 /**
  * L0 System commands
@@ -98,7 +100,11 @@ typedef struct teoLNullConnectData {
 
     teoLNullEventsCb event_cb;  ///< Event callback function
     void *user_data;            ///< User data
-
+    
+    int tcp_f;                  ///< TCP or UDP flag: TCP == 1
+    trudpData *td;              ///< TRUDP connection data
+    trudpChannelData *tcd;      ///< TRUDP channel data
+    
 } teoLNullConnectData;
 
 #define ARP_TABLE_IP_SIZE 48    // INET6_ADDRSTRLEN = 46
@@ -284,8 +290,8 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, uint16_t port);
-TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, uint16_t port,
+TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
+TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
         teoLNullEventsCb event_cb, void *user_data);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);

@@ -62,6 +62,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/libtrudp/src/udp.o \
 	${OBJECTDIR}/libtrudp/src/utils.o \
 	${OBJECTDIR}/libtrudp/src/write_queue.o \
+	${OBJECTDIR}/main_select_common.o \
 	${OBJECTDIR}/main_select_cpp.o
 
 
@@ -223,6 +224,11 @@ ${OBJECTDIR}/libtrudp/src/write_queue.o: libtrudp/src/write_queue.c
 	${MKDIR} -p ${OBJECTDIR}/libtrudp/src
 	${RM} "$@.d"
 	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/libtrudp/src/write_queue.o libtrudp/src/write_queue.c
+
+${OBJECTDIR}/main_select_common.o: main_select_common.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_select_common.o main_select_common.c
 
 ${OBJECTDIR}/main_select_cpp.o: main_select_cpp.cpp
 	${MKDIR} -p ${OBJECTDIR}
