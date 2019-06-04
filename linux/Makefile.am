@@ -25,7 +25,7 @@ teocli_cpp_SOURCES = ../main_cpp.cpp
 teocli_cpp_LDADD = libteocli.la 
 
 noinst_PROGRAMS += teocli_s_cpp
-teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
+teocli_s_cpp_SOURCES = ../main_select_cpp.cpp ../libteol0/teocli.cpp
 teocli_s_cpp_LDADD = libteocli.la
 
 

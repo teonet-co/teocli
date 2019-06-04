@@ -31,7 +31,7 @@ using namespace std;
  *
  */
 int main(int argc, char** argv) {
-
+/*
     // Welcome message
     cout << "Teonet L0 client example ver " TL0CN_VERSION <<
             " (C++ native client)\n\n";
@@ -208,6 +208,6 @@ int main(int argc, char** argv) {
 
     // Cleanup L0 Client library
     delete teo;
-
+*/
     return 0;
 }

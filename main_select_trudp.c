@@ -226,9 +226,11 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                     printf("Got answer from authentication server\n");
                     const char *auth_data = (const char *) (cp->peer_name + cp->peer_name_length);
                     printf("Data: %s\n\n", auth_data);
-
-                    ((trudpChannelData *)tcd)->connected_f = 1;
-                    send_l0_event_udp(tcd, EV_L_CONNECTED, &((trudpChannelData *)tcd)->fd, sizeof(((trudpChannelData *)tcd)->fd), NULL);
+                    if (param->proto == TR_UDP) {
+                        ((trudpChannelData *)tcd)->connected_f = 1;
+                        send_l0_event_udp(tcd, EV_L_CONNECTED, &((trudpChannelData *)tcd)->fd,
+                                sizeof(((trudpChannelData *)tcd)->fd), NULL);
+                    }
                 } break;
 
                 default: {

@@ -13,7 +13,7 @@ typedef struct connection_interface_t {
   int (*get_connection_status)(struct connection_interface_t*);
   int (*read_event_loop)(struct connection_interface_t*, int timeout);
   size_t (*keep_connection)(struct connection_interface_t*);
-  void (*free_connection)(); 
+  void (*free_connection)(struct connection_interface_t*); 
   void (*channel_free)();
 
   void *impl_;

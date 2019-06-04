@@ -15,8 +15,9 @@
  */
 
 #pragma once
-
+#include <memory>
 #include <string>
+#include <iostream>
 
 #include "teonet_l0_client.h"
 
@@ -37,7 +38,7 @@ public:
     /**
      * Teocli event callback (teoLNullEventsCb)
      */
-    typedef void (*EventsCb)(Teocli &cli, Events event, void *data,
+    typedef void (*EventsCb)(void *cli, Events event, void *data,
                          size_t data_len, void *user_data);
 
 private:
@@ -46,27 +47,27 @@ private:
     EventsCb eventCallBack = NULL;
     teoLNullConnectData *con = NULL;
     std::string clientName = "teocli++-default";
-
+    connection_interface_t m_connection;
     /**
      * Initialize L0 client library.
      *
      * Calls once per application to initialize this client library.
      */
-    inline void init() { teoLNullInit(); }
+    void init() { teoLNullInit(); }
 
     /**
      * Cleanup L0 client library.
      *
      * Calls once per application to cleanup this client library.
      */
-    inline void cleanup() { teoLNullCleanup(); }
+    void cleanup() { teoLNullCleanup(); }
 
     /**
      * Return pointer to user data
      *
      * @return Pointer to user data, or NULL if not set
      */
-    inline void* getUserData() const {
+    void* getUserData() const {
         return userData;
     }
 
@@ -75,7 +76,7 @@ private:
      *
      * @return Pointer to Event CallBack, or NULL if not set
      */
-    inline EventsCb getEventCallBack() const {
+    EventsCb getEventCallBack() const {
         return eventCallBack;
     }
 
@@ -84,11 +85,9 @@ private:
      *
      * @param con
      */
-    inline void setCon(teoLNullConnectData* con) {
+    void setCon(teoLNullConnectData* con) {
         this->con = con;
     }
-
-public:
 
     /**
      * Teonet client simple constructor
@@ -99,12 +98,18 @@ public:
       void *user_data) : Teocli(client) {
       connect(server, port, user_data, event_cb);
     }
+    Teocli(EventsCb event_cb, struct app_parameters* ap);
+public:
+
+    using UniquePtr = std::unique_ptr<Teocli>;
+    using UniqueConstPtr = std::unique_ptr<const Teocli>;
+    static UniquePtr create_connection(EventsCb event_cb, struct app_parameters* ap);
 
     /**
      * Teonet client simple destructor
      */
     virtual ~Teocli() {
-        disconnect();
+  //      disconnect();
         cleanup();
     }
 
@@ -126,14 +131,14 @@ public:
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connect(const char *server, int port,
+    int connect(const char *server, int port,
         void *user_data = NULL, EventsCb event_cb = NULL) {
 
         eventCallBack = event_cb ? event_cb :
-          [](teo::Teocli &cli, teo::Events event, void *data,
+          [](void *cli, teo::Events event, void *data,
             size_t data_length, void *user_data) {
             if(event != EV_L_TICK && event != EV_L_IDLE)
-            cli.eventCb(event, data, data_length, user_data);
+            ((teo::Teocli *)cli)->eventCb(event, data, data_length, user_data);
         };
         userData = user_data;
         con = teoLNullConnectE(server, port,
@@ -146,15 +151,16 @@ public:
      * Disconnect from server and free teoLNullConnectData
      *
      */
-    inline void disconnect() {
-        teoLNullDisconnect(con);
-        con = NULL;
+    void disconnect() {
+      m_connection.free_connection(&m_connection);
+//      teoLNullDisconnect(con);
+//        con = NULL;
     }
 
     /**
      * Shutdown connection (disconnect from server)
      */
-    inline void shutdown() {
+    void shutdown() {
       teoLNullShutdown(con);
     }
 
@@ -168,8 +174,9 @@ public:
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connected() const {
-        return con == NULL ? 0 : con->status;
+    int connected() {
+      return m_connection.get_connection_status(&m_connection);
+//        return con == NULL ? 0 : con->status;
     }
 
     /**
@@ -222,7 +229,7 @@ public:
      *
      * @return Length of send data or -1 at error
      */
-    inline ssize_t send(int cmd, const char *peer_name, void *data,
+    ssize_t send(int cmd, const char *peer_name, void *data,
             size_t data_length) {
         return teoLNullSend(con, cmd, peer_name, data, data_length);
     }
@@ -234,15 +241,16 @@ public:
      * @param msg
      * @return
      */
-    inline ssize_t sendEcho(const char *peer_name, const char *msg) {
-        return teoLNullSendEcho(con, peer_name, msg);
+    ssize_t sendEcho(const char *peer_name, const char *msg) {
+      return m_connection.send_echo(&m_connection, peer_name, msg);
+     //   return teoLNullSendEcho(con, peer_name, msg);
     }
 
     /**
      * Process echo answer data
      * @return Trip time in ms
      */
-    inline int packetEchoAnswerTripTime() {
+    int packetEchoAnswerTripTime() {
         return teoLNullProccessEchoAnswer((char*) packetData());
     }
 
@@ -254,7 +262,7 @@ public:
      * @retval -1 Packet not receiving yet (got part of packet)
      * @retval -2 Wrong packet received (dropped)
      */
-    inline ssize_t recv() {
+    ssize_t recv() {
         return teoLNullRecv(con);
     }
 
@@ -266,7 +274,7 @@ public:
      *
      * @return Number of received bytes or -1 at timeout
      */
-    inline ssize_t recvTimeout(uint32_t timeout) {
+    ssize_t recvTimeout(uint32_t timeout) {
         return teoLNullRecvTimeout(con, timeout);
     }
 
@@ -278,8 +286,9 @@ public:
      *
      * @return 0 - if disconnected or 1 other way
      */
-    inline int eventLoop(int timeout = 0) {
-        return teoLNullReadEventLoop(con, timeout);
+    int eventLoop(int timeout = 0) {
+      return m_connection.read_event_loop(&m_connection, timeout);
+//        return teoLNullReadEventLoop(con, timeout);
     }
     static void eventLoopE(void *par) {
         Teocli *cli = (Teocli*) par;
@@ -291,7 +300,7 @@ public:
      *
      * @param ms Time to sleep in ms
      */
-    inline void sleep(int ms) const {
+    void sleep(int ms) const {
         teoLNullSleep(ms);
     }
 
@@ -299,7 +308,7 @@ public:
      * Return read buffer of last recv call
      * @return Pointer to teoLNullCPacket
      */
-    inline teoLNullCPacket *packet() const {
+    teoLNullCPacket *packet() const {
         return (teoLNullCPacket*) con->read_buffer;
     }
 
@@ -307,7 +316,7 @@ public:
      * Return packet arp data of last recv call
      * @return Pointer to ksnet_arp_data_ar
      */
-    inline ksnet_arp_data_ar *packetArpData() const {
+    ksnet_arp_data_ar *packetArpData() const {
         return (ksnet_arp_data_ar *)
                     (packet()->peer_name + packet()->peer_name_length);
     }
@@ -316,7 +325,7 @@ public:
      * Return packet clients array data
      * @return Pointer to teonet_client_data_ar
      */
-    inline teonet_client_data_ar *packetClientData() const {
+    teonet_client_data_ar *packetClientData() const {
         return (teonet_client_data_ar *)
                     (packet()->peer_name + packet()->peer_name_length);
     }
@@ -325,7 +334,7 @@ public:
      * Return packet data
      * @return Pointer to void data
      */
-    inline void *packetData() const {
+    void *packetData() const {
         return (void*) (packet()->peer_name + packet()->peer_name_length);
     }
 
@@ -343,20 +352,20 @@ private:
     static void callbackBind (void *con, Events event, void *data,
             size_t data_len, void *user_data) {
 
-        Teocli &cli = *(Teocli *) user_data;
+        Teocli *cli = (Teocli *) user_data;
 
         if(event == EV_L_CONNECTED) {
 
-            cli.setCon((teoLNullConnectData *)con);
-            if(cli.connected() > 0) {
+            cli->setCon((teoLNullConnectData *)con);
+            if(cli->connected() > 0) {
 
                 // Send (1) Initialization packet to L0 server, *** REQUERED ***
-                ssize_t snd = cli.login();
+                ssize_t snd = cli->login();
                 if(snd == -1) std::cout << "Can't send login to server\n";
             }
         }
 
-        cli.getEventCallBack()(cli, event, data, data_len, cli.getUserData());
+        cli->getEventCallBack()((void *)cli, event, data, data_len, cli->getUserData());
     }
 
 public:

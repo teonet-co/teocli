@@ -41,19 +41,6 @@
 #include "libteol0/teocli.hpp"
 
 /**
- * Application parameters structure
- */
-struct AppParameters {
-
-    const char *client_name;
-    const char *tcp_server;
-    int tcp_port;
-    const char *peer_name;
-    const char *message;
-
-};
-
-/**
  * Teonet L0 client event callback
  *
  * @param cli
@@ -62,37 +49,38 @@ struct AppParameters {
  * @param data_len
  * @param user_data
  */
-static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
+/*static void event_cb(void *con, teo::Events event, void *data,
             size_t data_len, void *user_data) {
 
-    const AppParameters *param = (const AppParameters *)user_data;
+    const struct app_parameters *param = (const struct app_parameters *)user_data;
+    teo::Teocli *cli = (teo::Teocli *)con;
 
     switch(event) {
 
         case EV_L_CONNECTED: {
 
-            if(cli.connected() > 0) {
+            if(cli->connected() > 0) {
 
                 std::cout << "Successfully connect to server\n";
 
                 // Send (1) peer list request to peer, command CMD_L_PEERS
-                ssize_t snd = cli.send(CMD_L_PEERS, param->peer_name, NULL, 0);
+                ssize_t snd = cli->send(CMD_L_PEERS, param->peer_name, NULL, 0);
                 std::cout << "Send " << snd << " bytes packet to L0 server to "
                        "peer " << param->peer_name << ", "
                        "cmd = " << CMD_L_PEERS << " (CMD_L_PEERS)\n";
 
                 // Send (2) clients list request to peer, command CMD_L_L0_CLIENTS
-                snd = cli.send(CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
+                snd = cli->send(CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
                 std::cout << "Send " << snd << " bytes packet to L0 server to "
                        "peer " << param->peer_name << ", "
                        "cmd = " << CMD_L_L0_CLIENTS << " (CMD_L_L0_CLIENTS)\n";
 
                 // Send (3) echo request to peer, command CMD_L_ECHO
-                snd = cli.sendEcho(param->peer_name, param->message);
+                snd = cli->sendEcho(param->peer_name, param->msg);
                 std::cout << "Send " << snd << " bytes packet to L0 server to "
                        "peer " << param->peer_name << ", "
                        "cmd = " << CMD_L_ECHO << " (CMD_L_ECHO), "
-                       "data: " << param->message << "\n";
+                       "data: " << param->msg << "\n";
 
                 // Show empty line
                 std::cout << "\n";
@@ -107,7 +95,7 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
             // Receive answer from server
             const size_t rc = data_len;
-            teo::Packet *cp = cli.packet();
+            teo::Packet *cp = cli->packet();
 
             std::cout << "Receive " << rc << " bytes: " << cp->data_length <<
                 " bytes data from L0 server, "
@@ -205,8 +193,173 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
             break;
     }
 }
+*/
+void event_cb(void *con, teoLNullEvents event, void *data,
+            size_t data_len, void *user_data) {
 
-//teo::Teocli *cli;
+
+    const struct app_parameters *param = (const struct app_parameters *)user_data;
+
+    switch(event) {
+
+        case EV_L_CONNECTED:
+        {
+            int *fd = (int *)data;
+            if(*fd > 0) {
+
+                printf("Successfully connect to server\n");
+
+                // Send (1) Initialization packet to L0 server
+                ssize_t snd = teoLNullLogin(con, param->host_name, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("\nSend %d bytes packet to L0 server Initialization packet\n", (int)snd);
+                }
+
+                // Send (2) peer list request to peer, command CMD_L_PEERS
+                snd = l0_send_msg(con, CMD_L_PEERS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, cmd = %d (CMD_L_PEERS)\n",
+                       (int)snd, param->peer_name, CMD_L_PEERS);
+                }
+
+                // Send (3) clients list request
+                snd = l0_send_msg(con, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
+                       "cmd = %d (CMD_L_L0_CLIENTS)\n",
+                       (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
+                }
+
+                // Send (3) echo request to peer, command CMD_L_ECHO
+                //
+                // Add current time to the end of message (it should be return
+                // back by server)
+                snd = l0_send_echo(con, param->peer_name, param->msg, param->proto);
+                if(snd == -1) {
+                    perror(strerror(errno));
+                } else {
+                    printf("Send %d bytes packet to L0 server to peer %s, "
+                       "cmd = %d (CMD_L_ECHO), "
+                       "data: %s\n",
+                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+                }
+
+                printf("\n");
+            } else {
+                printf("Can't connect to server\n");
+            }
+        } break;
+
+        case EV_L_DISCONNECTED:
+            printf("Disconnected ...\n");
+            break;
+
+        case EV_L_RECEIVED:
+        {
+            // Receive answer from server
+            const size_t rc = data_len;
+            teoLNullCPacket *cp = (teoLNullCPacket*) data;
+
+            printf("Receive %d bytes: %hu bytes data from L0 server, "
+                    "from peer %s, cmd = %hhu\n",
+                    (int)rc, cp->data_length, cp->peer_name, cp->cmd);
+
+            // Process commands
+            switch(cp->cmd) {
+
+                case CMD_L_PEERS_ANSWER:
+                {
+                    // Show peer list
+                    if(cp->data_length > 1) {
+
+                        ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
+                                (cp->peer_name + cp->peer_name_length);
+                        const char *ln =
+                                "--------------------------------------------"
+                                "---------\n";
+                        printf("%sPeers (%u): \n%s", ln, arp_data_ar->length, ln);
+                        int i;
+                        for(i = 0; i < (int)arp_data_ar->length; i++) {
+
+                            printf("%-12s(%2d)   %-15s   %d %8.3f ms\n",
+                                arp_data_ar->arp_data[i].name,
+                                arp_data_ar->arp_data[i].data.mode,
+                                arp_data_ar->arp_data[i].data.addr,
+                                arp_data_ar->arp_data[i].data.port,
+                                arp_data_ar->arp_data[i].data.last_triptime);
+
+                        }
+                        printf("%s", ln);
+                    }
+                } break;
+
+                case CMD_L_L0_CLIENTS_ANSWER: {
+
+                    // Show peer list
+                    teonet_client_data_ar *client_data_ar = (teonet_client_data_ar *)
+                            (cp->peer_name + cp->peer_name_length);
+                    const char *ln = "--------------------------------------------"
+                                     "---------\n";
+                    printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
+                    int i = 0;
+                    for(i = 0; i < (int)client_data_ar->length; ++i) {
+                        printf("%-12s\n", client_data_ar->client_data[i].name);
+                    }
+                    printf("%s", ln);
+                } break;
+
+                case CMD_L_ECHO_ANSWER:
+                {
+                    printf("Got echo answer command\n");
+                    data = cp->peer_name + cp->peer_name_length;
+                    int trip_time = teoLNullProccessEchoAnswer((const char*)data);
+
+                    printf("Data: %s\n", (char*)data);
+                    printf("Trip time: %d ms\n\n", trip_time);
+                } break;
+
+                case CMD_L_AUTH_LOGIN_ANSWER: {
+
+                    printf("Got answer from authentication server\n");
+
+                    const char *auth_data = (const char *)
+                            (cp->peer_name + cp->peer_name_length);
+
+                    printf("Data: %s\n\n", auth_data);
+                } break;
+
+                case CMD_L_ECHO:
+                {
+                    printf("Got echo command\n");
+                } break;
+
+                default: {
+                    printf("Got unknown command\n");
+                } break;
+            }
+
+        } break;
+
+        default:
+            break;
+    }
+}
+#include  <signal.h>
+volatile sig_atomic_t quit_flag = 0;
+
+void INThandler(int sig)
+{
+    printf("Catch CTRL-C SIGNAL !!!\n");
+    quit_flag = 1;
+}
+
+
 
 /**
  * Main L0 Native client example function
@@ -217,6 +370,7 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
  * @return
  */
 int main(int argc, char** argv) {
+    signal(SIGINT, INThandler); 
 
     // Welcome message
     std::cout << "Teonet c++ L0 client with Select and Event Callback example "
@@ -231,58 +385,54 @@ int main(int argc, char** argv) {
 
         exit(EXIT_SUCCESS);
     }
-
     // Teonet L0 server parameters
-    AppParameters parameters = {
-        argv[1], // This client name
-        argv[2], // L0 tcp_server
-        atoi(argv[3]), // L0 tcp_port
-        argv[4], // Peer name to send test messages to
-        argc > 5 ? argv[5] : "Hello" // Test message
-    };
+    struct app_parameters parameters;
+    parameters.host_name = argv[1]; //"C3";
+    parameters.tcp_server = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
+    parameters.tcp_port = atoi(argv[3]); //9000;
+    parameters.peer_name = argv[4]; //"teostream";
+    parameters.proto = TCP;
+    if(argc > 5) parameters.msg = argv[5];
+    else parameters.msg = "Hello";
 
+    auto cli = teo::Teocli::create_connection(event_cb, &parameters);
+    
     // Create Teocli object, Initialize L0 Client library and connect to L0 server
-    teo::Teocli *cli = new teo::Teocli(parameters.client_name,
+/*    teo::Teocli *cli = new teo::Teocli(parameters.host_name,
         parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
+        
+*/        
 
-        auto reconnect = true; // Reconnect this client if disconnected
         unsigned long num = 0; // An index
         const int timeout = 50; // Select tmeout
         int attempt = 0; // Reconnect attempt count
 
-        while(reconnect) {
+
+        while(!quit_flag) {
 
             if(cli->connected() > 0) {
                 
                 attempt = 0;
 
-                #ifdef __EMSCRIPTEN__
-                emscripten_set_main_loop_arg(cli->eventLoopE, cli, 60, 0);
-                #else
                 // Event loop
-                while(cli->eventLoop(timeout)) {
+                while(cli->eventLoop(timeout) && !quit_flag) {
 
                     // Send Echo command every second
                     if( !(num % (1000 / timeout)) )
-                        cli->sendEcho(parameters.peer_name, parameters.message);
+                        cli->sendEcho(parameters.peer_name, parameters.msg);
 
                     num++;
                 }
                 std::cout << "Exit from event loop\n";
                 cli->disconnect();
-                #endif
+
             }
-            else {
-                std::cout << "Try to reconnect...\n";
-                if(attempt++) cli->sleep(1000);
-                cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb);
-            }
+//            else {
+//                std::cout << "Try to reconnect...\n";
+//                if(attempt++) cli->sleep(1000);
+//                cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb);
+//            }
         }
 
-    #ifdef __EMSCRIPTEN__
-    #else
-    delete(cli);
-    #endif
-
-    return (EXIT_SUCCESS);
+   return (EXIT_SUCCESS);
 }
