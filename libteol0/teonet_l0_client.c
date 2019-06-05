@@ -600,10 +600,8 @@ inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 // Application constants
 #define BUFFER_SIZE 2048
-//#define SEND_MESSAGE_AFTER_MIN  15000 /* 16667 */ // uSec (mSec * 1000)
+
 #define SEND_MESSAGE_AFTER  1000000
-//#define RECONNECT_AFTER 3000000 // uSec (mSec * 1000)
-//#define SHOW_STATISTIC_AFTER 500000 // uSec (mSec * 1000)
 #define DELAY 500000 // uSec
 
 /**
@@ -769,7 +767,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
  * @retval teoLNullConnectData::status==-3 - Client-connect() error
  */
 teoLNullConnectData* teoLNullConnectE(const char *server, int port,
-        teoLNullEventsCb event_cb, void *user_data) {
+        teoLNullEventsCb event_cb, void *user_data, PROTOCOL connection_flag) {
 
     int result;
     teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
@@ -782,13 +780,13 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     con->event_cb = event_cb;
     con->user_data = user_data;
 
-    int TCP_F = 0;
+//    int TCP_F = 0;
 
     con->td = NULL;
-    con->tcp_f = TCP_F;
+    con->tcp_f = connection_flag;
 
     // Connect to TCP
-    if(TCP_F) {
+    if(con->tcp_f) {
 
         con->fd = teosockCreateTcp();
 
@@ -889,9 +887,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
  * @retval teoLNullConnectData::status==-2 - HOST NOT FOUND error
  * @retval teoLNullConnectData::status==-3 - Client-connect() error
  */
-teoLNullConnectData* teoLNullConnect(const char *server, int port) {
+teoLNullConnectData* teoLNullConnect(const char *server, int port, PROTOCOL connection_flag) {
 
-    return teoLNullConnectE(server, port, NULL, NULL);
+    return teoLNullConnectE(server, port, NULL, NULL, connection_flag);
 }
 
 /**

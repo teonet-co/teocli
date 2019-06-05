@@ -84,6 +84,11 @@ typedef enum teoLNullConnectionStatus {
 
 } teoLNullConnectionStatus;
 
+typedef enum PROTOCOL {
+  TRUDP = 0,
+  TCP   = 1
+} PROTOCOL;
+
 /**
  * L0 client connect data
  */
@@ -290,9 +295,10 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
+TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port, 
+    PROTOCOL connection_flag);
 TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
-        teoLNullEventsCb event_cb, void *user_data);
+        teoLNullEventsCb event_cb, void *user_data, PROTOCOL connection_flag);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
