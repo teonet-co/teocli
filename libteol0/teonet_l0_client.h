@@ -31,7 +31,7 @@ extern int usleep (__useconds_t __useconds);
 
 #include "teonet_socket.h"
 #include "../libtrudp/src/trudp.h"
-#include "../libtrudp/src/utils.h"
+#include "../libtrudp/src/trudp_utils.h"
 
 /**
  * L0 System commands
@@ -107,6 +107,7 @@ typedef struct teoLNullConnectData {
     void *user_data;            ///< User data
     
     int tcp_f;                  ///< TCP or UDP flag: TCP == 1
+    int udp_reset_f;
     trudpData *td;              ///< TRUDP connection data
     trudpChannelData *tcd;      ///< TRUDP channel data
     

@@ -53,7 +53,8 @@ void TEOCLI_API WinSleep(uint32_t dwMilliseconds) {Sleep(dwMilliseconds);}
         con->event_cb(con, event, data, data_length, con->user_data); \
     }
 
-#define DEBUG 1
+#define DEBUG 0
+
 
 /**
  * Show debug message
@@ -659,6 +660,7 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout) {
             debug(NULL, DEBUG, "process send queue ... %d\n", rv);
         }
         
+        // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     }
 
@@ -693,6 +695,7 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout) {
         retval = TEOSOCK_SELECT_READY;
     }
 //    }
+    return retval;
 }
 
 /**
@@ -730,22 +733,31 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     }
 
     // There is a data in sd
-    else {
+    else { // send TCP-data to event-loop, UDP-data has been send in trudp-eventloop
+        if(con->tcp_f) {
 
-        ssize_t rc;
-        while((rc = teoLNullRecv(con)) != -1) {
+            ssize_t rc;
+            while((rc = teoLNullRecv(con)) != -1) {
 
-            if(rc > 0) {
-                send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
-            } else if(rc == 0) {
-                send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
-                con->status = CON_STATUS_NOT_CONNECTED;
-                retval = 0;
-                break;
+                if(rc > 0) {
+                    send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
+                } else if(rc == 0) {
+                    send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+                    con->status = CON_STATUS_NOT_CONNECTED;
+                    retval = 0;
+                    break;
+                }
             }
         }
     }
 
+    if (!con->tcp_f && con->udp_reset_f) {
+        send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+        con->status = CON_STATUS_NOT_CONNECTED;
+        retval = 0;
+        con->udp_reset_f = 0;
+        teoLNullDisconnect(con);
+    }
     // Send Tick event
     send_l0_event(con, EV_L_TICK, NULL, 0);
 
@@ -779,8 +791,8 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     con->read_buffer_size = 0;
     con->event_cb = event_cb;
     con->user_data = user_data;
+    con->udp_reset_f = 0;
 
-//    int TCP_F = 0;
 
     con->td = NULL;
     con->tcp_f = connection_flag;
@@ -920,7 +932,11 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
 void teoLNullShutdown(teoLNullConnectData *con) {
 
     if (con != NULL && con->fd > 0) {
-        teosockShutdown(con->fd, TEOSOCK_SHUTDOWN_RDWR);
+        if (con->tcp_f) {
+            teosockShutdown(con->fd, TEOSOCK_SHUTDOWN_RDWR);
+        } else {
+            con->udp_reset_f = 1;
+        }
     }
 }
 
@@ -1111,12 +1127,11 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 trudpChannelSendData(tcd, cp, data_length);
             }
             // Send other commands to L0 event loop
-            else //send_l0_event_udp(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
-                 //   cp->data_length + cp->peer_name_length, NULL);
-                 //send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
-                 
-            send_l0_event(con, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
+            else { 
+//                printf("EV_L_RECEIVED peer:%s cmd:%d\n", cp->peer_name, cp->cmd);
+                send_l0_event(con, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
                     cp->data_length + cp->peer_name_length);
+            }
 
 
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
