@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-            event_cb, &param);
+            event_cb, &param, TCP);
 
         if(con->status > 0) {
 
