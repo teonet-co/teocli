@@ -852,13 +852,13 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int port,
     // Connect to UDP
     else {
 
-        //int port = 9090; //atoi(o_local_port); // Local port
-        int fd = trudpUdpBindRaw(&port, 1);
+        int port_local = 0; //atoi(o_local_port); // Local port
+        int fd = trudpUdpBindRaw(&port_local, 1);
         if(fd <= 0) {
             (void)fprintf(stderr, "Can't bind UDP port ...\n");
             exit(1);
         } else {
-            printf("Start listening at UDP port %d\n", port);
+            printf("Start listening at UDP port %d\n", port_local);
         }
 
 //        trudpData *td = NULL;
