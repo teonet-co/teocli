@@ -51,11 +51,7 @@ node_modules/
 /linux/depcomp
 /linux/ltmain.sh
 /linux/missing
-/linux/NEWS
 /linux/libtool
-/linux/ChangeLog
-/linux/AUTHORS
-/linux/README
 /linux/teocli_s_cpp
 /linux/teocli_cpp
 /linux/teocli_s_trudp
