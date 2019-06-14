@@ -56,7 +56,7 @@ struct app_parameters {
     int tcp_port;
     const char *peer_name;
     const char *msg;
-
+    int tcp_f;
 };
 
 /**
@@ -204,6 +204,15 @@ void event_cb(void *con, teoLNullEvents event, void *data,
     }
 }
 
+#include  <signal.h>
+volatile sig_atomic_t quit_flag = 0;
+
+void INThandler(int sig)
+{
+    printf("Catch CTRL-C SIGNAL !!!\n");
+    quit_flag = 1;
+}
+
 /**
  * Main L0 Native client example function
  *
@@ -213,6 +222,8 @@ void event_cb(void *con, teoLNullEvents event, void *data,
  * @return
  */
 int main(int argc, char** argv) {
+    
+    signal(SIGINT, INThandler); 
 
     // Welcome message
     printf("Teonet L0 client with Select and Event Loop Callback example version " TL0CN_VERSION " (Native TCP Client)\n\n");
@@ -235,15 +246,16 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = "Hello";
+    param.tcp_f = 1;
 
     // Initialize L0 Client library
     teoLNullInit();
 
-    while(1) {
+    while(!quit_flag) {
 
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-            event_cb, &param, TCP);
+            event_cb, &param, TRUDP);
 
         if(con->status > 0) {
 
@@ -251,7 +263,7 @@ int main(int argc, char** argv) {
             const int timeout = 50;
 
             // Event loop
-            while(teoLNullReadEventLoop(con, timeout)) {
+            while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
 
                 // Send Echo command every second
                 if( !(num % (1000 / timeout)) )
@@ -264,6 +276,8 @@ int main(int argc, char** argv) {
             teoLNullDisconnect(con);
         }
         else teoLNullSleep(1000);
+        
+        //quit_flag = 1;
     }
 
     // Cleanup L0 Client library

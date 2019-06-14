@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-#AC_PREREQ([2.69])
-AC_INIT([Teocli], [0.0.14])
+AC_PREREQ([2.69])
+AC_INIT([Teocli], [0.0.17])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -29,7 +29,13 @@ AC_CHECK_LIB([teocli], [main])
 
 # Checks for library functions.
 
+AC_CACHE_SAVE
+
 LT_INIT
 
 AC_CONFIG_FILES([Makefile])
+
+# Call trudp ./configure script recursively.
+AC_CONFIG_SUBDIRS([../libtrudp])
+
 AC_OUTPUT

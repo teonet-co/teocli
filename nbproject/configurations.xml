@@ -5,14 +5,9 @@
       <logicalFolder name="test" displayName="test" projectFiles="true">
         <logicalFolder name="echo_server" displayName="echo_server" projectFiles="true">
           <itemPath>emscripten/test/echo_server/emscripten.sh</itemPath>
-          <itemPath>emscripten/test/echo_server/package-lock.json</itemPath>
           <itemPath>emscripten/test/echo_server/package.json</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_client.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_client.js</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_echo_server.c</itemPath>
-          <itemPath>emscripten/test/echo_server/test_sockets_echo_server.js</itemPath>
           <itemPath>emscripten/test/echo_server/test_sockets_msg.h</itemPath>
         </logicalFolder>
       </logicalFolder>
@@ -25,6 +20,342 @@
       <itemPath>libteol0/teocli.hpp</itemPath>
       <itemPath>libteol0/teonet_l0_client.c</itemPath>
       <itemPath>libteol0/teonet_l0_client.h</itemPath>
+      <itemPath>libteol0/teonet_platform.h</itemPath>
+      <itemPath>libteol0/teonet_socket.c</itemPath>
+      <itemPath>libteol0/teonet_socket.h</itemPath>
+      <itemPath>libteol0/teonet_time.c</itemPath>
+      <itemPath>libteol0/teonet_time.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="libtrudp" displayName="libtrudp" projectFiles="true">
+      <logicalFolder name=".circleci" displayName=".circleci" projectFiles="true">
+        <itemPath>libtrudp/.circleci/config.yml</itemPath>
+      </logicalFolder>
+      <logicalFolder name="autom4te.cache"
+                     displayName="autom4te.cache"
+                     projectFiles="true">
+        <itemPath>libtrudp/autom4te.cache/output.0</itemPath>
+        <itemPath>libtrudp/autom4te.cache/output.1</itemPath>
+        <itemPath>libtrudp/autom4te.cache/output.2</itemPath>
+        <itemPath>libtrudp/autom4te.cache/requests</itemPath>
+        <itemPath>libtrudp/autom4te.cache/traces.0</itemPath>
+        <itemPath>libtrudp/autom4te.cache/traces.1</itemPath>
+        <itemPath>libtrudp/autom4te.cache/traces.2</itemPath>
+      </logicalFolder>
+      <logicalFolder name="ci-build" displayName="ci-build" projectFiles="true">
+        <logicalFolder name=".deps" displayName=".deps" projectFiles="true">
+        </logicalFolder>
+        <logicalFolder name=".libs" displayName=".libs" projectFiles="true">
+        </logicalFolder>
+        <logicalFolder name="data" displayName="data" projectFiles="true">
+          <logicalFolder name="ci-centos" displayName="ci-centos" projectFiles="true">
+            <itemPath>libtrudp/ci-build/data/ci-centos/Dockerfile</itemPath>
+          </logicalFolder>
+          <logicalFolder name="ci-opensuse" displayName="ci-opensuse" projectFiles="true">
+            <itemPath>libtrudp/ci-build/data/ci-opensuse/Dockerfile</itemPath>
+          </logicalFolder>
+          <logicalFolder name="ci-ubuntu" displayName="ci-ubuntu" projectFiles="true">
+            <itemPath>libtrudp/ci-build/data/ci-ubuntu/Dockerfile</itemPath>
+          </logicalFolder>
+          <itemPath>libtrudp/ci-build/data/ci-build.sh</itemPath>
+        </logicalFolder>
+        <logicalFolder name="gpg_key" displayName="gpg_key" projectFiles="true">
+          <itemPath>libtrudp/ci-build/gpg_key/deb-sec.gpg.key</itemPath>
+          <itemPath>libtrudp/ci-build/gpg_key/deb.gpg.key</itemPath>
+          <itemPath>libtrudp/ci-build/gpg_key/deb.gpg.key.txt</itemPath>
+        </logicalFolder>
+        <itemPath>libtrudp/ci-build/.gitignore</itemPath>
+        <itemPath>libtrudp/ci-build/Makefile</itemPath>
+        <itemPath>libtrudp/ci-build/Makefile.am</itemPath>
+        <itemPath>libtrudp/ci-build/Makefile.in</itemPath>
+        <itemPath>libtrudp/ci-build/README.md</itemPath>
+        <itemPath>libtrudp/ci-build/build-centos.sh</itemPath>
+        <itemPath>libtrudp/ci-build/build-opensuse.sh</itemPath>
+        <itemPath>libtrudp/ci-build/build-ubuntu.sh</itemPath>
+        <itemPath>libtrudp/ci-build/change_log_prepend.sh</itemPath>
+        <itemPath>libtrudp/ci-build/check-config.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_deb.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_deb_env.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_deb_inc.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_deb_keys_add.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_deb_keys_remove.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_inc.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_package</itemPath>
+        <itemPath>libtrudp/ci-build/make_package.c</itemPath>
+        <itemPath>libtrudp/ci-build/make_remote_doc_upload.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_remote_download.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_remote_install.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_remote_upload.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_rpm.sh</itemPath>
+        <itemPath>libtrudp/ci-build/make_rpm_inc.sh</itemPath>
+      </logicalFolder>
+      <logicalFolder name="ci-build-data"
+                     displayName="ci-build-data"
+                     projectFiles="true">
+        <itemPath>libtrudp/ci-build-data/build-ubuntu.sh</itemPath>
+      </logicalFolder>
+      <logicalFolder name="embedded" displayName="embedded" projectFiles="true">
+        <logicalFolder name="teoccl" displayName="teoccl" projectFiles="true">
+          <logicalFolder name=".circleci" displayName=".circleci" projectFiles="true">
+            <itemPath>libtrudp/embedded/teoccl/.circleci/bintray.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/.circleci/config.yml</itemPath>
+          </logicalFolder>
+          <logicalFolder name="autom4te.cache"
+                         displayName="autom4te.cache"
+                         projectFiles="true">
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/output.0</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/output.1</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/output.2</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/requests</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/traces.0</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/traces.1</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/autom4te.cache/traces.2</itemPath>
+          </logicalFolder>
+          <logicalFolder name="ci-build" displayName="ci-build" projectFiles="true">
+            <logicalFolder name=".deps" displayName=".deps" projectFiles="true">
+            </logicalFolder>
+            <logicalFolder name=".libs" displayName=".libs" projectFiles="true">
+            </logicalFolder>
+            <logicalFolder name="data" displayName="data" projectFiles="true">
+              <logicalFolder name="ci-centos" displayName="ci-centos" projectFiles="true">
+                <itemPath>libtrudp/embedded/teoccl/ci-build/data/ci-centos/Dockerfile</itemPath>
+              </logicalFolder>
+              <logicalFolder name="ci-opensuse" displayName="ci-opensuse" projectFiles="true">
+                <itemPath>libtrudp/embedded/teoccl/ci-build/data/ci-opensuse/Dockerfile</itemPath>
+              </logicalFolder>
+              <logicalFolder name="ci-ubuntu" displayName="ci-ubuntu" projectFiles="true">
+                <itemPath>libtrudp/embedded/teoccl/ci-build/data/ci-ubuntu/Dockerfile</itemPath>
+              </logicalFolder>
+              <itemPath>libtrudp/embedded/teoccl/ci-build/data/ci-build.sh</itemPath>
+            </logicalFolder>
+            <logicalFolder name="gpg_key" displayName="gpg_key" projectFiles="true">
+              <itemPath>libtrudp/embedded/teoccl/ci-build/gpg_key/deb-sec.gpg.key</itemPath>
+              <itemPath>libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key</itemPath>
+              <itemPath>libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key.txt</itemPath>
+            </logicalFolder>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/.gitignore</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/Makefile</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/Makefile.am</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/Makefile.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/README.md</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/build-centos.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/build-opensuse.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/build-ubuntu.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/change_log_prepend.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/check-config.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_deb.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_deb_env.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_deb_inc.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_deb_keys_add.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_deb_keys_remove.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_inc.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_package</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_package.c</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_remote_doc_upload.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_remote_download.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_remote_install.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_remote_upload.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_rpm.sh</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/ci-build/make_rpm_inc.sh</itemPath>
+          </logicalFolder>
+          <logicalFolder name="m4" displayName="m4" projectFiles="true">
+            <itemPath>libtrudp/embedded/teoccl/m4/libtool.m4</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/m4/ltoptions.m4</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/m4/ltsugar.m4</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/m4/ltversion.m4</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/m4/lt~obsolete.m4</itemPath>
+          </logicalFolder>
+          <logicalFolder name="po" displayName="po" projectFiles="true">
+            <itemPath>libtrudp/embedded/teoccl/po/ChangeLog</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/LINGUAS</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/Makefile</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/Makefile.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/Makefile.in.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/POTFILES</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/POTFILES.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/po/stamp-it</itemPath>
+          </logicalFolder>
+          <logicalFolder name="src" displayName="src" projectFiles="true">
+            <logicalFolder name=".deps" displayName=".deps" projectFiles="true">
+            </logicalFolder>
+            <logicalFolder name=".libs" displayName=".libs" projectFiles="true">
+              <itemPath>libtrudp/embedded/teoccl/src/.libs/libteoccl.lai</itemPath>
+              <itemPath>libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4</itemPath>
+              <itemPath>libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4.0.0</itemPath>
+            </logicalFolder>
+            <itemPath>libtrudp/embedded/teoccl/src/Makefile</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/Makefile.am</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/Makefile.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/hash.c</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/hash.h</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/libteoccl.pc</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/libteoccl.pc.in</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/list.c</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/list.h</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/map.c</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/map.h</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/map.hpp</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/queue.c</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/queue.h</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/queue.hpp</itemPath>
+            <itemPath>libtrudp/embedded/teoccl/src/teoccl.hpp</itemPath>
+          </logicalFolder>
+          <itemPath>libtrudp/embedded/teoccl/.clang-format</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/.gitignore</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/.gitmodules</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/AUTHORS</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/COPYING</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/ChangeLog</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/Doxyfile</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/INSTALL</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/Makefile</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/Makefile.am</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/Makefile.in</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/NEWS</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/README</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/README.md</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/acinclude.m4</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/aclocal.m4</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/aminclude.am</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/autogen.sh</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/config.h</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/config.h.in</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/config.log</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/config.status</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/configure</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/configure.ac</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/intltool-extract.in</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/intltool-merge.in</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/intltool-update.in</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/libtool</itemPath>
+          <itemPath>libtrudp/embedded/teoccl/stamp-h1</itemPath>
+        </logicalFolder>
+      </logicalFolder>
+      <logicalFolder name="examples" displayName="examples" projectFiles="true">
+        <logicalFolder name=".deps" displayName=".deps" projectFiles="true">
+        </logicalFolder>
+        <logicalFolder name=".libs" displayName=".libs" projectFiles="true">
+          <itemPath>libtrudp/examples/.libs/trudp2p</itemPath>
+          <itemPath>libtrudp/examples/.libs/trudpcat_ev</itemPath>
+        </logicalFolder>
+        <itemPath>libtrudp/examples/Makefile</itemPath>
+        <itemPath>libtrudp/examples/Makefile.am</itemPath>
+        <itemPath>libtrudp/examples/Makefile.in</itemPath>
+        <itemPath>libtrudp/examples/README.md</itemPath>
+        <itemPath>libtrudp/examples/read_queue.c</itemPath>
+        <itemPath>libtrudp/examples/read_queue.h</itemPath>
+        <itemPath>libtrudp/examples/snake.c</itemPath>
+        <itemPath>libtrudp/examples/snake.h</itemPath>
+        <itemPath>libtrudp/examples/trudp2p</itemPath>
+        <itemPath>libtrudp/examples/trudp2p.c</itemPath>
+        <itemPath>libtrudp/examples/trudp_pth.c</itemPath>
+        <itemPath>libtrudp/examples/trudp_pth.h</itemPath>
+        <itemPath>libtrudp/examples/trudpcat.c</itemPath>
+        <itemPath>libtrudp/examples/trudpcat_ev</itemPath>
+        <itemPath>libtrudp/examples/trudpcat_ev.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="m4" displayName="m4" projectFiles="true">
+        <itemPath>libtrudp/m4/libtool.m4</itemPath>
+        <itemPath>libtrudp/m4/ltoptions.m4</itemPath>
+        <itemPath>libtrudp/m4/ltsugar.m4</itemPath>
+        <itemPath>libtrudp/m4/ltversion.m4</itemPath>
+        <itemPath>libtrudp/m4/lt~obsolete.m4</itemPath>
+      </logicalFolder>
+      <logicalFolder name="po" displayName="po" projectFiles="true">
+        <itemPath>libtrudp/po/ChangeLog</itemPath>
+        <itemPath>libtrudp/po/LINGUAS</itemPath>
+        <itemPath>libtrudp/po/Makefile</itemPath>
+        <itemPath>libtrudp/po/Makefile.in</itemPath>
+        <itemPath>libtrudp/po/Makefile.in.in</itemPath>
+        <itemPath>libtrudp/po/POTFILES</itemPath>
+        <itemPath>libtrudp/po/POTFILES.in</itemPath>
+        <itemPath>libtrudp/po/stamp-it</itemPath>
+      </logicalFolder>
+      <logicalFolder name="src" displayName="src" projectFiles="true">
+        <logicalFolder name=".deps" displayName=".deps" projectFiles="true">
+        </logicalFolder>
+        <logicalFolder name=".libs" displayName=".libs" projectFiles="true">
+          <itemPath>libtrudp/src/.libs/libtrudp.lai</itemPath>
+          <itemPath>libtrudp/src/.libs/libtrudp.so.11</itemPath>
+          <itemPath>libtrudp/src/.libs/libtrudp.so.11.0.0</itemPath>
+        </logicalFolder>
+        <itemPath>libtrudp/src/Makefile</itemPath>
+        <itemPath>libtrudp/src/Makefile.am</itemPath>
+        <itemPath>libtrudp/src/Makefile.in</itemPath>
+        <itemPath>libtrudp/src/libtrudp.pc</itemPath>
+        <itemPath>libtrudp/src/libtrudp.pc.in</itemPath>
+        <itemPath>libtrudp/src/packet.c</itemPath>
+        <itemPath>libtrudp/src/packet.h</itemPath>
+        <itemPath>libtrudp/src/packet_queue.c</itemPath>
+        <itemPath>libtrudp/src/packet_queue.h</itemPath>
+        <itemPath>libtrudp/src/trudp.c</itemPath>
+        <itemPath>libtrudp/src/trudp.h</itemPath>
+        <itemPath>libtrudp/src/trudp_api.h</itemPath>
+        <itemPath>libtrudp/src/trudp_channel.c</itemPath>
+        <itemPath>libtrudp/src/trudp_channel.h</itemPath>
+        <itemPath>libtrudp/src/trudp_const.h</itemPath>
+        <itemPath>libtrudp/src/trudp_ev.c</itemPath>
+        <itemPath>libtrudp/src/trudp_ev.h</itemPath>
+        <itemPath>libtrudp/src/trudp_receive_queue.c</itemPath>
+        <itemPath>libtrudp/src/trudp_receive_queue.h</itemPath>
+        <itemPath>libtrudp/src/trudp_send_queue.c</itemPath>
+        <itemPath>libtrudp/src/trudp_send_queue.h</itemPath>
+        <itemPath>libtrudp/src/trudp_stat.c</itemPath>
+        <itemPath>libtrudp/src/trudp_stat.h</itemPath>
+        <itemPath>libtrudp/src/trudp_utils.c</itemPath>
+        <itemPath>libtrudp/src/trudp_utils.h</itemPath>
+        <itemPath>libtrudp/src/udp.c</itemPath>
+        <itemPath>libtrudp/src/udp.h</itemPath>
+        <itemPath>libtrudp/src/utils.c</itemPath>
+        <itemPath>libtrudp/src/utils.h</itemPath>
+        <itemPath>libtrudp/src/utils_r.h</itemPath>
+        <itemPath>libtrudp/src/write_queue.c</itemPath>
+        <itemPath>libtrudp/src/write_queue.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="win_vcxproj" displayName="win_vcxproj" projectFiles="true">
+        <logicalFolder name="libtrudp" displayName="libtrudp" projectFiles="true">
+          <itemPath>libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj</itemPath>
+          <itemPath>libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj.filters</itemPath>
+        </logicalFolder>
+        <itemPath>libtrudp/win_vcxproj/libtrudp.sln</itemPath>
+      </logicalFolder>
+      <itemPath>libtrudp/.gitignore</itemPath>
+      <itemPath>libtrudp/.gitlab-ci.yml</itemPath>
+      <itemPath>libtrudp/.gitmodules</itemPath>
+      <itemPath>libtrudp/AUTHORS</itemPath>
+      <itemPath>libtrudp/COPYING</itemPath>
+      <itemPath>libtrudp/ChangeLog</itemPath>
+      <itemPath>libtrudp/Doxyfile</itemPath>
+      <itemPath>libtrudp/INSTALL</itemPath>
+      <itemPath>libtrudp/Makefile</itemPath>
+      <itemPath>libtrudp/Makefile.am</itemPath>
+      <itemPath>libtrudp/Makefile.in</itemPath>
+      <itemPath>libtrudp/NEWS</itemPath>
+      <itemPath>libtrudp/README</itemPath>
+      <itemPath>libtrudp/README.md</itemPath>
+      <itemPath>libtrudp/TODO.tasks</itemPath>
+      <itemPath>libtrudp/acinclude.m4</itemPath>
+      <itemPath>libtrudp/aclocal.m4</itemPath>
+      <itemPath>libtrudp/aminclude.am</itemPath>
+      <itemPath>libtrudp/autogen.sh</itemPath>
+      <itemPath>libtrudp/compile</itemPath>
+      <itemPath>libtrudp/config.guess</itemPath>
+      <itemPath>libtrudp/config.h</itemPath>
+      <itemPath>libtrudp/config.h.in</itemPath>
+      <itemPath>libtrudp/config.log</itemPath>
+      <itemPath>libtrudp/config.status</itemPath>
+      <itemPath>libtrudp/config.sub</itemPath>
+      <itemPath>libtrudp/configure</itemPath>
+      <itemPath>libtrudp/configure.ac</itemPath>
+      <itemPath>libtrudp/depcomp</itemPath>
+      <itemPath>libtrudp/install-sh</itemPath>
+      <itemPath>libtrudp/intltool-extract.in</itemPath>
+      <itemPath>libtrudp/intltool-merge.in</itemPath>
+      <itemPath>libtrudp/intltool-update.in</itemPath>
+      <itemPath>libtrudp/libtool</itemPath>
+      <itemPath>libtrudp/ltmain.sh</itemPath>
+      <itemPath>libtrudp/missing</itemPath>
+      <itemPath>libtrudp/stamp-h1</itemPath>
+      <itemPath>libtrudp/trudpcat.sh</itemPath>
     </logicalFolder>
     <logicalFolder name="linux" displayName="linux" projectFiles="true">
       <itemPath>linux/Makefile.am</itemPath>
@@ -84,6 +415,7 @@
       <itemPath>main.c</itemPath>
       <itemPath>main_cpp.cpp</itemPath>
       <itemPath>main_select.c</itemPath>
+      <itemPath>main_select_common.c</itemPath>
       <itemPath>main_select_cpp.cpp</itemPath>
       <itemPath>main_select_trudp.c</itemPath>
     </logicalFolder>
@@ -128,6 +460,7 @@
     <Elem>emscripten</Elem>
     <Elem>build</Elem>
     <Elem>nbind</Elem>
+    <Elem>libtrudp</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -161,32 +494,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
             ex="false"
             tool="3"
             flavor2="0">
@@ -202,11 +510,832 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.circleci/config.yml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitlab-ci.yml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitmodules" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/AUTHORS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/COPYING" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Doxyfile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/INSTALL" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/NEWS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/TODO.tasks" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/acinclude.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/aclocal.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/aminclude.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autogen.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.0" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.2" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/requests" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.0" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.2" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build-data/build-ubuntu.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-centos.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-opensuse.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-ubuntu.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/change_log_prepend.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/check-config.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-build.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-centos/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-opensuse/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-ubuntu/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb-sec.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb.gpg.key.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_env.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_keys_add.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_keys_remove.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_package" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_package.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_doc_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_download.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_install.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_rpm.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_rpm_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/compile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.guess" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.h.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.log" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.status" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.sub" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/configure" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/configure.ac" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/depcomp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.circleci/bintray.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.circleci/config.yml"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.clang-format"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.gitignore"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.gitmodules"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/AUTHORS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/COPYING" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Doxyfile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/INSTALL" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/NEWS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/acinclude.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/aclocal.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/aminclude.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autogen.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.1"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.2"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/requests"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.1"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.2"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/.gitignore"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/README.md"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-centos.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-opensuse.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-ubuntu.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/change_log_prepend.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/check-config.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-build.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-centos/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-opensuse/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-ubuntu/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb-sec.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_env.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_keys_add.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_keys_remove.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_package"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_package.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_doc_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_download.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_install.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_rpm.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_rpm_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.h.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.log"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.status"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/configure" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/configure.ac"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-extract.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-merge.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-update.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/libtool" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/libtool.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltoptions.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltsugar.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltversion.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/lt~obsolete.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/ChangeLog"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/LINGUAS"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile.in.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/POTFILES"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/POTFILES.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/stamp-it"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.lai"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4.0.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/hash.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/hash.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/libteoccl.pc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/libteoccl.pc.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/list.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/list.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/teoccl.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/stamp-h1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/.libs/trudp2p" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/.libs/trudpcat_ev"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/read_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/read_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/snake.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/snake.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp2p" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp2p.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp_pth.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp_pth.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat_ev" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat_ev.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/install-sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-extract.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-merge.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-update.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/libtool" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ltmain.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/libtool.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltoptions.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltsugar.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltversion.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/lt~obsolete.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/missing" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/LINGUAS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile.in.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/POTFILES" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/POTFILES.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/stamp-it" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.lai" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.so.11" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.so.11.0.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/libtrudp.pc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/libtrudp.pc.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_api.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_channel.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_channel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_const.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_ev.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_ev.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_receive_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_receive_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_send_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_send_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_stat.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_stat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_utils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/udp.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/udp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils_r.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/write_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/write_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/stamp-h1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/trudpcat.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp.sln" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj.filters"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/configure.ac" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main_select_common.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="main_select_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -324,17 +1453,7 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/package-lock.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/package.json"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client"
             ex="false"
             tool="3"
             flavor2="0">
@@ -344,24 +1463,9 @@
             tool="0"
             flavor2="0">
       </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_client.js"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="emscripten/test/echo_server/test_sockets_echo_server.c"
             ex="false"
             tool="0"
-            flavor2="0">
-      </item>
-      <item path="emscripten/test/echo_server/test_sockets_echo_server.js"
-            ex="false"
-            tool="3"
             flavor2="0">
       </item>
       <item path="emscripten/test/echo_server/test_sockets_msg.h"
@@ -375,6 +1479,825 @@
       </item>
       <item path="libteol0/teonet_l0_client.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="libteol0/teonet_platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_socket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libteol0/teonet_time.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.circleci/config.yml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitlab-ci.yml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/.gitmodules" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/AUTHORS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/COPYING" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Doxyfile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/INSTALL" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/NEWS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/TODO.tasks" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/acinclude.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/aclocal.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/aminclude.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autogen.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.0" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/output.2" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/requests" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.0" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/autom4te.cache/traces.2" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build-data/build-ubuntu.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/.gitignore" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-centos.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-opensuse.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/build-ubuntu.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/change_log_prepend.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/check-config.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-build.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-centos/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-opensuse/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/data/ci-ubuntu/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb-sec.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/gpg_key/deb.gpg.key.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_env.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_keys_add.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_deb_keys_remove.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_package" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_package.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_doc_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_download.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_install.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_remote_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_rpm.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ci-build/make_rpm_inc.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/compile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.guess" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.h.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.log" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.status" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/config.sub" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/configure" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/configure.ac" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/depcomp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.circleci/bintray.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.circleci/config.yml"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.clang-format"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.gitignore"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/.gitmodules"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/AUTHORS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/COPYING" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Doxyfile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/INSTALL" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/NEWS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/README" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/acinclude.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/aclocal.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/aminclude.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autogen.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.1"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/output.2"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/requests"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.1"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/autom4te.cache/traces.2"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/.gitignore"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/README.md"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-centos.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-opensuse.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/build-ubuntu.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/change_log_prepend.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/check-config.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-build.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-centos/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-opensuse/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/data/ci-ubuntu/Dockerfile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb-sec.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/gpg_key/deb.gpg.key.txt"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_env.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_keys_add.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_deb_keys_remove.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_package"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_package.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_doc_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_download.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_install.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_remote_upload.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_rpm.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/ci-build/make_rpm_inc.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.h.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.log"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/config.status"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/configure" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/configure.ac"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-extract.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-merge.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/intltool-update.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/libtool" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/libtool.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltoptions.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltsugar.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/ltversion.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/m4/lt~obsolete.m4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/ChangeLog"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/LINGUAS"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/Makefile.in.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/POTFILES"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/POTFILES.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/po/stamp-it"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.lai"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/.libs/libteoccl.so.4.0.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile.am"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/Makefile.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/hash.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/hash.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/libteoccl.pc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/libteoccl.pc.in"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/list.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/list.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/map.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/queue.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/src/teoccl.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/embedded/teoccl/stamp-h1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/.libs/trudp2p" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/.libs/trudpcat_ev"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/read_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/read_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/snake.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/snake.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp2p" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp2p.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp_pth.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudp_pth.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat_ev" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/examples/trudpcat_ev.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/install-sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-extract.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-merge.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/intltool-update.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/libtool" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/ltmain.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/libtool.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltoptions.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltsugar.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/ltversion.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/m4/lt~obsolete.m4" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/missing" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/ChangeLog" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/LINGUAS" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/Makefile.in.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/POTFILES" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/POTFILES.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/po/stamp-it" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.lai" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.so.11" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/.libs/libtrudp.so.11.0.0"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile.am" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/Makefile.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/libtrudp.pc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/libtrudp.pc.in" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/packet_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_api.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_channel.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_channel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_const.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_ev.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_ev.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_receive_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_receive_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_send_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_send_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_stat.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_stat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_utils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/trudp_utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/udp.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/udp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/utils_r.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/src/write_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libtrudp/src/write_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/stamp-h1" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/trudpcat.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp.sln" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="libtrudp/win_vcxproj/libtrudp/libtrudp.vcxproj.filters"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="linux/Makefile.am" ex="false" tool="3" flavor2="0">
       </item>
       <item path="linux/README.md" ex="false" tool="3" flavor2="0">
@@ -386,6 +2309,8 @@
       <item path="main_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main_select.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="main_select_common.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="main_select_cpp.cpp" ex="false" tool="1" flavor2="0">
       </item>

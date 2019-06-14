@@ -17,22 +17,21 @@
 #define	TEONET_L0_CLIENT_H
 
 ///! Teonet native client version (should change in linux/Makefile.am:7 too)
-#define TL0CN_VERSION "0.0.14"
+#define TL0CN_VERSION "0.0.17"
 
 #include <stdint.h>
 
-#if !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
-	#ifdef MS_WIN64
-	typedef __int64 ssize_t;
-	#else
-	typedef _W64 int ssize_t;
-	#endif
+#if !defined(HAVE_MINGW) && defined(_WIN32)
 #else
 #include <unistd.h>
-#if !defined(usleep) && !defined(HAVE_MINGW) && (defined(_WIN32) || defined(_WIN64))
+#if !defined(usleep) && !defined(HAVE_MINGW) && defined(_WIN32)
 extern int usleep (__useconds_t __useconds);
 #endif
 #endif
+
+#include "teonet_socket.h"
+#include "../libtrudp/src/trudp.h"
+#include "../libtrudp/src/trudp_utils.h"
 
 /**
  * L0 System commands
@@ -73,24 +72,45 @@ typedef void (*teoLNullEventsCb)(void *kc, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) ;
 
 /**
+ * L0 client connection status
+ */
+typedef enum teoLNullConnectionStatus {
+
+    CON_STATUS_CONNECTED = 1,
+    CON_STATUS_NOT_CONNECTED = 0,
+    CON_STATUS_SOCKET_ERROR = -1,
+    CON_STATUS_HOST_ERROR = -2,
+    CON_STATUS_CONNECTION_ERROR = -3
+
+} teoLNullConnectionStatus;
+
+typedef enum PROTOCOL {
+  TRUDP = 0,
+  TCP   = 1
+} PROTOCOL;
+
+/**
  * L0 client connect data
  */
 typedef struct teoLNullConnectData {
 
-    #if defined(HAVE_MINGW) || defined(_WIN32) || defined(_WIN64)
-    uint32_t fd;                ///< Connection socket
-    #else
-    int fd;                     ///< Connection socket
-    #endif
+    teonetSocket fd;         ///< Socket descriptor
+
+    teoLNullConnectionStatus status;  ///< Connection status
 
     void *read_buffer;          ///< Pointer to saved buffer
     size_t read_buffer_ptr;     ///< Pointer in read buffer
     size_t read_buffer_size;    ///< Read buffer size
-    size_t last_packet_ptr;     ///< Last recived packet pointer (length)
+    size_t last_packet_ptr;     ///< Last received packet pointer (length)
 
     teoLNullEventsCb event_cb;  ///< Event callback function
     void *user_data;            ///< User data
-
+    
+    int tcp_f;                  ///< TCP or UDP flag: TCP == 1
+    int udp_reset_f;
+    trudpData *td;              ///< TRUDP connection data
+    trudpChannelData *tcd;      ///< TRUDP channel data
+    
 } teoLNullConnectData;
 
 #define ARP_TABLE_IP_SIZE 48    // INET6_ADDRSTRLEN = 46
@@ -106,7 +126,7 @@ typedef struct ksnet_arp_data {
 //    char addr[48];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
-    double last_activity;           ///< Last time receved data from peer
+    double last_activity;           ///< Last time received data from peer
     double last_triptime_send;      ///< Last time when triptime request send
     double last_triptime_got;       ///< Last time when triptime received
 
@@ -129,6 +149,12 @@ typedef struct ksnet_arp_data_ext {
 } ksnet_arp_data_ext;
 
 #define DIG_IN_TEO_VER 3
+
+// Suppress MSVC compiler warning 'zero-sized array in struct'.
+#if defined(TEONET_COMPILER_MSVC)
+#pragma warning(push)
+#pragma warning(disable: 4200)
+#endif
 
 /**
  * Host info data structure
@@ -233,8 +259,12 @@ typedef struct l0_info_data {
 
 } l0_info_data;
 
-#pragma pack(pop)
+// Reset compiler warnings to previous state.
+#if defined(TEONET_COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
+#pragma pack(pop)
 
 #ifdef _WINDLL
 #define TEOCLI_API __declspec(dllexport)
@@ -242,7 +272,7 @@ typedef struct l0_info_data {
 #define TEOCLI_API
 #endif
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -254,9 +284,9 @@ extern "C" {
 #define teoLNullBufferSize(peer_length, data_length) \
     ( sizeof(teoLNullCPacket) + peer_length + data_length )
 
-#if (defined(_WIN32) || defined(_WIN64)) && !defined(HAVE_MINGW)
-	void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
-	#define teoLNullSleep(ms) WinSleep(ms)
+#if defined(_WIN32) && !defined(HAVE_MINGW)
+    void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
+    #define teoLNullSleep(ms) WinSleep(ms)
 #else
     #define teoLNullSleep(ms) usleep(ms * 1000)
 #endif
@@ -266,18 +296,19 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port);
+TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port, 
+    PROTOCOL connection_flag);
 TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
-        teoLNullEventsCb event_cb, void *user_data);
+        teoLNullEventsCb event_cb, void *user_data, PROTOCOL connection_flag);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
-TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, int cmd,
+TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
         const char *peer_name, void *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         const char *msg);
-TEOCLI_API int teoLNullProccessEchoAnswer(const char *msg);
+TEOCLI_API int64_t teoLNullProccessEchoAnswer(const char *msg);
 TEOCLI_API ssize_t teoLNullRecv(teoLNullConnectData *con);
 TEOCLI_API ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc);
 TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout);
@@ -287,16 +318,14 @@ TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 // Low level functions
 TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
         const char* host_name);
-TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len, const char *peer_name, const char *msg);
+TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len, const char *peer_name,
+        const char *msg);
 TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
-TEOCLI_API ssize_t teoLNullPacketSend(int sd, void* pkg, size_t pkg_length);
+TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length);
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
-void set_nonblock(int sd);
-int set_tcp_nodelay(int sd);
-
 
 #ifdef	__cplusplus
 }

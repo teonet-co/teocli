@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "teonet_l0_client.h"
 
 namespace teo {
@@ -50,21 +52,21 @@ private:
      *
      * Calls once per application to initialize this client library.
      */
-    inline void init() { teoLNullInit(); }
+    void init() { teoLNullInit(); }
 
     /**
      * Cleanup L0 client library.
      *
      * Calls once per application to cleanup this client library.
      */
-    inline void cleanup() { teoLNullCleanup(); }
+    void cleanup() { teoLNullCleanup(); }
 
     /**
      * Return pointer to user data
      *
      * @return Pointer to user data, or NULL if not set
      */
-    inline void* getUserData() const {
+    void* getUserData() const {
         return userData;
     }
 
@@ -73,7 +75,7 @@ private:
      *
      * @return Pointer to Event CallBack, or NULL if not set
      */
-    inline EventsCb getEventCallBack() const {
+    EventsCb getEventCallBack() const {
         return eventCallBack;
     }
 
@@ -82,7 +84,7 @@ private:
      *
      * @param con
      */
-    inline void setCon(teoLNullConnectData* con) {
+    void setCon(teoLNullConnectData* con) {
         this->con = con;
     }
 
@@ -92,10 +94,12 @@ public:
      * Teonet client simple constructor
      */
     Teocli(const char *client = "teocli++") : clientName(client) { init(); }
-    Teocli(const char *server, int port) : Teocli() { connect(server, port); }
+    Teocli(const char *server, int port, PROTOCOL proto) : Teocli() {
+      connect(server, port, NULL, NULL, proto);
+    }
     Teocli(const char *client, const char *server, int port, EventsCb event_cb,
-      void *user_data) : Teocli(client) {
-      connect(server, port, user_data, event_cb);
+      void *user_data, PROTOCOL proto) : Teocli(client) {
+      connect(server, port, user_data, event_cb, proto);
     }
 
     /**
@@ -124,8 +128,8 @@ public:
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connect(const char *server, int port,
-        void *user_data = NULL, EventsCb event_cb = NULL) {
+    int connect(const char *server, int port,
+        void *user_data, EventsCb event_cb, PROTOCOL connection_flag) {
 
         eventCallBack = event_cb ? event_cb :
           [](teo::Teocli &cli, teo::Events event, void *data,
@@ -135,7 +139,7 @@ public:
         };
         userData = user_data;
         con = teoLNullConnectE(server, port,
-                eventCallBack == NULL ? NULL : callbackBind, this);
+                eventCallBack == NULL ? NULL : callbackBind, this, connection_flag);
 
         return connected();
     }
@@ -144,15 +148,15 @@ public:
      * Disconnect from server and free teoLNullConnectData
      *
      */
-    inline void disconnect() {
+    void disconnect() {
         teoLNullDisconnect(con);
         con = NULL;
     }
-    
+
     /**
      * Shutdown connection (disconnect from server)
      */
-    inline void shutdown() {
+    void shutdown() {
       teoLNullShutdown(con);
     }
 
@@ -166,8 +170,8 @@ public:
      * @retval -2 - HOST NOT FOUND error
      * @retval -3 - Client-connect() error
      */
-    inline int connected() const {
-        return con == NULL ? 0 : con->fd;
+    int connected() const {
+        return con == NULL ? 0 : con->status;
     }
 
     /**
@@ -220,7 +224,7 @@ public:
      *
      * @return Length of send data or -1 at error
      */
-    inline ssize_t send(int cmd, const char *peer_name, void *data,
+    ssize_t send(int cmd, const char *peer_name, void *data,
             size_t data_length) {
         return teoLNullSend(con, cmd, peer_name, data, data_length);
     }
@@ -232,7 +236,7 @@ public:
      * @param msg
      * @return
      */
-    inline ssize_t sendEcho(const char *peer_name, const char *msg) {
+    ssize_t sendEcho(const char *peer_name, const char *msg) {
         return teoLNullSendEcho(con, peer_name, msg);
     }
 
@@ -240,7 +244,7 @@ public:
      * Process echo answer data
      * @return Trip time in ms
      */
-    inline int packetEchoAnswerTripTime() {
+    int packetEchoAnswerTripTime() {
         return teoLNullProccessEchoAnswer((char*) packetData());
     }
 
@@ -252,7 +256,7 @@ public:
      * @retval -1 Packet not receiving yet (got part of packet)
      * @retval -2 Wrong packet received (dropped)
      */
-    inline ssize_t recv() {
+    ssize_t recv() {
         return teoLNullRecv(con);
     }
 
@@ -264,7 +268,7 @@ public:
      *
      * @return Number of received bytes or -1 at timeout
      */
-    inline ssize_t recvTimeout(uint32_t timeout) {
+    ssize_t recvTimeout(uint32_t timeout) {
         return teoLNullRecvTimeout(con, timeout);
     }
 
@@ -276,7 +280,7 @@ public:
      *
      * @return 0 - if disconnected or 1 other way
      */
-    inline int eventLoop(int timeout = 0) {
+    int eventLoop(int timeout = 0) {
         return teoLNullReadEventLoop(con, timeout);
     }
     static void eventLoopE(void *par) {
@@ -289,7 +293,7 @@ public:
      *
      * @param ms Time to sleep in ms
      */
-    inline void sleep(int ms) const {
+    void sleep(int ms) const {
         teoLNullSleep(ms);
     }
 
@@ -297,7 +301,7 @@ public:
      * Return read buffer of last recv call
      * @return Pointer to teoLNullCPacket
      */
-    inline teoLNullCPacket *packet() const {
+    teoLNullCPacket *packet() const {
         return (teoLNullCPacket*) con->read_buffer;
     }
 
@@ -305,7 +309,7 @@ public:
      * Return packet arp data of last recv call
      * @return Pointer to ksnet_arp_data_ar
      */
-    inline ksnet_arp_data_ar *packetArpData() const {
+    ksnet_arp_data_ar *packetArpData() const {
         return (ksnet_arp_data_ar *)
                     (packet()->peer_name + packet()->peer_name_length);
     }
@@ -314,7 +318,7 @@ public:
      * Return packet clients array data
      * @return Pointer to teonet_client_data_ar
      */
-    inline teonet_client_data_ar *packetClientData() const {
+    teonet_client_data_ar *packetClientData() const {
         return (teonet_client_data_ar *)
                     (packet()->peer_name + packet()->peer_name_length);
     }
@@ -323,7 +327,7 @@ public:
      * Return packet data
      * @return Pointer to void data
      */
-    inline void *packetData() const {
+    void *packetData() const {
         return (void*) (packet()->peer_name + packet()->peer_name_length);
     }
 
