@@ -8,9 +8,11 @@
 
 // Determine target operating system.
 #if defined(__linux__)
+#include <sys/select.h>
 // Defined if target OS is linux.
 #define TEONET_OS_LINUX
 #elif defined(_WIN32)
+#include <winsock2.h>
 // Defined if target OS is Windows.
 #define TEONET_OS_WINDOWS
 #elif defined(__APPLE__)

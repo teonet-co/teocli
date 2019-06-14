@@ -569,8 +569,10 @@ uint8_t get_byte_checksum(void *data, size_t data_length) {
 //    fcntl(sd, F_SETFL, flags | O_NONBLOCK);
 //    #endif
 //}
-inline void set_nonblock(int sd) __attribute_deprecated__;
-inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE); }
+
+//DEPRECATED
+//inline void set_nonblock(int sd) __attribute_deprecated__;
+//inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE); }
 
 /**
  * Set TCP NODELAY option
@@ -596,8 +598,10 @@ inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKI
 //
 //    return result;
 //}
-int set_tcp_nodelay(int sd) __attribute_deprecated__;
-inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
+
+//DEPRECATED
+//int set_tcp_nodelay(int sd) __attribute_deprecated__;
+//inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 // Application constants
 #define BUFFER_SIZE 2048
