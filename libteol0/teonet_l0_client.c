@@ -604,7 +604,7 @@ uint8_t get_byte_checksum(void *data, size_t data_length) {
 //inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 // Application constants
-#define BUFFER_SIZE 2048
+#define BUFFER_SIZE 4096
 
 #define SEND_MESSAGE_AFTER  1000000
 #define DELAY 500000 // uSec

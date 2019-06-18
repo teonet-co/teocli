@@ -52,7 +52,7 @@ enum CMD_L {
     CMD_L_END = 127
 };
 
-#define L0_BUFFER_SIZE 2048
+#define L0_BUFFER_SIZE 4096
 #define MAX_FD_NUMBER 65536
 
 /**
