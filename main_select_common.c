@@ -238,6 +238,11 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
+    const int send_size = 100;
+    char *send_msg = malloc(send_size);
+    int i = 0;
+    for (i = 0; i<send_size; ++i)
+        send_msg[i] = 'Q';
     // Teonet L0 server parameters
     struct app_parameters param;
     param.host_name = argv[1]; //"C3";
@@ -245,7 +250,7 @@ int main(int argc, char** argv) {
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
-    else param.msg = "Hello";
+    else param.msg = send_msg;
     param.tcp_f = 1;
 
     // Initialize L0 Client library
@@ -255,7 +260,7 @@ int main(int argc, char** argv) {
 
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-            event_cb, &param, TRUDP);
+            event_cb, &param, param.tcp_f ? TCP : TRUDP);
 
         if(con->status > 0) {
 
@@ -282,6 +287,6 @@ int main(int argc, char** argv) {
 
     // Cleanup L0 Client library
     teoLNullCleanup();
-
+    free(send_msg);
     return (EXIT_SUCCESS);
 }

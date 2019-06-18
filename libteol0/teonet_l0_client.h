@@ -30,8 +30,8 @@ extern int usleep (__useconds_t __useconds);
 #endif
 
 #include "teonet_socket.h"
-#include "../libtrudp/src/trudp.h"
-#include "../libtrudp/src/trudp_utils.h"
+#include "trudp.h"
+#include "trudp_utils.h"
 
 /**
  * L0 System commands
@@ -52,7 +52,7 @@ enum CMD_L {
     CMD_L_END = 127
 };
 
-#define L0_BUFFER_SIZE 2048
+#define L0_BUFFER_SIZE 4096
 #define MAX_FD_NUMBER 65536
 
 /**
@@ -296,9 +296,9 @@ extern "C" {
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
 
-TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int port, 
+TEOCLI_API teoLNullConnectData *teoLNullConnect(const char *server, int16_t port,
     PROTOCOL connection_flag);
-TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int port,
+TEOCLI_API teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port,
         teoLNullEventsCb event_cb, void *user_data, PROTOCOL connection_flag);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);

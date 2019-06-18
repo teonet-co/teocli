@@ -7,12 +7,13 @@
 #define TEONET_PLATFORM_H
 
 // Determine target operating system.
-#if defined(__linux__)
-#include <sys/select.h>
+#if defined(__ANDROID__)
+// Defined if target OS is android.
+#define TEONET_OS_ANDROID
+#elif defined(__linux__)
 // Defined if target OS is linux.
 #define TEONET_OS_LINUX
 #elif defined(_WIN32)
-#include <winsock2.h>
 // Defined if target OS is Windows.
 #define TEONET_OS_WINDOWS
 #elif defined(__APPLE__)
@@ -42,6 +43,9 @@
 
 // This section is for doxygen. Keep it in sync with macroses above.
 #if defined(FORCE_DOXYGEN)
+// Defined if target OS is android.
+#define TEONET_OS_ANDROID
+#undef TEONET_OS_ANDROID
 /// Defined if target OS is linux.
 #define TEONET_OS_LINUX
 #undef TEONET_OS_LINUX  // We have to undefine all macroses to not screw up preprocessing.
