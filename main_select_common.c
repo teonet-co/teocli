@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 1000;
+    const int send_size = 100;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
-    param.tcp_f = 0;
+    param.tcp_f = 1;
 
     // Initialize L0 Client library
     teoLNullInit();
