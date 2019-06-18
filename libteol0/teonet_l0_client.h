@@ -30,8 +30,8 @@ extern int usleep (__useconds_t __useconds);
 #endif
 
 #include "teonet_socket.h"
-#include "../libtrudp/src/trudp.h"
-#include "../libtrudp/src/trudp_utils.h"
+#include "trudp.h"
+#include "trudp_utils.h"
 
 /**
  * L0 System commands
