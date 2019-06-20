@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 1998;
+    const int send_size = 3000;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
 
 
                 // Send Echo command every second
-                if( !(num % (5000 / timeout)) )
+                if( !(num % (1000 / timeout)) )
                     teoLNullSendEcho(con, param.peer_name, param.msg);
 
                 num++;
@@ -281,7 +281,7 @@ int main(int argc, char** argv) {
             // Close connection
             teoLNullDisconnect(con);
         }
-        else teoLNullSleep(5000);
+        else teoLNullSleep(1000);
         
         //quit_flag = 1;
     }
