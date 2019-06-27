@@ -99,13 +99,13 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 //
                 // Add current time to the end of message (it should be return
                 // back by server)
-                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
+/*                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
                 if(snd == -1) perror(strerror(errno));
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_ECHO), "
                        "data: %s\n",
                        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
-
+*/
                 // Show empty line
                 printf("\n");
 
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 100;
+    const int send_size = 3000;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
-    param.tcp_f = 1;
+    param.tcp_f = 0;
 
     // Initialize L0 Client library
     teoLNullInit();
@@ -270,6 +270,7 @@ int main(int argc, char** argv) {
             // Event loop
             while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
 
+
                 // Send Echo command every second
                 if( !(num % (1000 / timeout)) )
                     teoLNullSendEcho(con, param.peer_name, param.msg);
@@ -284,7 +285,7 @@ int main(int argc, char** argv) {
         
         //quit_flag = 1;
     }
-
+close_con:
     // Cleanup L0 Client library
     teoLNullCleanup();
     free(send_msg);

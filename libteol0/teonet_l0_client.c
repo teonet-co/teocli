@@ -145,7 +145,17 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
-        return trudpChannelSendData(con->tcd, (void *) data, length);
+//        return trudpChannelSendData(con->tcd, (void *) data, length);
+
+        ssize_t send_size = 0;
+        for(;;) {
+            size_t len = length > 512 ? 512 : length;
+            send_size += trudpChannelSendData(con->tcd, (void *)data, len);
+            length -= len;
+            if(!length) break;
+            data += len; 
+        }
+        return send_size;
     }
 }
 
@@ -1000,7 +1010,13 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
                 if(!(type = trudpPacketGetType(data))) {
                     teoLNullCPacket *cp = trudpPacketGetData(data);
-                    debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
+                    debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, data: %s\n",
+                        (int)data_length,
+                        id,
+                        addr,
+                        port,
+                        (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
+/*                    debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
                         (int)data_length,
                         id,
                         addr,
@@ -1010,7 +1026,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                         cp->peer_name,
                         cp->cmd,
                         (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
-                }
+  */              }
             }
             #ifdef DEBUG_MSG
                 debug(tru, DEBUG,  "send %d bytes %s id=%u, to %s:%d\n",
