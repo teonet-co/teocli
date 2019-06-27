@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     ssize_t rc;
 
     // Initialize and connect to teonet L0 server
-    teo::Teocli *teo = new teo::Teocli(TCP_SERVER, TCP_PORT);
+    teo::Teocli *teo = new teo::Teocli(TCP_SERVER, TCP_PORT, TCP);
     if(teo->connected() > 0) {
 
         // Send (1) Initialization packet to L0 server

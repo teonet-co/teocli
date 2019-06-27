@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     teoLNullInit();
 
     // Connect to L0 server
-    teoLNullConnectData *con = teoLNullConnect(TCP_SERVER, TCP_PORT);
+    teoLNullConnectData *con = teoLNullConnect(TCP_SERVER, TCP_PORT, TCP);
     if(con->status > 0) {
 
         // Send (1.1) Initialization packet to L0 server
