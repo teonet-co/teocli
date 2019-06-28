@@ -326,6 +326,8 @@ TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
+void set_nonblock(int sd);
+int set_tcp_nodelay(int sd);
 
 #ifdef	__cplusplus
 }

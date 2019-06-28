@@ -1044,5 +1044,11 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             break;
     }
 }
+//DEPRECATED	
+inline void set_nonblock(int sd) __attribute_deprecated__;	
+inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);} 
+//DEPRECATED	
+int set_tcp_nodelay(int sd) __attribute_deprecated__;	
+inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 #undef DEBUG_MSG
