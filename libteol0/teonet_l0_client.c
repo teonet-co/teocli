@@ -34,7 +34,7 @@
 // Uncomment next line to show debug message
 //#define CONNECT_MSG
 //#define DEBUG_MSG
-#define DEBUG 1
+#define DEBUG 0
 // Application constants
 #define BUFFER_SIZE 4096
 
