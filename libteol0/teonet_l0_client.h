@@ -305,7 +305,7 @@ TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
-        const char *peer_name, void *data, size_t data_length);
+        const char *peer_name, void *data, size_t data_length, int debug_log_id);
 TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         const char *msg);
 TEOCLI_API int64_t teoLNullProccessEchoAnswer(const char *msg);
@@ -322,7 +322,7 @@ TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len, const 
         const char *msg);
 TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
         const char * peer, const void* data, size_t data_length);
-TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length);
+TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length, int debug_log_id);
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);

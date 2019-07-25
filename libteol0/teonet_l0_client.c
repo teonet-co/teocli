@@ -140,7 +140,7 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
 }
 
 
-ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
+ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length, int debug_log_id)
 {
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
@@ -150,7 +150,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         ssize_t send_size = 0;
         for(;;) {
             size_t len = length > 512 ? 512 : length;
-            send_size += trudpChannelSendData(con->tcd, (void *)data, len);
+            send_size += trudpChannelSendData(con->tcd, (void *)data, len, debug_log_id);
             length -= len;
             if(!length) break;
             data += len; 
@@ -169,10 +169,10 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
  *
  * @return Length of send data or -1 at error
  */
-ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length)
+ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_length, int debug_log_id)
 {
     if (con != NULL) {
-        return _teosockSend(con, pkg, pkg_length);
+        return _teosockSend(con, pkg, pkg_length, debug_log_id);
     } else {
         return -1;
     }
@@ -193,7 +193,7 @@ ssize_t teoLNullPacketSend(teoLNullConnectData *con, void* pkg, size_t pkg_lengt
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd, const char *peer_name,
-        void *data, size_t data_length)
+        void *data, size_t data_length, int debug_log_id)
 {
     if (data == NULL) {
         data_length = 0;
@@ -205,7 +205,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd, const char *peer_nam
 
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name,
             data, data_length);
-    ssize_t snd = _teosockSend(con, buf, pkg_length);
+    ssize_t snd = _teosockSend(con, buf, pkg_length, debug_log_id);
 
     free(buf);
 
@@ -262,7 +262,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name, const 
     size_t pkg_length = teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
 
     // Send message with time
-    ssize_t snd = _teosockSend(con, buf, pkg_length);
+    ssize_t snd = _teosockSend(con, buf, pkg_length, 0);
 
     return snd;
 }
@@ -440,7 +440,7 @@ ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc)
         teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
         if(cp->cmd == CMD_L_ECHO) {
             char *data = cp->peer_name + cp->peer_name_length;
-            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length, 0);
         }
     }
 
@@ -516,7 +516,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name)
         return 0;
     }
 
-    ssize_t snd = _teosockSend(con, buf, pkg_length);
+    ssize_t snd = _teosockSend(con, buf, pkg_length, 0);
 
     #if defined(_WIN32)
     free(buf);
@@ -979,7 +979,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 char *data = cp->peer_name + cp->peer_name_length;
                 cp->cmd = CMD_L_ECHO_ANSWER;
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
-                trudpChannelSendData(tcd, cp, data_length);
+                trudpChannelSendData(tcd, cp, data_length, 0);
             } else { // Send other commands to L0 event loop
                 send_l0_event(con, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + cp->data_length + cp->peer_name_length);
             }
