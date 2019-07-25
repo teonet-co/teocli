@@ -559,20 +559,20 @@ uint8_t get_byte_checksum(void *data, size_t data_length)
 static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
 {
     int rv = 1;
-    fd_set rfds, wfds;
+    fd_set rfds; //, wfds;
     struct timeval tv;
     uint64_t ts = teoGetTimestampFull();
     teosockSelectResult retval;
 
     // Watch server_socket to see when it has input.
-    FD_ZERO(&wfds);
+    //FD_ZERO(&wfds);
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
 
-    // Process write queue
-    if(trudpGetWriteQueueSize(td)) {
-        FD_SET(td->fd, &wfds);
-    }
+    // // Process write queue
+    // if(trudpGetWriteQueueSize(td)) {
+    //     FD_SET(td->fd, &wfds);
+    // }
 
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
 
@@ -580,7 +580,7 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
     usecToTv(&tv, t);
 
-    rv = select((int)td->fd + 1, &rfds, &wfds, NULL, &tv);
+    rv = select((int)td->fd + 1, &rfds, NULL /*&wfds*/, NULL, &tv);
 
     // Error
     if (rv == -1) {
@@ -611,11 +611,11 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
             }
         }
 
-        // Process write fd
-        if(FD_ISSET(td->fd, &wfds)) {
-            // Process write queue
-            while(trudpProcessWriteQueue(td));
-        }
+        // // Process write fd
+        // if(FD_ISSET(td->fd, &wfds)) {
+        //     // Process write queue
+        //     while(trudpProcessWriteQueue(td));
+        // }
         
         retval = TEOSOCK_SELECT_READY;
     }
