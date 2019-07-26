@@ -579,7 +579,8 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
     usecToTv(&tv, t);
 
-    rv = select((int)td->fd + 1, &rfds, NULL /*&wfds*/, NULL, &tv);
+    int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
+    rv = select(nfds + 1, &rfds, NULL, NULL, &tv);
 
     // Error
     if (rv == -1) {
@@ -595,6 +596,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
+    
         // Process read fd
         if(FD_ISSET(td->fd, &rfds)) {
             char buffer[BUFFER_SIZE];
