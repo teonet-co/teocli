@@ -80,7 +80,8 @@ typedef enum teoLNullConnectionStatus {
     CON_STATUS_NOT_CONNECTED = 0,
     CON_STATUS_SOCKET_ERROR = -1,
     CON_STATUS_HOST_ERROR = -2,
-    CON_STATUS_CONNECTION_ERROR = -3
+    CON_STATUS_CONNECTION_ERROR = -3,
+    CON_STATUS_PIPE_ERROR = -4
 
 } teoLNullConnectionStatus;
 
@@ -94,7 +95,7 @@ typedef enum PROTOCOL {
  */
 typedef struct teoLNullConnectData {
 
-    teonetSocket fd;         ///< Socket descriptor
+    teonetSocket fd;            ///< Socket descriptor
 
     teoLNullConnectionStatus status;  ///< Connection status
 
@@ -110,6 +111,8 @@ typedef struct teoLNullConnectData {
     int udp_reset_f;
     trudpData *td;              ///< TRUDP connection data
     trudpChannelData *tcd;      ///< TRUDP channel data
+    
+    int pipefd[2];              ///< Pipe to use it in thread safe write function
     
 } teoLNullConnectData;
 
