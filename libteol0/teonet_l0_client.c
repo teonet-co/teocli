@@ -139,18 +139,21 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
     return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
 }
 
-
 ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length, int debug_log_id)
 {
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
-//        return trudpChannelSendData(con->tcd, (void *) data, length);
-
         ssize_t send_size = 0;
         for(;;) {
             size_t len = length > 512 ? 512 : length;
-            send_size += trudpChannelSendData(con->tcd, (void *)data, len, debug_log_id);
+
+            //send_size += trudpChannelSendData(con->tcd, (void *)data, len, debug_log_id);
+
+            // Write to pipe
+            write(con->pipefd[1], data, len);
+            send_size += len;
+
             length -= len;
             if(!length) break;
             data += len; 
@@ -549,30 +552,26 @@ uint8_t get_byte_checksum(void *data, size_t data_length)
     return checksum;
 }
 
-
 /**
  * The TR-UDP cat network loop with select function
  *
  * @param td Pointer to trudpData
  * @param delay Default read data timeout
  */
-static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
+static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int timeout)
 {
+    trudpData *td = con->td;
+
     int rv = 1;
-    fd_set rfds; //, wfds;
+    fd_set rfds;
     struct timeval tv;
     uint64_t ts = teoGetTimestampFull();
     teosockSelectResult retval;
 
     // Watch server_socket to see when it has input.
-    //FD_ZERO(&wfds);
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
-
-    // // Process write queue
-    // if(trudpGetWriteQueueSize(td)) {
-    //     FD_SET(td->fd, &wfds);
-    // }
+    FD_SET(con->pipefd[0], &rfds);
 
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
 
@@ -597,7 +596,7 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
         // Process read fd
-        if(FD_ISSET(td->fd, &rfds)) {          
+        if(FD_ISSET(td->fd, &rfds)) {
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
@@ -610,13 +609,15 @@ static teosockSelectResult trudpNetworkSelectLoop(trudpData *td, int timeout)
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
             }
         }
+        // Process Pipe (thread safe write) 
+        if(FD_ISSET(con->pipefd[0], &rfds)) {
+            size_t len;
+            const BUF_SIZE = 2048;
+            char data[BUF_SIZE];
+            len = read(con->pipefd[0], data, BUF_SIZE);
+            trudpChannelSendData(con->tcd, (void *)data, len);
+        }
 
-        // // Process write fd
-        // if(FD_ISSET(td->fd, &wfds)) {
-        //     // Process write queue
-        //     while(trudpProcessWriteQueue(td));
-        // }
-        
         retval = TEOSOCK_SELECT_READY;
     }
 
@@ -639,7 +640,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
     if (con->tcp_f) {
         rv = teosockSelect(con->fd, TEOSOCK_SELECT_MODE_READ, timeout);
     } else {
-        rv = trudpNetworkSelectLoop(con->td, timeout * 1000);
+        rv = trudpNetworkSelectLoop(con, timeout * 1000);
     }
 
     if (rv == TEOSOCK_SELECT_ERROR) {
@@ -689,10 +690,11 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
  * @param user_data Pointer to user data which will be send to event callback
  *
  * @return Pointer to teoLNullConnectData. Null if no memory error
- * @retval teoLNullConnectData::status== 1   - Success connection
+ * @retval teoLNullConnectData::status== 1 - Success connection
  * @retval teoLNullConnectData::status==-1 - Create socket error
  * @retval teoLNullConnectData::status==-2 - HOST NOT FOUND error
  * @retval teoLNullConnectData::status==-3 - Client-connect() error
+ * @retval teoLNullConnectData::status==-4 - Pipe creation error
  */
 teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNullEventsCb event_cb,
         void *user_data, PROTOCOL connection_flag)
@@ -712,6 +714,8 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
     con->udp_reset_f = 0;
     con->td = NULL;
     con->tcp_f = connection_flag;
+    con->tcd = NULL;
+    con->pipefd[0] = con->pipefd[1] = -1;
 
     // Connect to TCP
     if(con->tcp_f) {
@@ -769,6 +773,12 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
             // \TODO Check connection status here
             con->status = CON_STATUS_CONNECTED;
             printf("TR-UDP port = %d created, fd = %d\n", port_local, fd);
+
+            // Pipe create
+            if (pipe(con->pipefd) == -1) {
+                con->status = CON_STATUS_PIPE_ERROR;
+                fprintf(stderr, "Can't create pipe ...\n");
+            }
         }
         else {
             con->status = CON_STATUS_SOCKET_ERROR;
@@ -776,7 +786,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         }
 
         con->fd = fd;
-     }
+    }
 
     // Send connected event
     send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
@@ -823,6 +833,9 @@ void teoLNullDisconnect(teoLNullConnectData *con)
             trudpChannelDestroy(con->tcd);
             trudpDestroy(con->td);
         }
+
+        if(con->pipefd[0] != -1) close(con->pipefd[0]);
+        if(con->pipefd[1] != -1) close(con->pipefd[1]);
 
         free(con);
     }
