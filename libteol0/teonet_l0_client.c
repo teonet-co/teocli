@@ -152,6 +152,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length, 
 
             // Write to pipe
             write(con->pipefd[1], data, len);
+            write(con->pipefd[1], &debug_log_id, sizeof(debug_log_id));
             send_size += len;
 
             length -= len;
@@ -614,10 +615,12 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         // Process Pipe (thread safe write) 
         if(FD_ISSET(con->pipefd[0], &rfds)) {
             size_t len;
-            const BUF_SIZE = 2048;
+            const int BUF_SIZE = 2048;
             char data[BUF_SIZE];
             len = read(con->pipefd[0], data, BUF_SIZE);
-            trudpChannelSendData(con->tcd, (void *)data, len);
+            int debug_log_id = 0;
+            read(con->pipefd[0], &debug_log_id, sizeof(int));
+            trudpChannelSendData(con->tcd, (void *)data, len, debug_log_id);
         }
 
         retval = TEOSOCK_SELECT_READY;
