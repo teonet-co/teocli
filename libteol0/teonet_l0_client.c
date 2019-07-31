@@ -15,6 +15,7 @@
 
 #include "teonet_l0_client.h"
 
+#include <pthread.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -139,18 +140,20 @@ size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
     return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
 }
 
+static pthread_mutex_t pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
 {
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
         ssize_t send_size = 0;
-        write(con->pipefd[1], &length, sizeof(length));
 //        debug(NULL, DEBUG, "PIPE DATALEN send ... %lld\n", length);
+        pthread_mutex_lock(&pipe_mutex);
         for(;;) {
             size_t len = length > 512 ? 512 : length;
 
-            //send_size += trudpChannelSendData(con->tcd, (void *)data, len);
+            write(con->pipefd[1], &len, sizeof(len));
 
             // Write to pipe
             write(con->pipefd[1], data, len);
@@ -160,6 +163,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
             if(!length) break;
             data += len; 
         }
+        pthread_mutex_unlock(&pipe_mutex);
         return send_size;
     }
 }
@@ -617,15 +621,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         if(FD_ISSET(con->pipefd[0], &rfds)) {
             size_t data_length = 0;
             read(con->pipefd[0], &data_length, sizeof(data_length));
-//            debug(NULL, DEBUG, "PIPE DATALEN recv ... %lld\n", data_length);
-            char* data = malloc(data_length);
 
-            size_t bytes_read = 0;
-            do
-            {
-                bytes_read += read(con->pipefd[0], data + bytes_read, data_length - bytes_read);
-            }
-            while (bytes_read != data_length);
+            char* data = malloc(data_length);
+            read(con->pipefd[0], data, data_length);
 
             trudpChannelSendData(con->tcd, (void *)data, data_length);
 
