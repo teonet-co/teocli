@@ -222,7 +222,7 @@ void INThandler(int sig)
  * @return
  */
 int main(int argc, char** argv) {
-    
+
     signal(SIGINT, INThandler); 
 
     // Welcome message
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 100;
+    const int send_size = 2006;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
