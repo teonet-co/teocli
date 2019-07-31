@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 3000;
+    const int send_size = 100;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
