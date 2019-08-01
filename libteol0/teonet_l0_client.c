@@ -152,6 +152,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         pthread_mutex_lock(&pipe_mutex);
         for(;;) {
             size_t len = length > 512 ? 512 : length;
+            printf("WRITE PIPE!!!!! %d %d\n", con->pipefd[0], con->pipefd[1]);
 
             write(con->pipefd[1], &len, sizeof(len));
 
@@ -583,7 +584,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
-    usecToTv(&tv, 30000);
+    usecToTv(&tv, t);
 
     int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
     rv = select(nfds + 1, &rfds, NULL, NULL, &tv);
@@ -624,7 +625,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
             char* data = malloc(data_length);
             read(con->pipefd[0], data, data_length);
-
+            printf("READ PIPE!!!!!  %d %d\n", con->pipefd[0], con->pipefd[1]);
             trudpChannelSendData(con->tcd, (void *)data, data_length);
 
             free(data);
