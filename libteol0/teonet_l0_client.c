@@ -583,7 +583,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
-    usecToTv(&tv, t);
+    usecToTv(&tv, 30000);
 
     int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
     rv = select(nfds + 1, &rfds, NULL, NULL, &tv);
