@@ -63,3 +63,7 @@ teocli_s_trudp_LDADD = libteocli.la
 noinst_PROGRAMS += teocli_s_common
 teocli_s_common_SOURCES = ../main_select_common.c
 teocli_s_common_LDADD = libteocli.la
+
+noinst_PROGRAMS += teocli_s_common_thread
+teocli_s_common_thread_SOURCES = ../main_select_common_thread.c
+teocli_s_common_thread_LDADD = libteocli.la

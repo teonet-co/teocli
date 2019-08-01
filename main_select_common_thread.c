@@ -214,6 +214,27 @@ void INThandler(int sig)
     quit_flag = 1;
 }
 
+#include <pthread.h>
+#include <inttypes.h> 
+
+void *send_thread(void *con)
+{
+    teoLNullConnectData* connection = con;
+
+    uint64_t tsf = teoGetTimestampFull();
+    // Event loop
+    while(!quit_flag) {
+        uint64_t now = teoGetTimestampFull();
+        if ((now - tsf > 10000)&&(connection->status > 0)) {
+            teoLNullSendEcho(con, "ps-server-max", "thread_send");
+            tsf = now;
+
+        } //else teoLNullSleep(1000);
+
+    }
+}
+
+
 /**
  * Main L0 Native client example function
  *
@@ -239,7 +260,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 3000;
+    const int send_size = 30;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -263,32 +284,21 @@ int main(int argc, char** argv) {
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
             event_cb, &param, param.tcp_f ? TCP : TRUDP);
 
+        pthread_t thread_id;
+        pthread_create(&thread_id, NULL, send_thread, (void *)con);
         if(con->status > 0) {
 
-            unsigned long num = 0;
-            const int timeout = 1;
+            const int timeout = 50;
 
-	    uint64_t tsf = teoGetTimestampFull();
             // Event loop
             while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
 
-                // Send Echo command every second
-//                if( !(num % (1000 / timeout)))
-		uint64_t now = teoGetTimestampFull();
-		if (now - tsf > 1000) {
-                    teoLNullSendEcho(con, param.peer_name, param.msg);
-		    tsf = now;
-		}
 
-//                num++;
             }
 
-            // Close connection
-            teoLNullDisconnect(con);
-        }
-        else teoLNullSleep(1000);
-        
-        //quit_flag = 1;
+//            teoLNullDisconnect(con);
+        } else teoLNullSleep(1000);
+        pthread_join(thread_id, NULL);
     }
 close_con:
     // Cleanup L0 Client library
