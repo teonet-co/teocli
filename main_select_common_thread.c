@@ -225,7 +225,7 @@ void *send_thread(void *con)
     // Event loop
     while(!quit_flag) {
         uint64_t now = teoGetTimestampFull();
-        if ((now - tsf > 10000)&&(connection->status > 0)) {
+        if ((now - tsf > 500)&&(connection->status > 0)) {
             teoLNullSendEcho(con, "ps-server-max", "thread_send");
             tsf = now;
 

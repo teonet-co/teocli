@@ -616,10 +616,6 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         retval = TEOSOCK_SELECT_ERROR;
     } else if(!rv) { // Idle or Timeout event
         // Process send queue
-        if (timeout_sq != UINT32_MAX) {
-            int rv = trudpProcessSendQueue(td, 0);
-            debug(NULL, DEBUG, "process send queue ... %d\n", rv);
-        }
         
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
@@ -653,6 +649,11 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         }
 
         retval = TEOSOCK_SELECT_READY;
+    }
+
+    if (rv != -1 && timeout_sq != UINT32_MAX) {
+        int rv = trudpProcessSendQueue(td, 0);
+        debug(NULL, DEBUG, "process send queue ... %d\n", rv);
     }
 
     return retval;

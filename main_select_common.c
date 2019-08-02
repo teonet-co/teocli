@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 3000;
+    const int send_size = 100;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -275,9 +275,9 @@ int main(int argc, char** argv) {
                 // Send Echo command every second
 //                if( !(num % (1000 / timeout)))
 		uint64_t now = teoGetTimestampFull();
-		if (now - tsf > 10000) {
-  //          teoLNullSendEcho(con, param.peer_name, param.msg);
-            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
+		if (now - tsf > 1000) {
+            teoLNullSendEcho(con, param.peer_name, param.msg);
+//            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
 		    tsf = now;
 		}
 
