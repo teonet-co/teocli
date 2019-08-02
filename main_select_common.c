@@ -275,8 +275,9 @@ int main(int argc, char** argv) {
                 // Send Echo command every second
 //                if( !(num % (1000 / timeout)))
 		uint64_t now = teoGetTimestampFull();
-		if (now - tsf > 1000) {
-                    teoLNullSendEcho(con, param.peer_name, param.msg);
+		if (now - tsf > 10000) {
+  //          teoLNullSendEcho(con, param.peer_name, param.msg);
+            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
 		    tsf = now;
 		}
 
