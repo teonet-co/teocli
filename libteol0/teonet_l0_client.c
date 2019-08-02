@@ -235,9 +235,14 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd, const char
 
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name,
             data, data_length);
-    ssize_t snd = trudpUdpSendto(con->td->fd, buf, pkg_length,
-                    (__CONST_SOCKADDR_ARG) &con->tcd->remaddr, sizeof(con->tcd->remaddr));
 
+    ssize_t snd = 0;
+    if (con->tcp_f) {
+        snd = _teosockSend(con, buf, pkg_length);
+    } else {
+        snd = trudpUdpSendto(con->td->fd, buf, pkg_length,
+                    (__CONST_SOCKADDR_ARG) &con->tcd->remaddr, sizeof(con->tcd->remaddr));
+    }
     free(buf);
 
     return snd;
