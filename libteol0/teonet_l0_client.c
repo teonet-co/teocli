@@ -222,6 +222,27 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd, const char *peer_nam
     return snd;
 }
 
+ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd, const char *peer_name,
+        void *data, size_t data_length)
+{
+    if (data == NULL) {
+        data_length = 0;
+    }
+
+    const size_t peer_length = strlen(peer_name) + 1;
+    const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
+    char *buf = malloc(buf_length);
+
+    size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name,
+            data, data_length);
+    ssize_t snd = trudpUdpSendto(con->td->fd, buf, pkg_length,
+                    (__CONST_SOCKADDR_ARG) &con->tcd->remaddr, sizeof(con->tcd->remaddr));
+
+    free(buf);
+
+    return snd;
+}
+
 
 /**
  * Create package for Echo command
