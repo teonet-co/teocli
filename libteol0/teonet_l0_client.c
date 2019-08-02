@@ -1091,11 +1091,19 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             break;
     }
 }
-//DEPRECATED	
-inline void set_nonblock(int sd) __attribute_deprecated__;	
+
+#if defined(TEONET_COMPILER_GCC)
+#define DEPRECATED_FUNCTION __attribute__((deprecated))
+#else
+#define DEPRECATED_FUNCTION
+#endif
+
+//DEPRECATED
+inline void set_nonblock(int sd) DEPRECATED_FUNCTION;
 inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);} 
+
 //DEPRECATED	
-int set_tcp_nodelay(int sd) __attribute_deprecated__;	
+int set_tcp_nodelay(int sd) DEPRECATED_FUNCTION;
 inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 #undef DEBUG_MSG
