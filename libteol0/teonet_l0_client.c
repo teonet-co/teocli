@@ -35,7 +35,7 @@
 // Uncomment next line to show debug message
 //#define CONNECT_MSG
 //#define DEBUG_MSG
-#define DEBUG 1
+#define DEBUG 0
 // Application constants
 #define BUFFER_SIZE 4096
 
@@ -152,7 +152,6 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         pthread_mutex_lock(&pipe_mutex);
         for(;;) {
             size_t len = length > 512 ? 512 : length;
-            printf("WRITE PIPE!!!!! %d %d\n", con->pipefd[0], con->pipefd[1]);
 
             write(con->pipefd[1], &len, sizeof(len));
 
@@ -647,7 +646,6 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
             char* data = malloc(data_length);
             read(con->pipefd[0], data, data_length);
-            printf("READ PIPE!!!!!  %d %d\n", con->pipefd[0], con->pipefd[1]);
             trudpChannelSendData(con->tcd, (void *)data, data_length);
 
             free(data);
