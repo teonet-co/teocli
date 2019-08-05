@@ -47,7 +47,7 @@
 #include "libtrudp/src/trudp.h"
 #include "libtrudp/src/trudp_utils.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #define TL0CNS_VERSION "0.0.2"
 
 // Application constants
