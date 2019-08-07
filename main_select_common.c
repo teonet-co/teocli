@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
         if(con->status > 0) {
 
             unsigned long num = 0;
-            const int timeout = 1;
+            const int timeout = 1000;
 
 	    uint64_t tsf = teoGetTimestampFull();
             // Event loop
@@ -285,7 +285,7 @@ int main(int argc, char** argv) {
             }
 
             // Close connection
-            teoLNullDisconnect(con);
+            if (!quit_flag) teoLNullDisconnect(con);
         }
         else teoLNullSleep(1000);
         
