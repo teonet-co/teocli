@@ -712,7 +712,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         con->udp_reset_f = 0;
         teoLNullDisconnect(con);
     }
-
+    
+    if (!con->tcp_f && con->status == CON_STATUS_NOT_CONNECTED && !con->udp_reset_f) {
+        retval = 0;
+    }
     send_l0_event(con, EV_L_TICK, NULL, 0);
 
     return retval;
@@ -868,7 +871,7 @@ void teoLNullDisconnect(teoLNullConnectData *con)
         }
 
         if(!con->tcp_f) {
-            trudpChannelDestroy(con->tcd);
+            trudpChannelDestroyAll(con->td);
             trudpDestroy(con->td);
         }
 
@@ -927,10 +930,15 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case DISCONNECTED: {
             char *key = trudpChannelMakeKey(tcd);
+            teoLNullConnectData *con = user_data;
+
             if (data_length == sizeof(uint32_t)) {
                 uint32_t last_received = *(uint32_t*)data;
                 debug(tru, DEBUG, "Disconnect channel %s, last received: %.6f sec\n", key, last_received / 1000000.0);
-                trudpChannelDestroy(tcd);
+                trudpChannelDestroyAll(con->td); 
+                send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+                tcd->connected_f = 0;
+                con->status = CON_STATUS_NOT_CONNECTED;
             } else {
                 debug(tru, DEBUG,  "Disconnected channel %s\n", key);
             }
@@ -944,8 +952,12 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         case GOT_RESET: {
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
-            
-            tcd->connected_f = 0;
+            teoLNullConnectData *con = user_data;
+            if (tcd->connected_f) {
+                send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+                con->status = CON_STATUS_NOT_CONNECTED;
+                tcd->connected_f = 0;
+            }
         } break;
 
         // SEND_RESET event
