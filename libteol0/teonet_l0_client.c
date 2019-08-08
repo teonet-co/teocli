@@ -29,6 +29,7 @@
 #include <unistd.h>
 #endif
 
+#include "debug_log.h"
 #include "teonet_socket.h"
 #include "teonet_time.h"
 
@@ -63,7 +64,7 @@ void TEOCLI_API WinSleep(uint32_t dwMilliseconds) {Sleep(dwMilliseconds);}
  * @param fmt
  * @param ...
  */
-static void debug(const void *tru, int mode, char *fmt, ...)
+static void debug(const void *tru, int mode, const char *fmt, ...)
 {
     static unsigned long idx = 0;
     va_list ap;
@@ -696,6 +697,8 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
                 if(rc > 0) {
                     send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
                 } else if(rc == 0) {
+                    debug_log_message("send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with 0 data");
+
                     send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                     con->status = CON_STATUS_NOT_CONNECTED;
                     retval = 0;
@@ -706,6 +709,8 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
     }
 
     if (!con->tcp_f && con->udp_reset_f) {
+        debug_log_message("send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with udp reset");
+
         send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
         con->status = CON_STATUS_NOT_CONNECTED;
         retval = 0;
@@ -936,6 +941,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 uint32_t last_received = *(uint32_t*)data;
                 debug(tru, DEBUG, "Disconnect channel %s, last received: %.6f sec\n", key, last_received / 1000000.0);
                 trudpChannelDestroyAll(con->td); 
+
+                debug_log_message("send_l0_event EV_L_DISCONNECTED in trudpEventCback on DISCONNECTED");
+
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 tcd->connected_f = 0;
                 con->status = CON_STATUS_NOT_CONNECTED;
@@ -954,6 +962,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
             teoLNullConnectData *con = user_data;
             if (tcd->connected_f) {
+                debug_log_message("send_l0_event EV_L_DISCONNECTED in trudpEventCback on GOT_RESET");
+
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 con->status = CON_STATUS_NOT_CONNECTED;
                 tcd->connected_f = 0;
