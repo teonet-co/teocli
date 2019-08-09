@@ -230,6 +230,23 @@ public:
     }
 
     /**
+     * Send **UNRELIABLE** command to L0 server
+     *
+     * Create L0 clients packet and send it to L0 server
+     *
+     * @param cmd Command
+     * @param peer_name Peer name to send to
+     * @param data Pointer to data
+     * @param data_length Length of data
+     *
+     * @return Length of send data or -1 at error
+     */
+    ssize_t sendUnreliable(int cmd, const char *peer_name, void *data,
+            size_t data_length) {
+        return teoLNullSendUnreliable(con, cmd, peer_name, data, data_length);
+    }
+
+    /**
      * Send Echo command
      *
      * @param peer_name
