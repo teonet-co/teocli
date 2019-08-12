@@ -113,6 +113,10 @@ typedef struct teoLNullConnectData {
     trudpChannelData *tcd;      ///< TRUDP channel data
     
     int pipefd[2];              ///< Pipe to use it in thread safe write function
+
+    #if defined(_WIN32)
+    HANDLE handles[2];
+    #endif
     
 } teoLNullConnectData;
 
