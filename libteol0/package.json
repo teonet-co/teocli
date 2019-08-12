@@ -1,6 +1,6 @@
 {
   "name": "teocli-l0",
-  "version": "0.0.17",
+  "version": "0.1.0",
   "description": "Teonet native C/C++ client core",
   "main": "index.js",
   "scripts": {
