@@ -19,6 +19,7 @@
                 <sourceRootElem>emscripten</sourceRootElem>
                 <sourceRootElem>build</sourceRootElem>
                 <sourceRootElem>nbind</sourceRootElem>
+                <sourceRootElem>libtrudp</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

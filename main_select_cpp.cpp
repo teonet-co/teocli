@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 
     // Create Teocli object, Initialize L0 Client library and connect to L0 server
     teo::Teocli *cli = new teo::Teocli(parameters.client_name,
-        parameters.tcp_server, parameters.tcp_port, event_cb, &parameters);
+        parameters.tcp_server, parameters.tcp_port, event_cb, &parameters, TRUDP);
 
         auto reconnect = true; // Reconnect this client if disconnected
         unsigned long num = 0; // An index
@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
             else {
                 std::cout << "Try to reconnect...\n";
                 if(attempt++) cli->sleep(1000);
-                cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb);
+                cli->connect(parameters.tcp_server, parameters.tcp_port, &parameters, event_cb, TCP);
             }
         }
 

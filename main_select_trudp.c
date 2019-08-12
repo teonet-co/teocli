@@ -44,8 +44,8 @@
 #include <stdarg.h>
 
 #include "libteol0/teonet_l0_client.h"
-#include "../trudp/src/trudp.h"
-#include "../trudp/src/utils.h"
+#include "libtrudp/src/trudp.h"
+#include "libtrudp/src/trudp_utils.h"
 
 #define DEBUG 1
 #define TL0CNS_VERSION "0.0.2"
@@ -56,6 +56,10 @@
 #define RECONNECT_AFTER 3000000 // uSec (mSec * 1000)
 #define SHOW_STATISTIC_AFTER 500000 // uSec (mSec * 1000)
 
+// Send L0 event to L0 event loop
+void* _param = NULL;
+#define send_l0_event(tcd, event, data, data_length, user_data) \
+event_cb(tcd, event, data, data_length, _param);
 
 /**
  * Show error and exit
@@ -79,7 +83,7 @@ static void die(char *fmt, ...)
  * @param fmt
  * @param ...
  */
-static void debug(char *fmt, ...)
+static void debug(const void *tru, int mode, char *fmt, ...)
 {
     static unsigned long idx = 0;
     va_list ap;
@@ -106,6 +110,9 @@ struct app_parameters {
 
 };
 
+static const int BUFFER_SIZE = 2048;
+static int connected_flag = 0;
+
 /**
  * Teonet L0 client event callback
  *
@@ -115,7 +122,7 @@ struct app_parameters {
  * @param data_len
  * @param user_data
  */
-void event_cb(void *con, teoLNullEvents event, void *data,
+void event_cb(void *tcd, teoLNullEvents event, void *data,
             size_t data_len, void *user_data) {
 
     const struct app_parameters *param = user_data;
@@ -129,29 +136,45 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
                 printf("Successfully connect to server\n");
 
-                // Send (1) Initialization packet to L0 server
-                ssize_t snd = teoLNullLogin(con, param->host_name);
-                if(snd == -1) perror(strerror(errno));
-                printf("\nSend %d bytes packet to L0 server, "
-                       "Initialization packet\n",
-                       (int)snd);
+//                // Send (1) Initialization packet to L0 server
+//                ssize_t snd = teoLNullLogin(con, param->host_name);
+//                if(snd == -1) perror(strerror(errno));
+//                printf("\nSend %d bytes packet to L0 server, "
+//                       "Initialization packet\n",
+//                       (int)snd);
 
                 // Send (2) peer list request to peer, command CMD_L_PEERS
-                snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+                //snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+
+                //ssize_t snd = 0;
+                char buf[BUFFER_SIZE];
+                
+                // Send peers request
+                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, /*79*/  CMD_L_PEERS, param->peer_name, NULL, 0);
+                ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);
+                //
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
 
-                // Send (3) echo request to peer, command CMD_L_ECHO
+                // Send lients request
+                pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
+                snd = trudpChannelSendData(tcd, buf, pkg_length);
                 //
-                // Add current time to the end of message (it should be return
-                // back by server)
-                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                if(snd == -1) perror(strerror(errno));
                 printf("Send %d bytes packet to L0 server to peer %s, "
-                       "cmd = %d (CMD_L_ECHO), "
-                       "data: %s\n",
-                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+                       "cmd = %d (CMD_L_L0_CLIENTS)\n",
+                       (int)snd, param->peer_name, CMD_L_L0_CLIENTS);
+
+//                // Send (3) echo request to peer, command CMD_L_ECHO
+//                //
+//                // Add current time to the end of message (it should be return
+//                // back by server)
+//                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
+//                if(snd == -1) perror(strerror(errno));
+//                printf("Send %d bytes packet to L0 server to peer %s, "
+//                       "cmd = %d (CMD_L_ECHO), "
+//                       "data: %s\n",
+//                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
 
                 // Show empty line
                 printf("\n");
@@ -206,6 +229,23 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                         printf("%s", ln);
                     }
                 } break;
+                
+                case CMD_L_L0_CLIENTS_ANSWER: {
+
+                    // Show peer list
+                    teonet_client_data_ar *client_data_ar = (teonet_client_data_ar *)
+                            (cp->peer_name + cp->peer_name_length);
+                    const char *ln = "--------------------------------------------"
+                                     "---------\n";
+                    printf("%sClients (%u): \n%s", ln, client_data_ar->length, ln);
+                    int i;
+                    for(i = 0; i < (int)client_data_ar->length; i++) {
+
+                        printf("%-12s\n", client_data_ar->client_data[i].name);
+                    }
+                    printf("%s", ln);
+
+                } break;
 
                 case CMD_L_ECHO_ANSWER:
                 {
@@ -226,16 +266,19 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     printf("Got echo command\n");
 
                 } break;
-                
+
                 case CMD_L_AUTH_LOGIN_ANSWER: {
-                    
+
                     printf("Got answer from authentication server\n");
-                    
+
                     const char *auth_data = (const char *)
                             (cp->peer_name + cp->peer_name_length);
-                    
+
                     // Show data
                     printf("Data: %s\n\n", auth_data);
+
+                    connected_flag = 1;
+                    send_l0_event(tcd, EV_L_CONNECTED, &((trudpChannelData *)tcd)->fd, sizeof(((trudpChannelData *)tcd)->fd), NULL);
                 }
                 break;
 
@@ -252,13 +295,11 @@ void event_cb(void *con, teoLNullEvents event, void *data,
     }
 }
 
-static int connected_flag = 0;
 static char *remote_address;
 static int remote_port_i;
 
 // Read buffer
 static char *buffer;
-static const int BUFFER_SIZE = 2048;
 
 /**
  * TR-UDP event callback
@@ -269,10 +310,11 @@ static const int BUFFER_SIZE = 2048;
  * @param data_length
  * @param user_data
  */
-static void event_cb_trudp(void *tcd_pointer, int event, void *data, 
-        size_t data_length, void *user_data) {
+static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t data_length,
+        void *user_data) {
 
     trudpChannelData *tcd = (trudpChannelData *)tcd_pointer;
+    void *tru = user_data;
 
     switch(event) {
 
@@ -281,8 +323,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case CONNECTED: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            fprintf(stderr, "Connect channel %s\n", key);
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,  "Connect channel %s\n", key);
 
         } break;
 
@@ -291,19 +333,16 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param data Last packet received
         // @param user_data NULL
         case DISCONNECTED: {
-                        
-            char *key = trudp_ChannelMakeKey(tcd);
+
+            char *key = trudpChannelMakeKey(tcd);
             if(data_length == sizeof(uint32_t)) {
                 uint32_t last_received = *(uint32_t*)data;
-                fprintf(stderr,
-                    "Disconnect channel %s, last received: %.6f sec\n",
-                    key, last_received / 1000000.0);
-                trudp_ChannelDestroy(tcd);
+                debug(tru, DEBUG,
+                      "Disconnect channel %s, last received: %.6f sec\n",
+                      key, last_received / 1000000.0);
+                trudpChannelDestroy(tcd);
             }
-            else {
-                fprintf(stderr,
-                    "Disconnected channel %s\n", key);
-            }
+            else debug(tru, DEBUG,  "Disconnected channel %s\n", key);
 
             connected_flag = 0;
 
@@ -314,10 +353,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_RESET: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            fprintf(stderr,
-              "Got TRU_RESET packet from channel %s\n",
-              key);
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
             
             connected_flag = 0;
 
@@ -328,28 +365,23 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case SEND_RESET: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            
-            if(!data)
-                fprintf(stderr,
-                  "Send reset: "
-                  "to channel %s\n",
-                  key);
+            char *key = trudpChannelMakeKey(tcd);
 
+            if(!data) debug(tru, DEBUG,  "Send reset: to channel %s\n", key);
             else {
-            
+
                 uint32_t id = (data_length == sizeof(uint32_t)) ? *(uint32_t*)data:0;
 
                 if(!id)
-                    fprintf(stderr,
-                      "Send reset: "
-                      "Not expected packet with id = 0 received from channel %s\n",
-                      key);
+                  debug(tru, DEBUG,
+                    "Send reset: "
+                    "Not expected packet with id = 0 received from channel %s\n",
+                    key);
                 else
-                    fprintf(stderr,
-                      "Send reset: "
-                      "High send packet number (%d) at channel %s\n",
-                      id, key);
+                  debug(tru, DEBUG,
+                    "Send reset: "
+                    "High send packet number (%d) at channel %s\n",
+                    id, key);
                 }
 
         } break;
@@ -359,8 +391,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_ACK_RESET: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            fprintf(stderr, "Got ACK to RESET packet at channel %s\n", key);
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,  "Got ACK to RESET packet at channel %s\n", key);
 
         } break;
 
@@ -369,9 +401,9 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_ACK_PING: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            debug(
-              "Got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,
+              "got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
               key, (char*)data,
               (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
 
@@ -382,9 +414,9 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_PING: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            fprintf(stderr,
-              "Got PING packet at channel %s, data: %s\n",
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,
+              "got PING packet at channel %s, data: %s\n",
               key, (char*)data);
 
         } break;
@@ -395,8 +427,8 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // @param user_data NULL
         case GOT_ACK: {
 
-            char *key = trudp_ChannelMakeKey(tcd);
-            debug("Got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,  "got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
                   trudpPacketGetId(data/*trudpPacketGetPacket(data)*/),
                   key, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
 
@@ -409,38 +441,56 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
         // Got DATA event
         // @param data Pointer to data
         // @param data_length Length of data
-        // @param user_data NULL
+        // @param user_data NULL Pointer to teoLNullConnectData
         case GOT_DATA: {
 
-            char *key = trudp_ChannelMakeKey(tcd);            
-            teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
-                        
-            debug("Got %d byte data at channel %s, id=%u, from: %s, data: %s\n", 
-                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
-                key, 
-                trudpPacketGetId(trudpPacketGetPacket(data)), 
-                cp->peer_name,
-                cp->peer_name + cp->peer_name_length );
+            teoLNullConnectData *con = user_data;
+            ssize_t rc = teoLNullRecvCheck(con, data, data_length);
+            if(!(rc > 0)) {
+                debug(tru, DEBUG, "got %d byte data to buffer\n", data_length);
+                break;
+            }
             
+            data_length = rc;
+            data = con->read_buffer;
+            
+            teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
+            char *key = trudpChannelMakeKey(tcd);
+            debug(tru, DEBUG,
+                "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, "
+                "peer: %s, cmd: %d, data length: %d, data: %s\n",
+                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
+                key,
+                (double)tcd->triptime / 1000.0,
+                (double)tcd->triptimeMiddle / 1000.0,
+                trudpPacketGetId(trudpPacketGetPacket(data)),
+                cp->peer_name,
+                cp->cmd,
+                cp->data_length,
+                cp->peer_name + cp->peer_name_length);
+
             // Process ECHO command
             if(cp->cmd == CMD_L_ECHO) {
                 char *data = cp->peer_name + cp->peer_name_length;
-                
+
 //                char buf[BUFFER_SIZE];
 //                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length);
-                
+
                 cp->cmd = CMD_L_ECHO_ANSWER;
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
-                trudp_ChannelSendData(tcd, cp, data_length);                
+                trudpChannelSendData(tcd, cp, data_length);
             }
+            // Send other commands to L0 event loop
+            else send_l0_event(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
+                    cp->data_length + cp->peer_name_length, NULL);
 
-            
+
 //            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
 //                if(o.debug) {
 //                    printf("#%u at %.3f, cannel %s [%.3f(%.3f) ms] ",
 //                           tcd->receiveExpectedId,
 //                           (double)trudpGetTimestamp() / 1000.0,
-//                           key, 
+//                           key,
 //                           (double)tcd->triptime / 1000.0,
 //                           (double)tcd->triptimeMiddle / 1000.0);
 //
@@ -451,29 +501,28 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
 //                // Show statistic window
 //                //showStatistic(TD(tcd));
 //            }
-            
-            //debug("%s\n", " ");
+//            debug(tru, DEBUG,  "\n");
 
         } break;
-        
+
         // Process received data
         // @param tcd Pointer to trudpData
         // @param data Pointer to receive buffer
         // @param data_length Receive buffer length
         // @param user_data NULL
         case PROCESS_RECEIVE: {
-            
+
             trudpData *td = (trudpData *)tcd;
-            trudpProcessReceive(td, data, data_length);
-                        
+            trudpProcessReceived(td, data, data_length);
+
         } break;
-        
+
         // Process send data
         // @param data Pointer to send data
         // @param data_length Length of send
         // @param user_data NULL
         case PROCESS_SEND: {
-        
+
             //if(isWritable(TD(tcd)->fd, timeout) > 0) {
             // Send to UDP
             trudpUdpSendto(TD(tcd)->fd, data, data_length,
@@ -481,19 +530,20 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
             //}
 
             // Debug message
-            if(DEBUG) {
+            if(/*o.debug*/ 1) {
 
                 int port,type;
                 uint32_t id = trudpPacketGetId(data);
                 char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
                 if(!(type = trudpPacketGetType(data))) {
-                    debug("Send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms\n",
+                    teoLNullCPacket *cp = trudpPacketGetData(data);
+                    debug(tru, DEBUG,  "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
                         (int)data_length, id, addr, port,
-                        tcd->triptime / 1000.0, tcd->triptimeMiddle / 1000.0);
+                        tcd->triptime / 1000.0, tcd->triptimeMiddle / 1000.0, cp->peer_name, cp->cmd, cp->peer_name + cp->peer_name_length);
                 }
                 else {
-                    debug("Send %d bytes %s id=%u, to %s:%d\n",
-                        (int)data_length, 
+                    debug(tru, DEBUG,  "send %d bytes %s id=%u, to %s:%d\n",
+                        (int)data_length,
                         type == 1 ? "ACK" :
                         type == 2 ? "RESET" :
                         type == 3 ? "ACK to RESET" :
@@ -503,9 +553,9 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
             }
 
             #if USE_LIBEV
-            trudp_start_send_queue_cb(&psd, 0);
+//            trudpSendQueueCbStart(&psd, 0);
             #endif
-            
+
         } break;
 
         default: break;
@@ -518,24 +568,31 @@ static void event_cb_trudp(void *tcd_pointer, int event, void *data,
  * @param td Pointer to trudpData
  * @param delay Default read data timeout
  */
-static void network_select_loop(trudpData *td, int timeout) {
+static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
 
     int rv = 1;
     fd_set rfds, wfds;
     struct timeval tv;
-    uint64_t /*tt, next_et = UINT64_MAX,*/ ts = trudpGetTimestampFull();
+    uint64_t /*tt, next_et = UINT64_MAX,*/ ts = teoGetTimestampFull();
 
+//    while(rv > 0) {
     // Watch server_socket to see when it has input.
     FD_ZERO(&wfds);
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
 
     // Process write queue
-    if(trudp_WriteQueueSizeAll(td)) {
+    if(trudpGetWriteQueueSize(td)) {
         FD_SET(td->fd, &wfds);
     }
 
-    uint32_t timeout_sq = trudp_SendQueueGetTimeout(td, ts);
+    uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
+//    debug("set timeout: %.3f ms; default: %.3f ms, send_queue: %.3f ms%s\n",
+//            (timeout_sq < timeout ? timeout_sq : timeout) / 1000.0,
+//            timeout / 1000.0,
+//            timeout_sq / 1000.0,
+//            timeout_sq == UINT32_MAX ? "(queue is empty)" : ""
+//    );
 
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
@@ -554,8 +611,8 @@ static void network_select_loop(trudpData *td, int timeout) {
 
         // Process send queue
         if(timeout_sq != UINT32_MAX) {
-            int rv = trudp_SendQueueProcess(td, 0);
-            if(rv) debug("Process send queue ... %d\n", rv);
+            int rv = trudpProcessSendQueue(td, 0);
+            debug(NULL, DEBUG, "process send queue ... %d\n", rv);
         }
     }
 
@@ -574,16 +631,18 @@ static void network_select_loop(trudpData *td, int timeout) {
             if(recvlen > 0) {
                 size_t data_length;
                 trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
-                trudp_ChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
+                trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
             }
         }
 
         // Process write fd
         if(FD_ISSET(td->fd, &wfds)) {
             // Process write queue
-            while(trudp_WriteQueueProcess(td));
+            while(trudpProcessWriteQueue(td));
+            //trudpProcessWriteQueue(td);
         }
     }
+//    }
 }
 
 /**
@@ -592,10 +651,10 @@ static void network_select_loop(trudpData *td, int timeout) {
  * @param td
  * @return
  */
-static trudpChannelData *connectToPeer(trudpData *td, const char * host_name) {
+static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) {
 
     trudpChannelData *tcd = NULL;
-    
+
     ssize_t snd;
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
@@ -608,12 +667,14 @@ static trudpChannelData *connectToPeer(trudpData *td, const char * host_name) {
 
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
     if(!pkg_length) return NULL;
-    
-    tcd = trudp_ChannelNew(td, remote_address, remote_port_i, 0);
-    trudp_ChannelSendData(tcd, buf, pkg_length);
+
+    tcd = trudpChannelNew(td, remote_address, remote_port_i, 0);
+    trudpChannelSendData(tcd, buf, pkg_length);
     fprintf(stderr, "Connecting to %s:%u:%u\n", remote_address, remote_port_i, 0);
-    connected_flag = 1;
-    
+    //connected_flag = 1;
+
+    tcd->fd = 1;
+    //send_l0_event(tcd, EV_L_CONNECTED, &tcd->fd, sizeof(tcd->fd), NULL);
     //if ((snd = teoLNullPacketSend((int)con->fd, buf, pkg_length)) >= 0) {};
 
     // Free buffer
@@ -630,6 +691,30 @@ static trudpChannelData *connectToPeer(trudpData *td, const char * host_name) {
 //    connected_flag = 1;
 
     return tcd;
+}
+
+static teoLNullConnectData* trudpLNullConnect(void *user_data) {
+
+    int result;
+    teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    if(con == NULL) return con;
+
+    con->last_packet_ptr = 0;
+    con->read_buffer = NULL;
+    con->read_buffer_ptr = 0;
+    con->read_buffer_size = 0;
+    con->event_cb = event_cb;
+    con->user_data = user_data;
+    
+    con->fd = 0;
+    
+    return con;
+}
+
+static void trudpLNullFree(teoLNullConnectData* con) {
+    if(con) {
+        free(con);
+    }
 }
 
 /**
@@ -663,26 +748,29 @@ int main(int argc, char** argv) {
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
-    else param.msg = "Hello";
+    else param.msg = "Hello"; // from TRUdp client :)";
 
     // Initialize L0 Client library
-    teoLNullInit();
-    
+    //teoLNullInit();
+
     // Connect to L0 TR-UDP server
     // Bind UDP port and get FD (start listening at port)
-    int port = 9090; //atoi(o_local_port);
+    _param = &param;
+    int port = 9090; //atoi(o_local_port); // Local port
     int fd = trudpUdpBindRaw(&port, 1);
     if(fd <= 0) die("Can't bind UDP port ...\n");
     else fprintf(stderr, "Start listening at UDP port %d\n", port);
 
-    // Initialize TR-UDP
-    remote_address = (char*)param.tcp_server;
-    remote_port_i = param.tcp_port;
-    trudpData *td = trudpInit(fd, port, event_cb_trudp, NULL);
-    if(td->fd > 0) {
+    if(fd > 0) {
         
-        printf("TR-UDP port created\n");
-        
+        // Initialize TR-UDP
+        remote_port_i = param.tcp_port;
+        remote_address = (char*)param.tcp_server;
+        teoLNullConnectData* con = trudpLNullConnect(NULL);
+        trudpData *td = trudpInit(fd, port, trudpEventCback, con);
+
+        printf("TR-UDP port created, fd = %d\n", td->fd);
+
         // Create read buffer
         buffer = malloc(BUFFER_SIZE);
 
@@ -690,77 +778,83 @@ int main(int argc, char** argv) {
         const int DELAY = 500000; // uSec
         unsigned long num = 0;
         int quit_flag = 0;
-        
+
         char *message;
         size_t message_length;
-        message = "hello_c"; 
+        message = "hello_c";
         message_length = strlen(message) + 1;
 
         trudpChannelData *tcd = NULL;
-                
+
         // Event loop
         while(!quit_flag) {
 
-            network_select_loop(td, SEND_MESSAGE_AFTER < DELAY ? 
+            trudpNetworkSelectLoop(td, SEND_MESSAGE_AFTER < DELAY ?
                 SEND_MESSAGE_AFTER : DELAY);
-            
+
             // Current timestamp
             tt = trudpGetTimestamp();
 
             // Connect
             if(!connected_flag && (tt - tt_c) > RECONNECT_AFTER) {
-                tcd = connectToPeer(td, param.host_name);
+                tcd = trudpLNullLogin(td, param.host_name);
                 tt_c = tt;
             }
-            
+
+            // When connected
             if(connected_flag) {
-                if((tt - tt_s) > SEND_MESSAGE_AFTER*5) {
+                // Send Echo command every 1 second
+                if((tt - tt_s) > SEND_MESSAGE_AFTER * 1) {
+
+                    //printf("tick...\n");
 
                     char buf[BUFFER_SIZE];
-
+                    // Send ping
                     size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
-                    trudp_ChannelSendData(tcd, buf, pkg_length);
+                    trudpChannelSendData(tcd, buf, pkg_length);
+                    
+//                    // Send cmd 129
+//                    pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, 129, "teo-wg-users"/*param.peer_name*/, NULL, 0);
+//                    trudpChannelSendData(tcd, buf, pkg_length);
 
                     tt_s = tt;
                 }
-                else {
-                    trudpProcessKeepConnection(td);
-                }
+                else trudpProcessKeepConnection(td);
             }
-            
 
             num++;
         }
-        
+
         // Destroy TR-UDP
-        trudpDestroy(td);         
+        trudpLNullFree(con);
+        trudpDestroy(td);
         free(buffer);
     }
-        
-    // Connect to L0 server
-    teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-        event_cb, &param);
-    if(con->fd > 0) {
 
-        unsigned long num = 0;
-        const int timeout = 50;
-
-        // Event loop
-        while(teoLNullReadEventLoop(con, timeout)) {
-
-            // Send Echo command every second
-            if( !(num % (1000 / timeout)) )
-                teoLNullSendEcho(con, param.peer_name, param.msg);
-
-            num++;
-        }
-
-        // Close connection
-        teoLNullDisconnect(con);        
-    }
-
+//    // Connect to L0 server
+//    teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
+//        event_cb, &param);
+//    if(con->fd > 0) {
+//
+//        unsigned long num = 0;
+//        const int timeout = 50;
+//
+//        // Event loop
+//        while(teoLNullReadEventLoop(con, timeout)) {
+//
+//            // Send Echo command every second
+//            if( !(num % (1000 / timeout)) )
+//                teoLNullSendEcho(con, param.peer_name, param.msg);
+//
+//            num++;
+//        }
+//
+//        // Close connection
+//        teoLNullDisconnect(con);
+//    }
+    
     // Cleanup L0 Client library
-    teoLNullCleanup();
+    //teoLNullCleanup();
 
     return (EXIT_SUCCESS);
 }
