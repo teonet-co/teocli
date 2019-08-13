@@ -35,7 +35,7 @@
 #include <unistd.h>
 #endif
 
-#include "debug_log.h"
+#include "teobase/logging.h"
 #include "teobase/socket.h"
 #include "teobase/time.h"
 
@@ -174,12 +174,12 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
 #endif
 
         if (write_result == -1) {
-            debug_log_message("[TeonetClient] Failed to write message to the pipe: write error.");
+            log_error("TeonetClient", "Failed to write message to the pipe: write error.");
             abort();
         }
 
         if ((size_t)write_result != sizeof(pipe_send_data)) {
-            debug_log_message("[TeonetClient] Failed to write message to the pipe: message written partially.");
+            log_error("TeonetClient", "Failed to write message to the pipe: message written partially.");
             abort();
         }
 
@@ -707,7 +707,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
             if (read_result != -1 && read_result != 0) {
                 if ((size_t)read_result != sizeof(pipe_send_data)) {
-                    debug_log_message("[TeonetClient] Failed to read message from the pipe: message read partially.");
+                    log_error("TeonetClient", "Failed to read message from the pipe: message read partially.");
                     abort();
                 }
 
@@ -769,7 +769,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
                 if(rc > 0) {
                     send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
                 } else if(rc == 0) {
-                    debug_log_message("[TeonetClient] send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with 0 data");
+                    log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with 0 data");
 
                     send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                     con->status = CON_STATUS_NOT_CONNECTED;
@@ -781,7 +781,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
     }
 
     if (!con->tcp_f && con->udp_reset_f) {
-        debug_log_message("[TeonetClient] send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with udp reset");
+        log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in teoLNullReadEventLoop with udp reset");
 
         send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
         con->status = CON_STATUS_NOT_CONNECTED;
@@ -901,47 +901,47 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
                 con->status = CON_STATUS_PIPE_ERROR;
                 con->pipefd[0] = -1;
                 con->pipefd[1] = -1;
-                debug_log_message("[TeonetClient] Failed to create pipe for sending commands.");
+                log_error("TeonetClient", "Failed to create pipe for sending commands.");
             }
 
             #if defined(_WIN32)
-            debug_log_message("[TeonetClient] Creating events.");
+            log_debug("TeonetClient", "Creating events.");
             con->handles[0] = WSACreateEvent();
             con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
 
             int event_select_result = 0;
             if (con->handles[0] != NULL && con->handles[1] != NULL) {
-                debug_log_message("[TeonetClient] Binding socket to event.");
+                log_debug("TeonetClient", "Binding socket to event.");
                 event_select_result = WSAEventSelect(fd, con->handles[0], FD_READ | FD_CLOSE);
                 if (event_select_result != 0) {
                     int error_code = WSAGetLastError();
-                    debug_log_message("[TeonetClient] Failed to bind event.");
+                    log_error("TeonetClient", "Failed to bind event.");
 
                     if (error_code == WSAENETDOWN) {
-                        debug_log_message("[TeonetClient] Error: WSAENETDOWN.");
+                        log_error("TeonetClient", "Error: WSAENETDOWN.");
                     } else if (error_code == WSAEINVAL) {
-                        debug_log_message("[TeonetClient] Error: WSAEINVAL.");
+                        log_error("TeonetClient", "Error: WSAEINVAL.");
                     } else if (error_code == WSAEINPROGRESS) {
-                        debug_log_message("[TeonetClient] Error: WSAEINPROGRESS.");
+                        log_error("TeonetClient", "Error: WSAEINPROGRESS.");
                     } else if (error_code == WSAENOTSOCK) {
-                        debug_log_message("[TeonetClient] Error: WSAENOTSOCK.");
+                        log_error("TeonetClient", "Error: WSAENOTSOCK.");
                     } else {
-                        debug_log_message("[TeonetClient] Error: unknown.");
+                        log_error("TeonetClient", "Error: unknown.");
                     }
                 }
             }
 
             if (con->handles[0] == NULL || con->handles[1] == NULL || event_select_result != 0) {
-                debug_log_message("[TeonetClient] Failed to create event.");
+                log_error("TeonetClient", "Failed to create event.");
 
                 if (con->handles[0] != NULL) {
-                    debug_log_message("[TeonetClient] Closing write handle.");
+                    log_debug("TeonetClient", "Closing write handle.");
                     WSACloseEvent(con->handles[0]);
                     con->handles[0] = NULL;
                 }
 
                 if (con->handles[1] != NULL) {
-                    debug_log_message("[TeonetClient] Closing read handle.");
+                    log_debug("TeonetClient", "Closing read handle.");
                     CloseHandle(con->handles[1]);
                     con->handles[1] = NULL;
                 }
@@ -952,13 +952,13 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
                 con->status = CON_STATUS_PIPE_ERROR;
                 con->pipefd[0] = -1;
                 con->pipefd[1] = -1;
-                debug_log_message("[TeonetClient] Failed to create events for sending commands.");
+                log_error("TeonetClient", "Failed to create events for sending commands.");
             }
             #endif
         }
         else {
             con->status = CON_STATUS_SOCKET_ERROR;
-            debug_log_message("[TeonetClient] Failed to bind UDP socket.");
+            log_error("TeonetClient", "Failed to bind UDP socket.");
         }
 
         con->fd = fd;
@@ -1097,7 +1097,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 debug(tru, DEBUG, "Disconnect channel %s, last received: %.6f sec\n", key, last_received / 1000000.0);
                 trudpChannelDestroyAll(con->td); 
 
-                debug_log_message("[TeonetClient] send_l0_event EV_L_DISCONNECTED in trudpEventCback on DISCONNECTED");
+                log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in trudpEventCback on DISCONNECTED");
 
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 tcd->connected_f = 0;
@@ -1117,7 +1117,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
             teoLNullConnectData *con = user_data;
             if (tcd->connected_f) {
-                debug_log_message("[TeonetClient] send_l0_event EV_L_DISCONNECTED in trudpEventCback on GOT_RESET");
+                log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in trudpEventCback on GOT_RESET");
 
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 con->status = CON_STATUS_NOT_CONNECTED;
