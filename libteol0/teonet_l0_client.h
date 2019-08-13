@@ -29,7 +29,7 @@ extern int usleep (__useconds_t __useconds);
 #endif
 #endif
 
-#include "teonet_socket.h"
+#include "teobase/socket.h"
 #include "trudp.h"
 #include "trudp_utils.h"
 

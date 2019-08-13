@@ -5,7 +5,7 @@
  * Created on October 12, 2015, 12:32 PM
  */
 
-#include "teonet_platform.h"
+#include "teobase/platform.h"
 
 #if defined(TEONET_COMPILER_MSVC)
 #if !defined(_CRT_SECURE_NO_WARNINGS)
@@ -36,8 +36,8 @@
 #endif
 
 #include "debug_log.h"
-#include "teonet_socket.h"
-#include "teonet_time.h"
+#include "teobase/socket.h"
+#include "teobase/time.h"
 
 // Uncomment next line to show debug message
 //#define CONNECT_MSG
