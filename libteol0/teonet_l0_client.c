@@ -157,12 +157,6 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         return teosockSend(con->fd, data, length);
     } else {
 //        debug(NULL, DEBUG, "PIPE DATALEN send ... %lld\n", length);
-
-        char debug_buffer[1024];
-        strcpy(debug_buffer, "[TeonetClient] Sending message ");
-        _itoa(length, debug_buffer + strlen(debug_buffer), 10);
-        debug_log_message(debug_buffer);
-
         teoPipeSendData pipe_send_data;
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
@@ -174,7 +168,6 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         // Write to pipe
 #if defined(_WIN32)
         ssize_t write_result = _write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
-        debug_log_message("[TeonetClient] Set pipe event.");
         SetEvent(con->handles[1]);
 #else
         ssize_t write_result = write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
@@ -664,16 +657,12 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
-        debug_log_message("[TeonetClient] Have data somewhere.");
-
         // Process read fd
 #if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0) {
 #else
         if (FD_ISSET(td->fd, &rfds)) {
 #endif
-            debug_log_message("[TeonetClient] Have data in socket.");
-
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
@@ -681,25 +670,14 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
             // Process received packet
             if(recvlen > 0) {
-                debug_log_message("[TeonetClient] Read socket ok.");
                 size_t data_length;
                 trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
-
-                char debug_buffer[1024];
-                strcpy(debug_buffer, "[TeonetClient] Got data in socket ");
-                _itoa(recvlen, debug_buffer + strlen(debug_buffer), 10);
-                strcpy(debug_buffer + strlen(debug_buffer), " with payload ");
-                _itoa(data_length, debug_buffer + strlen(debug_buffer), 10);
-                debug_log_message(debug_buffer);
             } else {
 #if defined(_WIN32)
-                debug_log_message("[TeonetClient] Read socket failed.");
-
                 WSANETWORKEVENTS network_events;
                 memset(&network_events, 0, sizeof(network_events));
 
-                debug_log_message("[TeonetClient] Reset socket event.");
                 WSAEnumNetworkEvents(con->fd, con->handles[0], &network_events);
 #endif
             }
@@ -710,8 +688,6 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 #else
         if (FD_ISSET(con->pipefd[0], &rfds)) {
 #endif
-            debug_log_message("[TeonetClient] Have data in pipe.");
-
             teoPipeSendData pipe_send_data;
             memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
@@ -730,16 +706,10 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 #endif
 
             if (read_result != -1 && read_result != 0) {
-                debug_log_message("[TeonetClient] Read pipe ok.");
                 if ((size_t)read_result != sizeof(pipe_send_data)) {
                     debug_log_message("[TeonetClient] Failed to read message from the pipe: message read partially.");
                     abort();
                 }
-
-                char debug_buffer[1024];
-                strcpy(debug_buffer, "[TeonetClient] Got data in pipe ");
-                _itoa(pipe_send_data.data_length, debug_buffer + strlen(debug_buffer), 10);
-                debug_log_message(debug_buffer);
 
                 trudpChannelSendData(con->tcd, pipe_send_data.data, pipe_send_data.data_length);
                 free(pipe_send_data.data);
@@ -748,9 +718,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
                 SetEvent(con->handles[1]);
 #endif
             } else {
-                debug_log_message("[TeonetClient] Read pipe failed.");
 #if defined(_WIN32)
-                debug_log_message("[TeonetClient] Reset pipe event.");
                 ResetEvent(con->handles[1]);
 #endif
             }
@@ -948,10 +916,6 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
                 if (event_select_result != 0) {
                     int error_code = WSAGetLastError();
                     debug_log_message("[TeonetClient] Failed to bind event.");
-                    debug_log_message("[TeonetClient] Return code:");
-                    char snum[50];
-                    _itoa(event_select_result, snum, 10);
-                    debug_log_message(snum);
 
                     if (error_code == WSAENETDOWN) {
                         debug_log_message("[TeonetClient] Error: WSAENETDOWN.");
@@ -963,9 +927,6 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
                         debug_log_message("[TeonetClient] Error: WSAENOTSOCK.");
                     } else {
                         debug_log_message("[TeonetClient] Error: unknown.");
-                        char snum[50];
-                        _itoa(error_code, snum, 10);
-                        debug_log_message(snum);
                     }
                 }
             }
