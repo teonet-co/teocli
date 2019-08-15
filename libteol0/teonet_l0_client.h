@@ -29,7 +29,7 @@ extern int usleep (__useconds_t __useconds);
 #endif
 #endif
 
-#include "teonet_socket.h"
+#include "teobase/socket.h"
 #include "trudp.h"
 #include "trudp_utils.h"
 
@@ -113,6 +113,10 @@ typedef struct teoLNullConnectData {
     trudpChannelData *tcd;      ///< TRUDP channel data
     
     int pipefd[2];              ///< Pipe to use it in thread safe write function
+
+    #if defined(_WIN32)
+    HANDLE handles[2];
+    #endif
     
 } teoLNullConnectData;
 

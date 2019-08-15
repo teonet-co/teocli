@@ -55,6 +55,7 @@ node_modules/
 /linux/teocli_s_cpp
 /linux/teocli_cpp
 /linux/teocli_s_trudp
+/linux/teocli_s_common_thread
 /nbind/package-lock.json
 /emscripten/test/echo_server/test_sockets_echo_server.js
 /emscripten/test/echo_server/package-lock.json
