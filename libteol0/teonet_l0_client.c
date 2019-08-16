@@ -15,7 +15,6 @@
 
 #include "teonet_l0_client.h"
 
-#include <pthread.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -639,6 +638,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
 
     int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
+
 #if defined(_WIN32)
     DWORD select_result = WaitForMultipleObjects(2, con->handles, FALSE, t / 1000);
 #else
@@ -657,7 +657,6 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
-    
         // Process read fd
 #if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0) {
@@ -723,17 +722,6 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
                 ResetEvent(con->handles[1]);
 #endif
             }
-        }
-        // Process Pipe (thread safe write) 
-        if(FD_ISSET(con->pipefd[0], &rfds)) {
-            size_t data_length = 0;
-            read(con->pipefd[0], &data_length, sizeof(data_length));
-
-            char* data = malloc(data_length);
-            read(con->pipefd[0], data, data_length);
-            trudpChannelSendData(con->tcd, (void *)data, data_length);
-
-            free(data);
         }
 
         retval = TEOSOCK_SELECT_READY;
