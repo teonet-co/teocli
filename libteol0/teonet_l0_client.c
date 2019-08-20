@@ -787,7 +787,10 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         con->status = CON_STATUS_NOT_CONNECTED;
         retval = 0;
         con->udp_reset_f = 0;
-        teoLNullDisconnect(con);
+
+        //teoLNullDisconnect(con);  // This crashes app because we still need con after this function.
+        // We probably have to set con->tcd->conneced_f to false instead
+        con->tcd->connected_f = 0;
     }
     
     if (!con->tcp_f && con->status == CON_STATUS_NOT_CONNECTED && !con->udp_reset_f) {
