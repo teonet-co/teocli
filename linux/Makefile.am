@@ -8,7 +8,8 @@ AM_CFLAGS = \
     -std=gnu11 \
     -fPIC \
     -I../libtrudp/src \
-    -I../libtrudp/embedded/teoccl/src \
+    -I../libtrudp/libs/teobase/include \
+    -I../libtrudp/libs/teobase/libs/teoccl/include \
     -pthread  \
     -Wpointer-arith
 
@@ -17,22 +18,19 @@ AM_CXXFLAGS = \
     -std=c++14 \
     -fPIC \
     -I../libtrudp/src \
-    -I../libtrudp/embedded/teoccl/src
+    -I../libtrudp/libs/teobase/include \
+    -I../libtrudp/libs/teobase/libs/teoccl/include
+
 
 lib_LTLIBRARIES = libteocli.la
 
 libteocli_la_SOURCES = \
-    ../libteol0/teonet_l0_client.c \
-    ../libteol0/teonet_socket.c \
-    ../libteol0/teonet_time.c
+    ../libteol0/teonet_l0_client.c
 
 #include_HEADERS = \
-#    ../libteol0/teonet_l0_client.h \
-#    ../libteol0/teonet_socket.h \
-#    ../libteol0/teonet_time.h \
-#    ../libteol0/teonet_platform.h
+#    ../libteol0/teonet_l0_client.h
 
-libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 7:0:0 
+libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE) 
 
 noinst_PROGRAMS =
 
@@ -44,7 +42,7 @@ noinst_PROGRAMS += teocli_s
 teocli_s_SOURCES = ../main_select.c
 teocli_s_LDADD = libteocli.la
 
-noinst_PROGRAMS += teocli_cpp  
+noinst_PROGRAMS += teocli_cpp
 teocli_cpp_SOURCES = ../main_cpp.cpp
 teocli_cpp_LDADD = libteocli.la
 
@@ -54,7 +52,8 @@ teocli_s_cpp_LDADD = libteocli.la
 
 LIBS = \
     ../libtrudp/src/.libs/libtrudp.a \
-    ../libtrudp/embedded/teoccl/src/.libs/libteoccl.a
+    ../libtrudp/libs/teobase/src/.libs/libteobase.a \
+    ../libtrudp/libs/teobase/libs/teoccl/src/.libs/libteoccl.a
 
 noinst_PROGRAMS += teocli_s_trudp
 teocli_s_trudp_SOURCES = ../main_select_trudp.c

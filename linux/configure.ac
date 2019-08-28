@@ -1,8 +1,18 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+AC_DEFUN([AC_DEFINE_SUBST], [
+AC_DEFINE([$1], [$2], [$3])
+AC_SUBST([$1], ['$2'])
+])
+
 AC_PREREQ([2.69])
-AC_INIT([Teocli], [0.1.0])
+
+AC_INIT([teoclil], [0.1.1], [Kirill Scherba <kirill@scherba.ru>, Anton Vasiliev <si1ver1502@gmail.com>, Max Ponka <mpano91@gmail.com>])
+
+AC_DEFINE_SUBST(LIBRARY_CURRENT,  1, [teocli dynamic library version])
+AC_DEFINE_SUBST(LIBRARY_REVISION, 0, [teocli dynamic library version])
+AC_DEFINE_SUBST(LIBRARY_AGE,      1, [teocli dynamic library version])
 
 # Checks for programs.
 AC_PROG_CXX
