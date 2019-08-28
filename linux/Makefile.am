@@ -30,7 +30,7 @@ libteocli_la_SOURCES = \
 #include_HEADERS = \
 #    ../libteol0/teonet_l0_client.h
 
-libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info 7:0:0 
+libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE) 
 
 noinst_PROGRAMS =
 
