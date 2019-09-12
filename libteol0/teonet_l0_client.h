@@ -130,7 +130,6 @@ typedef struct ksnet_arp_data {
     int16_t mode;       ///< Peers mode: -1 - This host, -2 undefined host, 0 - peer , 1 - r-host, 2 - TCP Proxy peer
     char addr[ARP_TABLE_IP_SIZE];      ///< Peer IP address
 // \todo test is it possible to change this structure for running peers
-//    char addr[48];      ///< Peer IP address
     int16_t port;       ///< Peer port
 
     double last_activity;           ///< Last time received data from peer
@@ -143,16 +142,13 @@ typedef struct ksnet_arp_data {
     double monitor_time;            ///< Monitor ping time
 
     double connected_time;          ///< Time when peer was connected to this peer
-    
-//    char *type;                     ///< Peer type
 
 } ksnet_arp_data;
 
 typedef struct ksnet_arp_data_ext {
-
     ksnet_arp_data data;
     char *type;
-    
+    uint32_t cque_id_peer_type;
 } ksnet_arp_data_ext;
 
 #define DIG_IN_TEO_VER 3
