@@ -711,7 +711,15 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
                     abort();
                 }
 
-                trudpChannelSendData(con->tcd, pipe_send_data.data, pipe_send_data.data_length);
+                ssize_t ptr = 0;
+                size_t length = pipe_send_data.data_length;
+                for(;;) {
+                    size_t len = length > 512 ? 512 : length;
+                    trudpChannelSendData(con->tcd, pipe_send_data.data + ptr, len);
+                    length -= len;
+                    if(!length) break;
+                    ptr += len;
+                }
                 free(pipe_send_data.data);
 
 #if defined(_WIN32)
