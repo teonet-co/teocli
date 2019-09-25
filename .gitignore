@@ -5,7 +5,7 @@ nbproject/private/
 package-lock.json
 .dep.inc
 .deps/
-/.dirstamp
+.dirstamp
 /build/
 /dist/
 /docs/
