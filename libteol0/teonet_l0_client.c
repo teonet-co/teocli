@@ -553,6 +553,10 @@ size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length, const char*
  */
 ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name)
 {
+
+    // \TODO: create crypto key here
+
+
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
     #if defined(_WIN32)
@@ -560,6 +564,8 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char* host_name)
     #else
     char buf[buf_len];
     #endif
+
+    // \TODO and crypto keys after 'host_name'
 
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
 

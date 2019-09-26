@@ -73,10 +73,12 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
     const struct app_parameters *param = user_data;
 
+    // TODO: save crypto key here
+
     switch(event) {
 
-        case EV_L_CONNECTED:
-        {
+        case EV_L_CONNECTED: {
+
             int *fd = data;
             if(*fd > 0) {
 
@@ -99,13 +101,13 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 //
                 // Add current time to the end of message (it should be return
                 // back by server)
-/*                snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                if(snd == -1) perror(strerror(errno));
-                printf("Send %d bytes packet to L0 server to peer %s, "
-                       "cmd = %d (CMD_L_ECHO), "
-                       "data: %s\n",
-                       (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
-*/
+                // snd = teoLNullSendEcho(con, param->peer_name, param->msg);
+                // if(snd == -1) perror(strerror(errno));
+                // printf("Send %d bytes packet to L0 server to peer %s, "
+                //        "cmd = %d (CMD_L_ECHO), "
+                //        "data: %s\n",
+                //        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+
                 // Show empty line
                 printf("\n");
 
@@ -172,6 +174,10 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     // Show trip time
                     printf("Trip time: %d ms\n\n", trip_time);
 
+                } break;
+
+                case CMD_L_L0_CRYPTO_KEY: {
+                    // \TODO: we receive key answer here
                 } break;
 
                 case CMD_L_AUTH_LOGIN_ANSWER: {
