@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "encryption.h"
+#include "tinycrypt.h"
 
 void randomize_bytes(volatile uint8_t* bytes, size_t size) {
   // random source via traits/strategy
