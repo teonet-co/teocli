@@ -10,6 +10,7 @@ AM_CFLAGS = \
     -I../libtrudp/src \
     -I../libtrudp/libs/teobase/include \
     -I../libtrudp/libs/teobase/libs/teoccl/include \
+    -I../ \
     -pthread  \
     -Wpointer-arith
 
@@ -19,7 +20,8 @@ AM_CXXFLAGS = \
     -fPIC \
     -I../libtrudp/src \
     -I../libtrudp/libs/teobase/include \
-    -I../libtrudp/libs/teobase/libs/teoccl/include
+    -I../libtrudp/libs/teobase/libs/teoccl/include \
+    -I../
 
 
 lib_LTLIBRARIES = libteocli.la

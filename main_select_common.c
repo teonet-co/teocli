@@ -50,13 +50,13 @@
  * Application parameters structure
  */
 struct app_parameters {
-
-    const char *host_name;
-    const char *tcp_server;
-    int tcp_port;
-    const char *peer_name;
-    const char *msg;
-    int tcp_f;
+  const char* host_name;
+  const char* tcp_server;
+  int tcp_port;
+  const char* peer_name;
+  const char* msg;
+  int tcp_f;
+  ENCRYPTION_PROTOCOL enc_proto;
 };
 
 /**
@@ -73,8 +73,6 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
     const struct app_parameters *param = user_data;
 
-    // TODO: save crypto key here
-
     switch(event) {
 
         case EV_L_CONNECTED: {
@@ -83,34 +81,18 @@ void event_cb(void *con, teoLNullEvents event, void *data,
             if(*fd > 0) {
 
                 printf("Successfully connect to server\n");
+                teoSetEncryptionProtocol(con, param->enc_proto);
 
                 // Send (1) Initialization packet to L0 server
                 ssize_t snd = teoLNullLogin(con, param->host_name);
                 if(snd == -1) perror(strerror(errno));
-                printf("\nSend %d bytes packet to L0 server, "
-                       "Initialization packet\n",
-                       (int)snd);
+                printf("\nSend %d bytes packet to L0 server, initialization packet\n", (int)snd);
 
                 // Send (2) peer list request to peer, command CMD_L_PEERS
                 snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
-
-                // Send (3) echo request to peer, command CMD_L_ECHO
-                //
-                // Add current time to the end of message (it should be return
-                // back by server)
-                // snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                // if(snd == -1) perror(strerror(errno));
-                // printf("Send %d bytes packet to L0 server to peer %s, "
-                //        "cmd = %d (CMD_L_ECHO), "
-                //        "data: %s\n",
-                //        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
-
-                // Show empty line
-                printf("\n");
-
             }
             else {
 
@@ -165,7 +147,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 case CMD_L_ECHO_ANSWER:
                 {
                     printf("Got echo answer command\n");
-                    data = cp->peer_name + cp->peer_name_length;
+                    const char *data = cp->peer_name + cp->peer_name_length;
                     int trip_time = teoLNullProccessEchoAnswer(data);
 
                     // Show data
@@ -177,7 +159,15 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 } break;
 
                 case CMD_L_L0_CRYPTO_KEY: {
-                    // \TODO: we receive key answer here
+                    const void * kex_data = cp->peer_name + cp->peer_name_length;
+                    const size_t kex_data_len = cp->data_length;
+                    if (kex_data_len > sizeof(uint16_t)) {
+                        const char * err = teoApplyRemoteKey(con, kex_data, kex_data_len);
+                        if (err) {
+                            printf("\n\nError during encryption key exchange: %s\n\n", err);
+                        }
+                        printf("\n\nReceived L0 encription key, session established\n\n");
+                    }
                 } break;
 
                 case CMD_L_AUTH_LOGIN_ANSWER: {
@@ -258,7 +248,23 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
-    param.tcp_f = 0;
+
+    const char *flagForceTcp = getenv("TEO_FORCE_TCP");
+    param.tcp_f = (flagForceTcp && flagForceTcp[0]) ? 1 : 0;
+
+    const char *flagEncryption = getenv("TEO_ENC_PROTO");
+    param.enc_proto = ENC_PROTO_ECDH_AES_128_V1;
+    if (flagEncryption) {
+        if (!strcmp( flagEncryption, "ECDH_AES_128_V1")) {
+            param.enc_proto = ENC_PROTO_ECDH_AES_128_V1;
+        } else if (!strcmp( flagEncryption, "DISABLED")) {
+            param.enc_proto = ENC_PROTO_DISABLED;
+        }
+    }
+
+    printf("flagEncryption='%s' enc_proto='%d'\n",
+                flagEncryption ? flagEncryption : "<NULL>",
+                param.enc_proto);
 
     // Initialize L0 Client library
     teoLNullInit();
@@ -270,24 +276,22 @@ int main(int argc, char** argv) {
             event_cb, &param, param.tcp_f ? TCP : TRUDP);
 
         if(con->status > 0) {
-
-            unsigned long num = 0;
             const int timeout = 1000;
 
-	    uint64_t tsf = teoGetTimestampFull();
+            uint64_t tsf = teoGetTimestampFull();
             // Event loop
             while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
 
                 // Send Echo command every second
-//                if( !(num % (1000 / timeout)))
-		uint64_t now = teoGetTimestampFull();
-		if (now - tsf > 1000) {
-            teoLNullSendEcho(con, param.peer_name, param.msg);
-//            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
-		    tsf = now;
-		}
+                //    if( !(num % (1000 / timeout)))
+                uint64_t now = teoGetTimestampFull();
+                if (now - tsf > 1000) {
+                    teoLNullSendEcho(con, param.peer_name, param.msg);
+                //    teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
+                    tsf = now;
+                }
 
-//                num++;
+                //    num++;
             }
 
             // Close connection
@@ -297,7 +301,7 @@ int main(int argc, char** argv) {
         
         //quit_flag = 1;
     }
-close_con:
+
     // Cleanup L0 Client library
     teoLNullCleanup();
     free(send_msg);

@@ -29,6 +29,7 @@ extern int usleep(__useconds_t __useconds);
 #endif
 #endif
 
+#include "libtinycrypt/tinycrypt.h"
 #include "teobase/socket.h"
 #include "trudp.h"
 #include "trudp_utils.h"
@@ -88,6 +89,31 @@ typedef enum teoLNullConnectionStatus {
 
 typedef enum PROTOCOL { TRUDP = 0, TCP = 1 } PROTOCOL;
 
+typedef enum ENCRYPTION_PROTOCOL {
+  ENC_PROTO_DISABLED = 0, ///< Run without encryption
+  ENC_PROTO_ECDH_AES_128_V1 = 1, ///< First implementation
+} ENCRYPTION_PROTOCOL;
+
+typedef enum ENCRYPTEDSESSIONSTATE {
+  SESCRYPT_NEWBORN,
+  SESCRYPT_PENDING,
+  SESCRYPT_ESTABLISHED,
+  SESCRYPT_DISABLED
+} ENCRYPTEDSESSIONSTATE;
+
+typedef struct KEYEXCHANGEPAYLOAD {
+  uint16_t protocolId;
+  ECDHPubkey pubkey;
+  AES128_1_BLOCK salt;
+} KEYEXCHANGEPAYLOAD;
+
+typedef struct ENCRYPTION_CONTEXT {
+  ENCRYPTEDSESSIONSTATE state;        ///< Stages of session handshake
+  ENCRYPTION_PROTOCOL enc_proto;      ///< Encryption protocol variant, for future extensions
+  uint32_t receiveNonce, sendNonce;   ///< counters for CTR-mode encryption
+  PeerKeyset keys;                    ///< Encryption keys holder
+} ENCRYPTION_CONTEXT;
+
 /**
  * L0 client connect data
  */
@@ -111,6 +137,8 @@ typedef struct teoLNullConnectData {
   trudpChannelData* tcd; ///< TRUDP channel data
 
   int pipefd[2]; ///< Pipe to use it in thread safe write function
+
+  ENCRYPTION_CONTEXT *client_crypt;
 
 #if defined(_WIN32)
   HANDLE handles[2];
@@ -196,7 +224,7 @@ typedef struct teoLNullCPacket {
   uint8_t cmd;              ///< Command
   uint8_t peer_name_length; ///< To peer name length (include leading zero)
   uint16_t data_length;     ///< Packet data length
-  uint8_t reserved_1;       ///< Reserved 1
+  uint8_t reserved_1;       ///< Reserved 1. Most significand bit is a is_encrypted flag, i.e. is_encrypted = (reserved_1&0x80)=0x80
   uint8_t reserved_2;       ///< Reserved 2
   uint8_t checksum;         ///< Whole checksum
   uint8_t header_checksum;  ///< Header checksum
@@ -306,10 +334,13 @@ TEOCLI_API void teoLNullDisconnect(teoLNullConnectData* con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData* con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData* con, const char* host_name);
+TEOCLI_API void teoSetEncryptionProtocol(teoLNullConnectData *con, ENCRYPTION_PROTOCOL enc_proto);
+TEOCLI_API const char *teoApplyRemoteKey(teoLNullConnectData *con, const void *payload, size_t length);
+
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData* con, uint8_t cmd, const char* peer_name,
-                                void* data, size_t data_length);
+                                const void* data, size_t data_length);
 TEOCLI_API ssize_t teoLNullSendUnreliable(teoLNullConnectData* con, uint8_t cmd,
-                                          const char* peer_name, void* data, size_t data_length);
+                                          const char* peer_name, const void* data, size_t data_length);
 TEOCLI_API ssize_t teoLNullSendEcho(teoLNullConnectData* con, const char* peer_name,
                                     const char* msg);
 TEOCLI_API int64_t teoLNullProccessEchoAnswer(const char* msg);
@@ -319,12 +350,15 @@ TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData* con, uint32_t timeou
 TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData* con, int timeout);
 
 // Low level functions
-TEOCLI_API size_t teoLNullPacketCreateLogin(void* buffer, size_t buffer_length,
-                                            const char* host_name);
-TEOCLI_API size_t teoLNullPacketCreateEcho(void* msg_buf, size_t buf_len, const char* peer_name,
-                                           const char* msg);
-TEOCLI_API size_t teoLNullPacketCreate(void* buffer, size_t buffer_length, uint8_t command,
-                                       const char* peer, const void* data, size_t data_length);
+TEOCLI_API size_t teoLNullLoginBufferSize(ENCRYPTION_CONTEXT* ctx, const char* host_name);
+TEOCLI_API size_t teoLNullPacketCreateLogin(ENCRYPTION_CONTEXT* ctx, void* buffer,
+                                            size_t buffer_length, const char* host_name);
+
+TEOCLI_API size_t teoLNullPacketCreateEcho(ENCRYPTION_CONTEXT* ctx, void* msg_buf, size_t buf_len,
+                                           const char* peer_name, const char* msg);
+TEOCLI_API size_t teoLNullPacketCreate(ENCRYPTION_CONTEXT* ctx, void* buffer, size_t buffer_length,
+                                       uint8_t command, const char* peer, const void* data,
+                                       size_t data_length);
 TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData* con, void* pkg, size_t pkg_length);
 
 // Teonet utils functions
