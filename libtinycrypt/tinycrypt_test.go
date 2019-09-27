@@ -15,18 +15,85 @@ func TestPacket(t *testing.T) {
 	})
 
 	t.Run("Make", func(t *testing.T) {
-		pk1 := New()
-		pk2 := New()
 
-		pk1.Make(pk2.PubkeyLocal(), pk2.SessionSalt())
-		pk2.Make(pk1.PubkeyLocal(), pk1.SessionSalt())
+		ch := make(chan []byte)
+		serverData := []byte("Hello world!")
+		clientString := "Hello answer!"
 
-		word := []byte("Hello world!")
-		pk1.Crypt(1, word)
-		fmt.Printf("Crypted word: %v\n", word)
+		// In server
+		server := func() {
 
-		pk2.Crypt(1, word)
-		fmt.Printf("Decrypted word: %s\n", string(word))
+			// Create servers Tcrypt object
+			server := New()
+
+			// Got public keys in binary buffer from client and apply it in
+			// servers Tcrypt
+			buf := <-ch
+			err := server.UnmarshalBinary(buf)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			// Send local public keys to client in binary buffer
+			buf, err = server.MarshalBinary()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ch <- buf
+
+			// Send encrypted data to client and receive encrypted answer
+			for num := 0; num < 5; num++ {
+				wordCrypted := server.Crypt(uint32(num), serverData)
+				fmt.Printf("Crypted word: %v\n", wordCrypted)
+				ch <- wordCrypted
+				wordAnswer := <-ch
+				server.CryptInPlace(uint32(num), wordAnswer)
+				if string(wordAnswer) != clientString {
+					t.Error("data encrypted on server not equal source data")
+				}
+				fmt.Printf("Decrypted word answer: %s\n", string(wordAnswer))
+			}
+
+			close(ch)
+		}
+
+		// In client
+		client := func() {
+
+			// Create clients Tcrypt object
+			client := New()
+
+			// Send local keys to server in binary buffer
+			buf, err := client.MarshalBinary()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ch <- buf
+
+			// Got public keys in binary buffer from server and apply it in
+			// clients Tcrypt
+			if err = client.UnmarshalBinary(<-ch); err != nil {
+				t.Error(err)
+				return
+			}
+
+			// God encrypted data from server and send encrypted answer
+			num := 0
+			for word := range ch {
+				client.CryptInPlace(uint32(num), word)
+				if string(word) != string(serverData) {
+					t.Error("data encrypted on client not equal source data")
+				}
+				fmt.Printf("Decrypted word #%d: %s\n", num, string(word))
+				ch <- client.CryptInPlace(uint32(num), []byte(clientString))
+				num++
+			}
+		}
+
+		go server()
+		client()
 	})
-
 }
