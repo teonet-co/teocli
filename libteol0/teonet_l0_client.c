@@ -112,6 +112,95 @@ void teoLNullCleanup()
     teosockCleanup();
 }
 
+void teoLNullPacketEncrypt(ENCRYPTION_CONTEXT *ctx, teoLNullCPacket *packet) {
+//   printf("\n\tPacketEncrypt @%p cmd %d of %u bytes with ctx @%p [%s]\t ", packet, packet->cmd, packet->data_length, ctx, packet->data_length ? (packet->peer_name + packet->peer_name_length) : "");
+
+  if (!ctx) {
+    // printf("Skip - NO CTX\n");
+    return;
+  }
+
+  if (ctx->state != SESCRYPT_ESTABLISHED) {
+    // printf("Skip - CTX_STATE %d\n", ctx->state);
+    return;
+  }
+
+//   printf("Nonce %u\t", ctx->sendNonce);
+  // HINT: set is_encrypted flag
+  packet->reserved_1 |= 0x80;
+  switch (ctx->enc_proto) {
+  case ENC_PROTO_DISABLED: {
+    // encryption disabled
+    // printf("Skip - ENC_PROTO_DISABLED\n");
+  } break;
+
+  case ENC_PROTO_ECDH_AES_128_V1: {
+    // encrypt packet payload
+    if (packet->data_length) {
+      XCrypt_AES128_1(&ctx->keys.sessionkey, ctx->sendNonce,
+                      (uint8_t *)(packet->peer_name + packet->peer_name_length),
+                      packet->data_length);
+    //   printf("Encrypted ENC_PROTO_ECDH_AES_128_V1\n\t[%s]\n", (packet->peer_name + packet->peer_name_length));
+    } else {
+    //   printf("NO_DATA_TO_ENCRYPT\n");
+    }
+  } break;
+
+  default: {
+    // Invalid/unknown encryption
+    // printf("Unexpected ENCRYPTION_PROTOCOL = (%d)\n", ctx->enc_proto);
+  } break;
+  }
+  ctx->sendNonce++;
+}
+
+void teoLNullPacketDecrypt(ENCRYPTION_CONTEXT *ctx, teoLNullCPacket *packet) {
+//   printf("\n\tPacketDecrypt @%p cmd %d of %u bytes with ctx @%p [%s]\t ", packet, packet->cmd, packet->data_length, ctx, packet->data_length ? (packet->peer_name + packet->peer_name_length) : "");
+
+  if (!ctx) {
+    // printf("Skip - NO CTX\n");
+    return;
+  }
+
+  if (ctx->state != SESCRYPT_ESTABLISHED) {
+    // printf("Skip - CTX_STATE %d\n", ctx->state);
+    return;
+  }
+
+//   printf("Nonce %u\t", ctx->receiveNonce);
+
+  // HINT: check is_encrypted flag
+  if ((packet->reserved_1 & 0x80) == 0x80) {
+    // encrypted packet
+    switch (ctx->enc_proto) {
+    case ENC_PROTO_ECDH_AES_128_V1: {
+      // decrypt packet payload
+      if (packet->data_length) {
+        XCrypt_AES128_1(&ctx->keys.sessionkey, ctx->receiveNonce,
+                        (uint8_t *)(packet->peer_name + packet->peer_name_length),
+                        packet->data_length);
+        //   printf("Decrypted ENC_PROTO_ECDH_AES_128_V1\n\t[%s]\n", (packet->peer_name + packet->peer_name_length));
+      } else {
+        // printf("NO_DATA_TO_DECRYPT\n");
+      }
+    } break;
+
+    case ENC_PROTO_DISABLED: {
+      // encryption disabled
+    //   printf("Skip - ENC_PROTO_DISABLED\n");
+    } break;
+
+    default: {
+        // Invalid/unknown encryption
+        // printf("Unexpected ENCRYPTION_PROTOCOL = (%d)\n", ctx->enc_proto);
+    } break;
+    }
+    packet->reserved_1 &= ~0x80; // Not encrypted anymore, clear is_encrypted flag
+    ctx->receiveNonce++;
+  } else {
+    //   printf("Skip - NOT_ENCRYPTED\n");
+  }
+}
 
 /**
  * Create L0 client packet
@@ -144,30 +233,7 @@ size_t teoLNullPacketCreate(ENCRYPTION_CONTEXT* ctx, void* buffer, size_t buffer
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
 
-    // if encrypted session
-    if(ctx && (ctx->state == SESCRYPT_ESTABLISHED)) {
-      switch(ctx->enc_proto) {
-      case ENC_PROTO_DISABLED: {
-        // encryption disabled
-        printf("\t\t\t\t\t case ENC_PROTO_DISABLED");
-      } break;
-
-      case ENC_PROTO_ECDH_AES_128_V1: {
-        // encrypt packet payload
-        XCrypt_AES128_1(&ctx->keys.sessionkey, ctx->sendNonce, (uint8_t*)pkg->peer_name, pkg->peer_name_length + pkg->data_length);
-        ctx->sendNonce++;
-        // HINT: set is_encrypted flag
-        pkg->reserved_1 |= 0x80;
-        printf("Xcrypted (pkt#%d) of %u bytes", ctx->sendNonce, pkg->peer_name_length + pkg->data_length);
-      } break;
-
-      default: {
-        // Invalid/unknown encryption
-        printf("\t\t\t\t\t Unexpected ENCRYPTION_PROTOCOL = (%d)", ctx->enc_proto);
-        return 0;
-      }
-      }
-    }
+    teoLNullPacketEncrypt(ctx, pkg);
 
     pkg->checksum = get_byte_checksum(pkg->peer_name, pkg->peer_name_length +
             pkg->data_length);
@@ -250,13 +316,19 @@ ssize_t teoLNullSend(teoLNullConnectData* con, uint8_t cmd, const char* peer_nam
 
   const size_t peer_length = strlen(peer_name) + 1;
   const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
+  #if defined(_WIN32)
   char* buf = malloc(buf_length);
+  #else
+  char buf[buf_length];
+  #endif
 
   size_t pkg_length =
       teoLNullPacketCreate(con->client_crypt, buf, buf_length, cmd, peer_name, data, data_length);
   ssize_t snd = _teosockSend(con, buf, pkg_length);
 
+  #if defined(_WIN32)
   free(buf);
+  #endif
 
   return snd;
 }
@@ -441,6 +513,7 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
             // Packet has received - return packet size
             retval = len;
             kld->last_packet_ptr += len;
+            teoLNullPacketDecrypt(kld->client_crypt, packet);        
 
             #ifdef DEBUG_MSG
             printf("L0 Server: Identify packet %" PRId32 " bytes length ...\n",
@@ -621,21 +694,21 @@ static size_t _teoLNullPacketCreateLogin_ECDH_AES_128_V1(ENCRYPTION_CONTEXT* ctx
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullLogin(teoLNullConnectData* con, const char* host_name) {
-  ENCRYPTION_PROTOCOL enc_proto =
-      con->client_crypt ? con->client_crypt->enc_proto : ENC_PROTO_DISABLED;
-
-  switch(enc_proto) {
-  case ENC_PROTO_DISABLED: {
-    printf("\nENC_PROTO_DISABLED == con->enc_proto\n\tSending generic login\n");
-    con->client_crypt->state = SESCRYPT_DISABLED;
-  } break;
-  case ENC_PROTO_ECDH_AES_128_V1: {
-    printf("\nENC_PROTO_ECDH_AES_128_V1 == con->enc_proto\n\tSending crypt-combined login\n");
-    con->client_crypt->state = SESCRYPT_PENDING;
-    con->client_crypt->receiveNonce = 1;
-    con->client_crypt->sendNonce = 1;
-    initPeerKeys(&con->client_crypt->keys);
-  } break;
+  if (con->client_crypt) {
+    switch (con->client_crypt->enc_proto) {
+    case ENC_PROTO_DISABLED: {
+      debug(NULL, DEBUG, "\nENC_PROTO_DISABLED\n\tSending generic login\n");
+      free(con->client_crypt);
+      con->client_crypt = NULL;
+    } break;
+    case ENC_PROTO_ECDH_AES_128_V1: {
+      debug(NULL, DEBUG, "\nENC_PROTO_ECDH_AES_128_V1\n\tSending crypt-combined login\n");
+      con->client_crypt->state = SESCRYPT_PENDING;
+      con->client_crypt->receiveNonce = 1;
+      con->client_crypt->sendNonce = 1;
+      initPeerKeys(&con->client_crypt->keys);
+    } break;
+    }
   }
 
   size_t buf_len = teoLNullLoginBufferSize(con->client_crypt, host_name);
@@ -1339,11 +1412,10 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             }
             
             data_length = rc;
-            data = con->read_buffer;
-            
-            teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
+            teoLNullCPacket *cp = con->read_buffer;
             char *key = trudpChannelMakeKey(tcd);
-            debug(tru, DEBUG, "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: %s, cmd: %d, data length: %d, data: %s\n", length, key, (double)tcd->triptime / 1000.0, (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name, cp->cmd, cp->data_length, cp->peer_name + cp->peer_name_length);
+            debug(tru, DEBUG, "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: %s, cmd: %d, data length: %d, data: %s\n",
+                              length, key, (double)tcd->triptime / 1000.0, (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name, cp->cmd, cp->data_length, cp->peer_name + cp->peer_name_length);
 
             // Process commands
             if(cp->cmd == CMD_L_ECHO) {

@@ -311,8 +311,9 @@ extern "C" {
  * @param peer_length
  * @param data_length
  */
-#define teoLNullBufferSize(peer_length, data_length)                                               \
-  (sizeof(teoLNullCPacket) + peer_length + data_length)
+inline size_t teoLNullBufferSize(size_t peer_length, size_t data_length) {
+  return sizeof(teoLNullCPacket) + peer_length + data_length;
+}
 
 #if defined(_WIN32) && !defined(HAVE_MINGW)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
@@ -356,6 +357,8 @@ TEOCLI_API size_t teoLNullPacketCreateLogin(ENCRYPTION_CONTEXT* ctx, void* buffe
 
 TEOCLI_API size_t teoLNullPacketCreateEcho(ENCRYPTION_CONTEXT* ctx, void* msg_buf, size_t buf_len,
                                            const char* peer_name, const char* msg);
+TEOCLI_API void teoLNullPacketEncrypt(ENCRYPTION_CONTEXT *ctx, teoLNullCPacket *packet);
+TEOCLI_API void teoLNullPacketDecrypt(ENCRYPTION_CONTEXT *ctx, teoLNullCPacket *packet);
 TEOCLI_API size_t teoLNullPacketCreate(ENCRYPTION_CONTEXT* ctx, void* buffer, size_t buffer_length,
                                        uint8_t command, const char* peer, const void* data,
                                        size_t data_length);
