@@ -45,11 +45,11 @@ func TestPacket(t *testing.T) {
 
 			// Send encrypted data to client and receive encrypted answer
 			for num := 0; num < 5; num++ {
-				wordCrypted := server.Crypt(uint32(num), serverData)
+				wordCrypted := server.Crypt(serverData)
 				fmt.Printf("Crypted word: %v\n", wordCrypted)
 				ch <- wordCrypted
 				wordAnswer := <-ch
-				server.CryptInPlace(uint32(num), wordAnswer)
+				server.CryptInPlace(wordAnswer)
 				if string(wordAnswer) != clientString {
 					t.Error("data encrypted on server not equal source data")
 				}
@@ -83,12 +83,12 @@ func TestPacket(t *testing.T) {
 			// God encrypted data from server and send encrypted answer
 			num := 0
 			for word := range ch {
-				client.CryptInPlace(uint32(num), word)
+				client.CryptInPlace(word)
 				if string(word) != string(serverData) {
 					t.Error("data encrypted on client not equal source data")
 				}
 				fmt.Printf("Decrypted word #%d: %s\n", num, string(word))
-				ch <- client.CryptInPlace(uint32(num), []byte(clientString))
+				ch <- client.CryptInPlace([]byte(clientString))
 				num++
 			}
 		}
