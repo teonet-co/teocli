@@ -465,7 +465,10 @@ ssize_t teoLNullRecv(teoLNullConnectData *con)
 
     ssize_t rc = teosockRecv(con->fd, buf, L0_BUFFER_SIZE);
     if(rc != 0) {
-        rc = teoLNullRecvCheck(con, buf, rc);
+        for (;;) {
+            rc = teoLNullRecvCheck(con, buf, rc);
+            if (rc <= 0) break;
+        }
     }
 
     return rc;
@@ -1023,6 +1026,7 @@ void teoLNullDisconnect(teoLNullConnectData *con)
         }
 
         if(!con->tcp_f) {
+
             trudpChannelDestroyAll(con->td);
             trudpDestroy(con->td);
         }
@@ -1253,6 +1257,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 int port,type;
                 uint32_t id = trudpPacketGetId(data);
                 char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
+
                 if(!(type = trudpPacketGetType(data))) {
                     teoLNullCPacket *cp = trudpPacketGetData(data);
                     debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, data: %s\n",
@@ -1261,17 +1266,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                         addr,
                         port,
                         (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
-/*                    debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
-                        (int)data_length,
-                        id,
-                        addr,
-                        port,
-                        tcd->triptime / 1000.0,
-                        tcd->triptimeMiddle / 1000.0,
-                        cp->peer_name,
-                        cp->cmd,
-                        (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
-  */              }
+                }
             }
             #ifdef DEBUG_MSG
                 debug(tru, DEBUG,  "send %d bytes %s id=%u, to %s:%d\n",
