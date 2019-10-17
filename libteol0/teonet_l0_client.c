@@ -33,6 +33,7 @@
 #if defined(TEONET_OS_LINUX) || defined(TEONET_OS_MACOS) || defined(TEONET_OS_IOS)
 #include <netdb.h>
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 #include "teobase/logging.h"
