@@ -76,7 +76,6 @@ void event_cb(void *con, teoLNullEvents event, void *data,
     // TODO: save crypto key here
 
     switch(event) {
-
         case EV_L_CONNECTED: {
 
             int *fd = data;
@@ -84,15 +83,8 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
                 printf("Successfully connect to server\n");
 
-                // Send (1) Initialization packet to L0 server
-                ssize_t snd = teoLNullLogin(con, param->host_name);
-                if(snd == -1) perror(strerror(errno));
-                printf("\nSend %d bytes packet to L0 server, "
-                       "Initialization packet\n",
-                       (int)snd);
-
                 // Send (2) peer list request to peer, command CMD_L_PEERS
-                snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+                ssize_t snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
                 printf("Send %d bytes packet to L0 server to peer %s, "
                        "cmd = %d (CMD_L_PEERS)\n",
                        (int)snd, param->peer_name, CMD_L_PEERS);
@@ -245,7 +237,7 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
-    const int send_size = 4000;
+    const int send_size = 10;
     char *send_msg = malloc(send_size);
     int i = 0;
     for (i = 0; i<send_size; ++i)
@@ -269,6 +261,11 @@ int main(int argc, char** argv) {
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
             event_cb, &param, param.tcp_f ? TCP : TRUDP);
 
+        // Send (1) Initialization packet to L0 server
+        ssize_t snd = teoLNullLogin(con, param.host_name);
+        if(snd == -1) perror(strerror(errno));
+        printf("Send %d bytes packet to L0 server, Initialization packet\n", (int)snd);
+
         if(con->status > 0) {
 
             unsigned long num = 0;
@@ -277,11 +274,10 @@ int main(int argc, char** argv) {
     	    uint64_t tsf = teoGetTimestampFull();
             // Event loop
             while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
-
                 // Send Echo command every second
 	        	uint64_t now = teoGetTimestampFull();
                 if (now - tsf > 1000) {
-                    teoLNullSendEcho(con, param.peer_name, param.msg);
+                   teoLNullSendEcho(con, param.peer_name, param.msg);
         //            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
                     tsf = now;
                 }
@@ -291,8 +287,10 @@ int main(int argc, char** argv) {
             if (!quit_flag) {
                 teoLNullDisconnect(con);
             }
+        } else {
+            teoLNullSleep(2000);
+            teoLNullDisconnect(con);
         }
-        else teoLNullSleep(1000);
         
         //quit_flag = 1;
     }

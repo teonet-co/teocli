@@ -465,10 +465,7 @@ ssize_t teoLNullRecv(teoLNullConnectData *con)
 
     ssize_t rc = teosockRecv(con->fd, buf, L0_BUFFER_SIZE);
     if(rc != 0) {
-        for (;;) {
-            rc = teoLNullRecvCheck(con, buf, rc);
-            if (rc <= 0) break;
-        }
+        rc = teoLNullRecvCheck(con, buf, rc);
     }
 
     return rc;
@@ -497,7 +494,7 @@ ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char * buf, ssize_t rc)
         teoLNullCPacket *cp = (teoLNullCPacket*) con->read_buffer;
         if(cp->cmd == CMD_L_ECHO) {
             char *data = cp->peer_name + cp->peer_name_length;
-            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length );
+            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length);
         }
     }
 
@@ -771,6 +768,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         rv = trudpNetworkSelectLoop(con, timeout * 1000);
     }
 
+
     if (rv == TEOSOCK_SELECT_ERROR) {
         int error = errno;
         if (error != EINTR) {
@@ -778,6 +776,9 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         }
     } else if (rv == TEOSOCK_SELECT_TIMEOUT) { // Idle or Timeout event
         send_l0_event(con, EV_L_IDLE, NULL, 0);
+        if (!con->tcp_f) {
+            trudpProcessKeepConnection(con->td);
+        }
     } else { // There is a data in sd. We should send TCP-data to event-loop, UDP-data has been send in trudp-eventloop
         if(con->tcp_f) {
 
@@ -901,6 +902,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
 
         // Set TCP_NODELAY option
         teosockSetTcpNodelay(con->fd);
+        send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
     } else { // Connect to UDP
         int port_local = 0; 
         int fd = trudpUdpBindRaw(&port_local, 1);
@@ -908,8 +910,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         if (fd > 0) {
             con->td = trudpInit(fd, port, trudpEventCback, con);
             con->tcd = trudpChannelNew(con->td, (char *) server, port, 0);
-            // \TODO Check connection status here
-            con->status = CON_STATUS_CONNECTED;
+//            trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
+           // \TODO Check connection status here
+//            con->status = CON_STATUS_CONNECTED;
             printf("TR-UDP port = %d created, fd = %d\n", port_local, fd);
 
             // Pipe create
@@ -983,9 +986,6 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
 
         con->fd = fd;
     }
-
-    // Send connected event
-    send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
 
     return con;
 }
@@ -1196,6 +1196,14 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_ACK: {
             char *key = trudpChannelMakeKey(tcd);
+            teoLNullConnectData *con = user_data;
+            uint32_t id = trudpPacketGetId(data);
+
+            if (id == 0) {
+                trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
+                con->status = CON_STATUS_CONNECTED;
+                send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+            }
             debug(tru, DEBUG,  "got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
                   trudpPacketGetId(data), key, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
         } break;
