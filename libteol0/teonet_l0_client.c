@@ -1294,6 +1294,42 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
     }
 }
 
+const char * STRING_teoLNullConnectionStatus(teoLNullConnectionStatus v) {
+  switch (v) {
+  case CON_STATUS_CONNECTED:
+    return "CON_STATUS_CONNECTED";
+  case CON_STATUS_NOT_CONNECTED:
+    return "CON_STATUS_NOT_CONNECTED";
+  case CON_STATUS_SOCKET_ERROR:
+    return "CON_STATUS_SOCKET_ERROR";
+  case CON_STATUS_HOST_ERROR:
+    return "CON_STATUS_HOST_ERROR";
+  case CON_STATUS_CONNECTION_ERROR:
+    return "CON_STATUS_CONNECTION_ERROR";
+  case CON_STATUS_PIPE_ERROR:
+    return "CON_STATUS_PIPE_ERROR";
+  }
+
+  return "INVALID teoLNullConnectionStatus";
+}
+
+const char *STRING_teoLNullEvents(teoLNullEvents v) {
+  switch (v) {
+    case EV_L_CONNECTED:
+      return "EV_L_CONNECTED";
+    case EV_L_DISCONNECTED:
+      return "EV_L_DISCONNECTED";
+    case EV_L_RECEIVED:
+      return "EV_L_RECEIVED";
+    case EV_L_TICK:
+      return "EV_L_TICK";
+    case EV_L_IDLE:
+      return "EV_L_IDLE";
+  }
+
+  return "INVALID teoLNullEvents";
+};
+
 #if defined(TEONET_COMPILER_GCC)
 #define DEPRECATED_FUNCTION __attribute__((deprecated))
 #else

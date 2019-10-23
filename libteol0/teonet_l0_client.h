@@ -332,6 +332,9 @@ uint8_t get_byte_checksum(void* data, size_t data_length);
 void set_nonblock(int sd);
 int set_tcp_nodelay(int sd);
 
+const char * STRING_teoLNullConnectionStatus(teoLNullConnectionStatus v);
+const char * STRING_teoLNullEvents(teoLNullEvents v);
+
 #ifdef __cplusplus
 }
 #endif
