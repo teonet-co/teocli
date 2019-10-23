@@ -63,11 +63,12 @@ typedef struct teoPipeSendData {
     char* data;
 } teoPipeSendData;
 
-// Send-event Macro
-#define send_l0_event(con, event, data, data_length) \
-    if(con->event_cb != NULL) { \
-        con->event_cb(con, event, data, data_length, con->user_data); \
-    }
+static void send_l0_event(teoLNullConnectData *con, teoLNullEvents event,
+                          void *data, size_t data_length) {
+  if (con->event_cb != NULL) {
+    con->event_cb(con, event, data, data_length, con->user_data);
+  }
+}
 
 /**
  * Show debug message
@@ -157,7 +158,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
-//        debug(NULL, DEBUG, "PIPE DATALEN send ... %lld\n", length);
+        // debug(NULL, DEBUG, "PIPE DATALEN send ... %lld\n", length);
         teoPipeSendData pipe_send_data;
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
@@ -167,12 +168,12 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char* data, size_t length)
         memcpy(pipe_send_data.data, data, length);
 
         // Write to pipe
-#if defined(_WIN32)
+        #if defined(_WIN32)
         ssize_t write_result = _write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
         SetEvent(con->handles[1]);
-#else
+        #else
         ssize_t write_result = write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
-#endif
+        #endif
 
         if (write_result == -1) {
             log_error("TeonetClient", "Failed to write message to the pipe: write error.");
@@ -630,13 +631,13 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
     teosockSelectResult retval;
 
-#if !defined(_WIN32)
+    #if !defined(_WIN32)
     // Watch server_socket to see when it has input.
     fd_set rfds;
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
     FD_SET(con->pipefd[0], &rfds);
-#endif
+    #endif
 
     uint64_t ts = teoGetTimestampFull();
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
@@ -646,13 +647,13 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
 
     int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
 
-#if defined(_WIN32)
+    #if defined(_WIN32)
     DWORD select_result = WaitForMultipleObjects(2, con->handles, FALSE, t / 1000);
-#else
+    #else
     struct timeval tv;
     usecToTv(&tv, t);
     int select_result = select(nfds + 1, &rfds, NULL, NULL, &tv);
-#endif
+    #endif
 
     // Error
     if (select_result == SELECT_RESULT_ERROR) {
@@ -665,11 +666,11 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
         // Process read fd
-#if defined(_WIN32)
+        #if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0) {
-#else
+        #else
         if (FD_ISSET(td->fd, &rfds)) {
-#endif
+        #endif
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
@@ -681,24 +682,24 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
                 trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
             } else {
-#if defined(_WIN32)
+                #if defined(_WIN32)
                 WSANETWORKEVENTS network_events;
                 memset(&network_events, 0, sizeof(network_events));
 
                 WSAEnumNetworkEvents(con->fd, con->handles[0], &network_events);
-#endif
+                #endif
             }
         }
         // Process Pipe (thread safe write)
-#if defined(_WIN32)
+        #if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0 + 1) {
-#else
+        #else
         if (FD_ISSET(con->pipefd[0], &rfds)) {
-#endif
+        #endif
             teoPipeSendData pipe_send_data;
             memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
-#if defined(_WIN32)
+            #if defined(_WIN32)
             struct _stat status;
             memset(&status, 0, sizeof(status));
 
@@ -708,9 +709,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
             if (fstat_result == 0 && status.st_size > 0) {
                 read_result = _read(con->pipefd[0], &pipe_send_data, sizeof(pipe_send_data));
             }
-#else
+            #else
             ssize_t read_result = read(con->pipefd[0], &pipe_send_data, sizeof(pipe_send_data));
-#endif
+            #endif
 
             if (read_result != -1 && read_result != 0) {
                 if ((size_t)read_result != sizeof(pipe_send_data)) {
@@ -729,13 +730,13 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
                 }
                 free(pipe_send_data.data);
 
-#if defined(_WIN32)
+                #if defined(_WIN32)
                 SetEvent(con->handles[1]);
-#endif
+                #endif
             } else {
-#if defined(_WIN32)
+                #if defined(_WIN32)
                 ResetEvent(con->handles[1]);
-#endif
+                #endif
             }
         }
 
@@ -743,8 +744,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
     }
 
     if (select_result != SELECT_RESULT_ERROR && timeout_sq != UINT32_MAX) {
+        debug(NULL, DEBUG, "process send queue ... ");
         int rv = trudpProcessSendQueue(td, 0);
-        debug(NULL, DEBUG, "process send queue ... %d\n", rv);
+        debug(NULL, DEBUG, "    process send queue result %d\n", rv);
     }
 
     return retval;
@@ -812,7 +814,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         con->tcd->connected_f = 0;
     }
     
-    if (!con->tcp_f && con->status == CON_STATUS_NOT_CONNECTED && !con->udp_reset_f) {
+    if (!con->tcp_f && con->status < 0 && !con->udp_reset_f) {
         retval = 0;
     }
     send_l0_event(con, EV_L_TICK, NULL, 0);
@@ -838,7 +840,6 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
 teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNullEventsCb event_cb,
         void *user_data, PROTOCOL connection_flag)
 {
-
     teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
     if (con == NULL) {
         return con;
@@ -856,6 +857,12 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
     con->tcd = NULL;
     con->pipefd[0] = -1;
     con->pipefd[1] = -1;
+    con->status = CON_STATUS_NOT_CONNECTED;
+
+    #if defined(_WIN32)
+    con->handles[0] = NULL;
+    con->handles[1] = NULL;
+    #endif
 
     // Connect to TCP
     if(con->tcp_f) {
@@ -863,16 +870,15 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
 
         if(con->fd == TEOSOCK_INVALID_SOCKET) {
             printf("Client-socket() error\n");
-            con->fd = 0;
+            con->fd = -1;
             con->status = CON_STATUS_SOCKET_ERROR;
             send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
             return con;
-        } else {
-            con->status = CON_STATUS_CONNECTED;
-            #ifdef DEBUG_MSG
-            printf("Client-socket() OK\n");
-            #endif
         }
+
+        #ifdef DEBUG_MSG
+        printf("Client-socket() OK\n");
+        #endif
 
         #ifdef CONNECT_MSG
         printf("Connecting to the server %s at port %" PRIu16 " ...\n", server, port);
@@ -883,109 +889,124 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
             printf("HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
             teosockClose(con->fd);
-            con->fd = 0;
+            con->fd = -1;
             con->status = CON_STATUS_HOST_ERROR;
             send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
             return con;
-        } else if (result == TEOSOCK_CONNECT_FAILED) {
+        }
+
+        if (result == TEOSOCK_CONNECT_FAILED) {
             int error = errno;
             printf("Client-connect() error: %" PRId32 ", %s\n", error, strerror(error));
             teosockClose(con->fd);
-            con->fd = 0;
+            con->fd = -1;
             con->status = CON_STATUS_CONNECTION_ERROR;
             send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
             return con;
-        } else {
-            #ifdef CONNECT_MSG
-            printf("Connection established ...\n");
-            #endif
         }
 
+        #ifdef CONNECT_MSG
+        printf("Connection established ...\n");
+        #endif
+
+        con->status = CON_STATUS_CONNECTED;
         // Set TCP_NODELAY option
         teosockSetTcpNodelay(con->fd);
         send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+        return con;
+
     } else { // Connect to UDP
         int port_local = 0; 
-        int fd = trudpUdpBindRaw(&port_local, 1);
-
-        if (fd > 0) {
-            con->td = trudpInit(fd, port, trudpEventCback, con);
-            con->tcd = trudpChannelNew(con->td, (char *) server, port, 0);
-//            trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
-           // \TODO Check connection status here
-//            con->status = CON_STATUS_CONNECTED;
-            printf("TR-UDP port = %d created, fd = %d\n", port_local, fd);
-
-            // Pipe create
-            #if defined(_WIN32)
-            if (_pipe(con->pipefd, 1024 * 10, _O_BINARY) == -1) {
-            #else
-            if (pipe(con->pipefd) == -1) {
-            #endif
-                con->status = CON_STATUS_PIPE_ERROR;
-                con->pipefd[0] = -1;
-                con->pipefd[1] = -1;
-                log_error("TeonetClient", "Failed to create pipe for sending commands.");
-            }
-
-            #if defined(_WIN32)
-            log_debug("TeonetClient", "Creating events.");
-            con->handles[0] = WSACreateEvent();
-            con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
-
-            int event_select_result = 0;
-            if (con->handles[0] != NULL && con->handles[1] != NULL) {
-                log_debug("TeonetClient", "Binding socket to event.");
-                event_select_result = WSAEventSelect(fd, con->handles[0], FD_READ | FD_CLOSE);
-                if (event_select_result != 0) {
-                    int error_code = WSAGetLastError();
-                    log_error("TeonetClient", "Failed to bind event.");
-
-                    if (error_code == WSAENETDOWN) {
-                        log_error("TeonetClient", "Error: WSAENETDOWN.");
-                    } else if (error_code == WSAEINVAL) {
-                        log_error("TeonetClient", "Error: WSAEINVAL.");
-                    } else if (error_code == WSAEINPROGRESS) {
-                        log_error("TeonetClient", "Error: WSAEINPROGRESS.");
-                    } else if (error_code == WSAENOTSOCK) {
-                        log_error("TeonetClient", "Error: WSAENOTSOCK.");
-                    } else {
-                        log_error("TeonetClient", "Error: unknown.");
-                    }
-                }
-            }
-
-            if (con->handles[0] == NULL || con->handles[1] == NULL || event_select_result != 0) {
-                log_error("TeonetClient", "Failed to create event.");
-
-                if (con->handles[0] != NULL) {
-                    log_debug("TeonetClient", "Closing write handle.");
-                    WSACloseEvent(con->handles[0]);
-                    con->handles[0] = NULL;
-                }
-
-                if (con->handles[1] != NULL) {
-                    log_debug("TeonetClient", "Closing read handle.");
-                    CloseHandle(con->handles[1]);
-                    con->handles[1] = NULL;
-                }
-
-                _close(con->pipefd[0]);
-                _close(con->pipefd[1]);
-
-                con->status = CON_STATUS_PIPE_ERROR;
-                con->pipefd[0] = -1;
-                con->pipefd[1] = -1;
-                log_error("TeonetClient", "Failed to create events for sending commands.");
-            }
-            #endif
-        }
-        else {
-            con->status = CON_STATUS_SOCKET_ERROR;
+        con->fd = trudpUdpBindRaw(&port_local, 1);
+        if(con->fd < 0) {
             log_error("TeonetClient", "Failed to bind UDP socket.");
+            con->status = CON_STATUS_SOCKET_ERROR;
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+            return con;
         }
 
-        con->fd = fd;
+        con->td = trudpInit(con->fd, port, trudpEventCback, con);
+        con->tcd = trudpChannelNew(con->td, (char*)server, port, 0);
+        printf("TR-UDP port = %d created, fd = %d\n", port_local, con->fd);
+
+        // Pipe create
+        #if defined(_WIN32)
+        int pipe_result = _pipe(con->pipefd, 1024 * 10, _O_BINARY);
+        #else
+        int pipe_result = pipe(con->pipefd);
+        #endif
+        if(pipe_result == -1) {
+            con->status = CON_STATUS_PIPE_ERROR;
+            con->pipefd[0] = -1;
+            con->pipefd[1] = -1;
+            log_error("TeonetClient", "Failed to create pipe for sending commands.");
+
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+            return con;
+        }
+
+        #if defined(_WIN32)
+        log_debug("TeonetClient", "Creating events.");
+        con->handles[0] = WSACreateEvent();
+        con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
+
+        int event_select_result = 0;
+        if(con->handles[0] != NULL && con->handles[1] != NULL) {
+            log_debug("TeonetClient", "Binding socket to event.");
+            event_select_result = WSAEventSelect(fd, con->handles[0], FD_READ | FD_CLOSE);
+            if(event_select_result != 0) {
+                int error_code = WSAGetLastError();
+                log_error("TeonetClient", "Failed to bind event.");
+
+                if(error_code == WSAENETDOWN) {
+                    log_error("TeonetClient", "Error: WSAENETDOWN.");
+                } else if(error_code == WSAEINVAL) {
+                    log_error("TeonetClient", "Error: WSAEINVAL.");
+                } else if(error_code == WSAEINPROGRESS) {
+                    log_error("TeonetClient", "Error: WSAEINPROGRESS.");
+                } else if(error_code == WSAENOTSOCK) {
+                    log_error("TeonetClient", "Error: WSAENOTSOCK.");
+                } else {
+                    log_error("TeonetClient", "Error: unknown.");
+                }
+            }
+        }
+
+        if (con->handles[0] == NULL || con->handles[1] == NULL || event_select_result != 0) {
+            log_error("TeonetClient", "Failed to create event.");
+
+            if (con->handles[0] != NULL) {
+                log_debug("TeonetClient", "Closing write handle.");
+                WSACloseEvent(con->handles[0]);
+                con->handles[0] = NULL;
+            }
+
+            if (con->handles[1] != NULL) {
+                log_debug("TeonetClient", "Closing read handle.");
+                CloseHandle(con->handles[1]);
+                con->handles[1] = NULL;
+            }
+
+            _close(con->pipefd[0]);
+            _close(con->pipefd[1]);
+
+            con->pipefd[0] = -1;
+            con->pipefd[1] = -1;
+            log_error("TeonetClient", "Failed to create events for sending commands.");
+
+            con->status = CON_STATUS_PIPE_ERROR;
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+            return con;
+        }
+        #endif
+        con->status = CON_STATUS_NOT_CONNECTED;
+        // Send empty data packet to ensure server reacheable
+        trudpChannelSendData(con->tcd, NULL, 0);
     }
 
     return con;
@@ -1048,7 +1069,7 @@ void teoLNullDisconnect(teoLNullConnectData *con)
             #endif
         }
 
-#if defined(_WIN32)
+        #if defined(_WIN32)
         if (con->handles[0] != NULL) {
             WSACloseEvent(con->handles[0]);
             con->handles[0] = NULL;
@@ -1058,7 +1079,7 @@ void teoLNullDisconnect(teoLNullConnectData *con)
             CloseHandle(con->handles[1]);
             con->handles[1] = NULL;
         }
-#endif
+        #endif
 
         free(con);
     }
@@ -1095,6 +1116,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 {
     trudpChannelData *tcd = (trudpChannelData *)tcd_pointer;
     void *tru = user_data;
+    debug(tru, DEBUG,  "trudpEventCback chan %s event %s data_length %ld\n",
+        trudpChannelMakeKey(tcd), STRING_trudpEvent(event), data_length);
 
     switch(event) {
 
@@ -1104,6 +1127,13 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         case CONNECTED: {
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,  "Connect channel %s\n", key);
+            if (!tcd->connected_f) {
+                // tcd->connected_f = 1; // would be set in trudpGetChannelCreate anyway
+                teoLNullConnectData *con = user_data;
+                con->status = CON_STATUS_CONNECTED;
+                log_info("TeonetClient", "send_l0_event EV_L_CONNECTED in trudpEventCback on CONNECTED(for unconnected)");
+                send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+            }
         } break;
 
         // DISCONNECTED event
@@ -1114,18 +1144,22 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             char *key = trudpChannelMakeKey(tcd);
             teoLNullConnectData *con = user_data;
 
-            if (data_length == sizeof(uint32_t)) {
+            // Disconnect notification with interval elapsed causes
+            // all channels of the same connection to be destroyed,
+            // which in turn emits disconnect notifications for each of them
+            // to avoid infinite recursion we do not destroy DISCONNECTED event without time in data 
+            if (data_length == sizeof(uint32_t) && data) {
                 uint32_t last_received = *(uint32_t*)data;
                 debug(tru, DEBUG, "Disconnect channel %s, last received: %.6f sec\n", key, last_received / 1000000.0);
-                trudpChannelDestroyAll(con->td); 
 
                 log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in trudpEventCback on DISCONNECTED");
 
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 tcd->connected_f = 0;
                 con->status = CON_STATUS_NOT_CONNECTED;
+                trudpChannelDestroyAll(con->td); 
             } else {
-                debug(tru, DEBUG,  "Disconnected channel %s\n", key);
+                debug(tru, DEBUG,  "Disconnected channel %s, data=%p, data_len=%ld\n", key, data, data_length);
             }
 
             tcd->connected_f = 0;
@@ -1180,7 +1214,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         case GOT_ACK_PING: {
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG, "got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
-              key, (char*)data, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
+                    key, (char*)data, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
         } break;
 
         // GOT_PING event: got PING packet, data
@@ -1200,7 +1234,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             teoLNullConnectData *con = user_data;
             uint32_t id = trudpPacketGetId(data);
 
-            if (id == 0) {
+            if (id == 0 && !tcd->connected_f) {
                 trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
                 con->status = CON_STATUS_CONNECTED;
                 send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
@@ -1224,17 +1258,16 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 debug(tru, DEBUG, "got %d byte data to buffer\n", data_length);
                 break;
             }
-            
+
             data_length = rc;
             data = con->read_buffer;
-            
+
             teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG, "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: %s, cmd: %d, data length: %d, data: %s\n", length, key, (double)tcd->triptime / 1000.0, (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name, cp->cmd, cp->data_length, cp->peer_name + cp->peer_name_length);
 
             // Process commands
             if(cp->cmd == CMD_L_ECHO) {
-                char *data = cp->peer_name + cp->peer_name_length;
                 cp->cmd = CMD_L_ECHO_ANSWER;
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
                 trudpChannelSendData(tcd, cp, data_length);
@@ -1275,18 +1308,20 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                         addr,
                         port,
                         (cp->data_length) ? cp->peer_name + cp->peer_name_length : "empty data");
-                }
-            }
-            #ifdef DEBUG_MSG
-                debug(tru, DEBUG,  "send %d bytes %s id=%u, to %s:%d\n",
+                } else {
+
+                #ifdef DEBUG_MSG
+                debug(tru, DEBUG,  "send %d bytes %s(%d) id=%u, to %s:%d\n",
                         (int)data_length,
                         type == 1 ? "ACK" :
                         type == 2 ? "RESET" :
                         type == 3 ? "ACK to RESET" :
                         type == 4 ? "PING" : "ACK to PING"
-                        , id, addr, port);
-            #endif
-            
+                        , type, id, addr, port);
+                #endif
+
+                }
+            }
         } break;
 
         default:

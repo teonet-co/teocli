@@ -41,6 +41,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <signal.h>
 
 #include "libteol0/teonet_l0_client.h"
 
@@ -58,6 +59,11 @@ struct app_parameters {
     const char *msg;
     int tcp_f;
 };
+
+// global app flags
+volatile int quit_flag;
+volatile int reconnect_flag;
+
 
 /**
  * Teonet L0 client event callback
@@ -77,42 +83,47 @@ void event_cb(void *con, teoLNullEvents event, void *data,
 
     switch(event) {
         case EV_L_CONNECTED: {
+            if (data && data_len == sizeof(teoLNullConnectionStatus)) {
+                teoLNullConnectionStatus status = *(teoLNullConnectionStatus *)data;
+                if (status == CON_STATUS_CONNECTED) {
+                    printf("Successfully connect to server\n");
 
-            int *fd = data;
-            if(*fd > 0) {
+                    // Send (1) Initialization packet to L0 server
+                    ssize_t snd = teoLNullLogin(con, param->host_name);
+                    if (snd == -1) perror(strerror(errno));
+                    printf("Send %d bytes packet to L0 server, Initialization packet\n", (int)snd);
 
-                printf("Successfully connect to server\n");
+                    // Send (2) peer list request to peer, command CMD_L_PEERS
+                    snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
+                    printf( "Send %d bytes packet to L0 server to peer %s, "
+                            "cmd = %d (CMD_L_PEERS)\n",
+                            (int)snd, param->peer_name, CMD_L_PEERS);
 
-                // Send (2) peer list request to peer, command CMD_L_PEERS
-                ssize_t snd = teoLNullSend(con, CMD_L_PEERS, param->peer_name, NULL, 0);
-                printf("Send %d bytes packet to L0 server to peer %s, "
-                       "cmd = %d (CMD_L_PEERS)\n",
-                       (int)snd, param->peer_name, CMD_L_PEERS);
+                    // Send (3) echo request to peer, command CMD_L_ECHO
+                    //
+                    // Add current time to the end of message (it should be return
+                    // back by server)
+                    // snd = teoLNullSendEcho(con, param->peer_name, param->msg);
+                    // if(snd == -1) perror(strerror(errno));
+                    // printf("Send %d bytes packet to L0 server to peer %s, "
+                    //        "cmd = %d (CMD_L_ECHO), "
+                    //        "data: %s\n",
+                    //        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
 
-                // Send (3) echo request to peer, command CMD_L_ECHO
-                //
-                // Add current time to the end of message (it should be return
-                // back by server)
-                // snd = teoLNullSendEcho(con, param->peer_name, param->msg);
-                // if(snd == -1) perror(strerror(errno));
-                // printf("Send %d bytes packet to L0 server to peer %s, "
-                //        "cmd = %d (CMD_L_ECHO), "
-                //        "data: %s\n",
-                //        (int)snd, param->peer_name, CMD_L_ECHO, param->msg);
+                    // Show empty line
+                    printf("\n");
 
-                // Show empty line
-                printf("\n");
-
+                } else {
+                    printf("Can't connect to server, status %s\n", STRING_teoLNullConnectionStatus(status));
+                }
+            } else {
+                printf("Invalid EV_L_CONNECTED event, data=%p, data_len=%ld\n", data, data_len);
             }
-            else {
-
-                printf("Can't connect to server\n");
-            }
-
         } break;
 
         case EV_L_DISCONNECTED:
             printf("Disconnected ...\n");
+            reconnect_flag = 1;
             break;
 
         case EV_L_RECEIVED:
@@ -202,10 +213,6 @@ void event_cb(void *con, teoLNullEvents event, void *data,
     }
 }
 
-#include  <signal.h>
-
-volatile sig_atomic_t quit_flag = 0;
-
 void INThandler(int sig)
 {
     printf("Catch CTRL-C SIGNAL !!!\n");
@@ -250,51 +257,60 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
-    param.tcp_f = 0;
+    param.tcp_f = getenv("FORCE_TCP") ? 1 : 0;
 
     // Initialize L0 Client library
     teoLNullInit();
 
+    quit_flag = 0;
     while(!quit_flag) {
 
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
             event_cb, &param, param.tcp_f ? TCP : TRUDP);
 
-        // Send (1) Initialization packet to L0 server
-        ssize_t snd = teoLNullLogin(con, param.host_name);
-        if(snd == -1) perror(strerror(errno));
-        printf("Send %d bytes packet to L0 server, Initialization packet\n", (int)snd);
-
-        if(con->status > 0) {
-
-            unsigned long num = 0;
+        reconnect_flag = 0;
+        if(con->status >= 0) {
             const int timeout = 1000;
-
-    	    uint64_t tsf = teoGetTimestampFull();
+            uint64_t nextPing = teoGetTimestampFull();
             // Event loop
-            while(teoLNullReadEventLoop(con, timeout) && !quit_flag) {
-                // Send Echo command every second
-	        	uint64_t now = teoGetTimestampFull();
-                if (now - tsf > 1000) {
-                   teoLNullSendEcho(con, param.peer_name, param.msg);
-        //            teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
-                    tsf = now;
+            while(teoLNullReadEventLoop(con, timeout)) {
+                if (quit_flag || reconnect_flag) {
+                    break;
                 }
-            }
 
-            // Close connection
-            if (!quit_flag) {
-                teoLNullDisconnect(con);
+                switch (con->status) {
+                    case CON_STATUS_NOT_CONNECTED: {
+                        // wait to be connected
+                    } continue;
+                    case CON_STATUS_CONNECTED:{
+                        // run
+                        // Send Echo command every second
+                        uint64_t now = teoGetTimestampFull();
+                        if (now > nextPing) {
+                           teoLNullSendEcho(con, param.peer_name, param.msg);
+                           // teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
+                            nextPing = now + 1000000;
+                        }
+                    } continue;
+                    default:{
+                        // Some error condition, go to reconnect
+                    } break;
+                }
+                // check if reconnecting
+                break;
             }
-        } else {
-            teoLNullSleep(2000);
-            teoLNullDisconnect(con);
         }
-        
-        //quit_flag = 1;
+
+        printf("con->status=%s\n", STRING_teoLNullConnectionStatus(con->status));
+        if (!quit_flag) {
+            printf("reconnect cooldown\n");
+            teoLNullSleep(2000);
+        }
+        // Close connection
+        teoLNullDisconnect(con);
     }
-close_con:
+
     // Cleanup L0 Client library
     teoLNullCleanup();
     free(send_msg);
