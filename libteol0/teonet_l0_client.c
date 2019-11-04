@@ -845,6 +845,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         return con;
     }
 
+    // TODO: This should be passed as parameter.
+    int connect_timeout_ms = 5000;
+
     con->last_packet_ptr = 0;
     con->read_buffer = NULL;
     con->read_buffer_ptr = 0;
@@ -884,7 +887,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         printf("Connecting to the server %s at port %" PRIu16 " ...\n", server, port);
         #endif
 
-        int result = teosockConnectTimeout(con->fd, server, port, 5000);
+        int result = teosockConnectTimeout(con->fd, server, port, connect_timeout_ms);
 
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
             printf("HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
@@ -1009,7 +1012,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         // Send empty data packet to ensure server reacheable
         trudpChannelSendData(con->tcd, NULL, 0);
 
-        int64_t timeout_time = teotimeGetCurrentTime() + 5000;
+        int64_t timeout_time = teotimeGetCurrentTime() + connect_timeout_ms;
         int event_loop_state = 1;
 
         while (con->status == CON_STATUS_NOT_CONNECTED && event_loop_state != 0) {
