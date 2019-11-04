@@ -286,7 +286,7 @@ size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len, const char *peer_name
     const size_t msg_len = strlen(msg) + 1;
     const size_t msg_buf_len = msg_len + time_length;
     void *msg_buf = malloc(msg_buf_len);
-    
+
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
     memcpy((char*)msg_buf + msg_len, &current_time, time_length);
@@ -387,7 +387,7 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
     // Increase buffer size
     if ((size_t)received > kld->read_buffer_size - kld->read_buffer_ptr) {
 
-        kld->read_buffer_size += data_len; 
+        kld->read_buffer_size += data_len;
         if (kld->read_buffer != NULL) {
             kld->read_buffer = realloc(kld->read_buffer, kld->read_buffer_size);
         } else {
@@ -661,7 +661,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con, int 
         retval = TEOSOCK_SELECT_ERROR;
     } else if(select_result == SELECT_RESULT_TIMEOUT) { // Idle or Timeout event
         // Process send queue
-        
+
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
@@ -813,7 +813,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout)
         // We probably have to set con->tcd->conneced_f to false instead
         con->tcd->connected_f = 0;
     }
-    
+
     if (!con->tcp_f && con->status < 0 && !con->udp_reset_f) {
         retval = 0;
     }
@@ -916,7 +916,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         return con;
 
     } else { // Connect to UDP
-        int port_local = 0; 
+        int port_local = 0;
         con->fd = trudpUdpBindRaw(&port_local, 1);
         if(con->fd < 0) {
             log_error("TeonetClient", "Failed to bind UDP socket.");
@@ -1004,9 +1004,31 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
             return con;
         }
         #endif
+
         con->status = CON_STATUS_NOT_CONNECTED;
         // Send empty data packet to ensure server reacheable
         trudpChannelSendData(con->tcd, NULL, 0);
+
+        int64_t timeout_time = teotimeGetCurrentTime() + 5000;
+        int event_loop_state = 1;
+
+        while (con->status == CON_STATUS_NOT_CONNECTED && event_loop_state != 0) {
+            event_loop_state = teoLNullReadEventLoop(con, 100);
+
+            if (teotimeGetCurrentTime() > timeout_time) {
+                con->status = CON_STATUS_CONNECTION_ERROR;
+                teosockClose(con->fd);
+                con->fd = -1;
+                send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+                return con;
+            }
+        }
+
+        if (con->status != CON_STATUS_CONNECTED) {
+            teosockClose(con->fd);
+            con->fd = -1;
+            return con;
+        }
     }
 
     return con;
@@ -1147,7 +1169,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             // Disconnect notification with interval elapsed causes
             // all channels of the same connection to be destroyed,
             // which in turn emits disconnect notifications for each of them
-            // to avoid infinite recursion we do not destroy DISCONNECTED event without time in data 
+            // to avoid infinite recursion we do not destroy DISCONNECTED event without time in data
             if (data_length == sizeof(uint32_t) && data) {
                 uint32_t last_received = *(uint32_t*)data;
                 debug(tru, DEBUG, "Disconnect channel %s, last received: %.6f sec\n", key, last_received / 1000000.0);
@@ -1157,7 +1179,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                 tcd->connected_f = 0;
                 con->status = CON_STATUS_NOT_CONNECTED;
-                trudpChannelDestroyAll(con->td); 
+                trudpChannelDestroyAll(con->td);
             } else {
                 debug(tru, DEBUG,  "Disconnected channel %s, data=%p, data_len=%ld\n", key, data, data_length);
             }
@@ -1373,9 +1395,9 @@ const char *STRING_teoLNullEvents(teoLNullEvents v) {
 
 //DEPRECATED
 inline void set_nonblock(int sd) DEPRECATED_FUNCTION;
-inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);} 
+inline void set_nonblock(int sd) { teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);}
 
-//DEPRECATED	
+//DEPRECATED
 int set_tcp_nodelay(int sd) DEPRECATED_FUNCTION;
 inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
