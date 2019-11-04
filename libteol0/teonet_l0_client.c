@@ -956,7 +956,7 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
         int event_select_result = 0;
         if(con->handles[0] != NULL && con->handles[1] != NULL) {
             log_debug("TeonetClient", "Binding socket to event.");
-            event_select_result = WSAEventSelect(fd, con->handles[0], FD_READ | FD_CLOSE);
+            event_select_result = WSAEventSelect(con->fd, con->handles[0], FD_READ | FD_CLOSE);
             if(event_select_result != 0) {
                 int error_code = WSAGetLastError();
                 log_error("TeonetClient", "Failed to bind event.");
