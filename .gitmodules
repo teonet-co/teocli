@@ -1,3 +1,10 @@
 [submodule "libtrudp"]
 	path = libtrudp
 	url = https://github.com/teonet-co/trudp.git
+	ignore = dirty
+[submodule "libtinycrypt/tiny-ECDH-c"]
+	path = libtinycrypt/tiny-ECDH-c
+	url = https://github.com/teonet-co/tiny-ECDH-c.git
+[submodule "libtinycrypt/tiny-AES-c"]
+	path = libtinycrypt/tiny-AES-c
+	url = https://github.com/teonet-co/tiny-AES-c.git
