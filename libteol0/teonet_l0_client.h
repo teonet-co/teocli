@@ -97,10 +97,10 @@ typedef struct teoLNullConnectData {
 
   teoLNullConnectionStatus status; ///< Connection status
 
-  void* read_buffer;       ///< Pointer to saved buffer
-  size_t read_buffer_ptr;  ///< Pointer in read buffer
-  size_t read_buffer_size; ///< Read buffer size
-  size_t last_packet_ptr;  ///< Last received packet pointer (length)
+  void* read_buffer;          ///< Pointer to saved buffer 
+  size_t read_buffer_offset;  ///< Offset in read buffer
+  size_t read_buffer_size;    ///< Read buffer size
+  size_t last_packet_offset;  ///< Last received packet offset (length)
 
   teoLNullEventsCb event_cb; ///< Event callback function
   void* user_data;           ///< User data

@@ -699,9 +699,9 @@ static teoLNullConnectData* trudpLNullConnect(void *user_data) {
     teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
     if(con == NULL) return con;
 
-    con->last_packet_ptr = 0;
+    con->last_packet_offset = 0;
     con->read_buffer = NULL;
-    con->read_buffer_ptr = 0;
+    con->read_buffer_offset = 0;
     con->read_buffer_size = 0;
     con->event_cb = event_cb;
     con->user_data = user_data;

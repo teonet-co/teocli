@@ -383,26 +383,26 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
     #endif
 
     // Check end of previous buffer
-    if (kld->last_packet_ptr > 0) {
+    if (kld->last_packet_offset > 0) {
 
-        kld->read_buffer_ptr = kld->read_buffer_ptr - kld->last_packet_ptr;
+        kld->read_buffer_offset = kld->read_buffer_offset - kld->last_packet_offset;
 
-        if (kld->read_buffer_ptr > 0) {
+        if (kld->read_buffer_offset > 0) {
 
             #ifdef DEBUG_MSG
             printf("L0 Client: Use %" PRId32 " bytes from previously received data...\n",
                    (int)(kld->read_buffer_ptr));
             #endif
 
-            memmove(kld->read_buffer, (char*)kld->read_buffer + kld->last_packet_ptr,
-                    kld->read_buffer_ptr);
+            memmove(kld->read_buffer, (char*)kld->read_buffer + kld->last_packet_offset,
+                    kld->read_buffer_offset);
         }
 
-        kld->last_packet_ptr = 0;
+        kld->last_packet_offset = 0;
     }
 
     // Increase buffer size
-    if ((size_t)received > kld->read_buffer_size - kld->read_buffer_ptr) {
+    if ((size_t)received > kld->read_buffer_size - kld->read_buffer_offset) {
 
         kld->read_buffer_size += data_len;
         if (kld->read_buffer != NULL) {
@@ -419,8 +419,8 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
 
     // Add received data to the read buffer
     if (received > 0) {
-        memmove((char*)kld->read_buffer + kld->read_buffer_ptr, data, received);
-        kld->read_buffer_ptr += received;
+        memmove((char*)kld->read_buffer + kld->read_buffer_offset, data, received);
+        kld->read_buffer_offset += received;
     }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)kld->read_buffer;
@@ -429,21 +429,21 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
     // \todo Check packet
 
     // Process read buffer
-    if(kld->read_buffer_ptr > sizeof(teoLNullCPacket) &&
-       kld->read_buffer_ptr >= (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length + packet->data_length)) {
+    if(kld->read_buffer_offset > sizeof(teoLNullCPacket) &&
+       kld->read_buffer_offset >= (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length + packet->data_length)) {
 
         if (teoLNullPacketChecksumCheck(packet) != 0) {
             // Packet has received - return packet size
             retval = len;
-            kld->last_packet_ptr += len;
+            kld->last_packet_offset += len;
 
             #ifdef DEBUG_MSG
             printf("L0 Server: Identify packet %" PRId32 " bytes length ...\n",
                 (int)retval);
             #endif
         } else { // Wrong checksum, wrong packet - drop this packet and return -2
-            kld->read_buffer_ptr = 0;
-            kld->last_packet_ptr = 0;
+            kld->read_buffer_offset = 0;
+            kld->last_packet_offset = 0;
             retval = -2;
 
             #ifdef DEBUG_MSG
@@ -884,9 +884,9 @@ teoLNullConnectData* teoLNullConnectE(const char *server, int16_t port, teoLNull
     // TODO: This should be passed as parameter.
     int connect_timeout_ms = 5000;
 
-    con->last_packet_ptr = 0;
+    con->last_packet_offset = 0;
     con->read_buffer = NULL;
-    con->read_buffer_ptr = 0;
+    con->read_buffer_offset = 0;
     con->read_buffer_size = 0;
     con->event_cb = event_cb;
     con->user_data = user_data;
