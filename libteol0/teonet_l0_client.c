@@ -342,6 +342,23 @@ int64_t teoLNullProccessEchoAnswer(const char *msg)
     return trip_time;
 }
 
+/**
+ * Check teoLNullCPacket checksums.
+ *
+ * @param packet Pointer to packet
+ *
+ * @return 1 if packet checksums are valid or 0 otherwise.
+ */
+static int teoLNullPacketChecksumCheck(teoLNullCPacket *packet) {
+    uint8_t header_checksum = get_byte_checksum(packet, sizeof(teoLNullCPacket) - sizeof(packet->header_checksum));
+    uint8_t checksum = get_byte_checksum(packet->peer_name, packet->peer_name_length + packet->data_length);
+
+    if(packet->header_checksum != header_checksum || packet->checksum != checksum) {
+        return 0;
+    }
+
+    return 1;
+}
 
 /**
  * Split or Combine input buffer
@@ -412,15 +429,10 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
     // \todo Check packet
 
     // Process read buffer
-    if(kld->read_buffer_ptr - kld->last_packet_ptr > sizeof(teoLNullCPacket) &&
-       kld->read_buffer_ptr - kld->last_packet_ptr >= (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length + packet->data_length)) {
+    if(kld->read_buffer_ptr > sizeof(teoLNullCPacket) &&
+       kld->read_buffer_ptr >= (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length + packet->data_length)) {
 
-        // Check checksum
-        uint8_t header_checksum = get_byte_checksum(packet, sizeof(teoLNullCPacket) - sizeof(packet->header_checksum));
-        uint8_t checksum = get_byte_checksum(packet->peer_name, packet->peer_name_length + packet->data_length);
-
-        if(packet->header_checksum == header_checksum && packet->checksum == checksum) {
-
+        if (teoLNullPacketChecksumCheck(packet) != 0) {
             // Packet has received - return packet size
             retval = len;
             kld->last_packet_ptr += len;
@@ -449,6 +461,30 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void* data, size_t 
     return retval;
 }
 
+
+/**
+ * Check that buffer is valid teoLNullCPacket.
+ *
+ * @param data Received data buffer
+ * @param data_len Received data buffer length
+ *
+ * @return 1 if packet is valid or 0 otherwise.
+ */
+static int teoLNullPacketCheck(void* data, size_t data_len)
+{
+    if (data_len < sizeof(teoLNullCPacket)) {
+        return 0;
+    }
+
+    teoLNullCPacket *packet = (teoLNullCPacket *)data;
+    size_t len = sizeof(teoLNullCPacket) + packet->peer_name_length + packet->data_length;
+
+    if (data_len != len) {
+        return 0;
+    }
+
+    return teoLNullPacketChecksumCheck(packet);
+}
 
 /**
  * Receive packet from L0 server and split or combine it
@@ -1300,6 +1336,23 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                 send_l0_event(con, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + cp->data_length + cp->peer_name_length);
             }
         } break;
+
+
+        // Got DATA event
+        // @param data Pointer to data
+        // @param data_length Length of data
+        // @param user_data NULL Pointer to teoLNullConnectData
+        case GOT_DATA_NO_TRUDP: {
+            teoLNullConnectData *con = user_data;
+
+            if (teoLNullPacketCheck(data, data_length) == 0) {
+                debug(tru, DEBUG, "got invalid non TR-UDP data packet with %d bytes of data\n", data_length);
+                break;
+            }
+
+            debug(tru, DEBUG, "got valid non TR-UDP data packet with %d bytes of data\n", data_length);
+            send_l0_event(con, EV_L_RECEIVED, data, data_length);
+        }
 
         // Process received data
         // @param tcd Pointer to trudpData
