@@ -249,9 +249,9 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
  */
 size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len,
                                 const char *peer_name, const char *msg) {
-    int64_t current_time = teotimeGetCurrentTimeMs();
+    int64_t current_time_ms = teotimeGetCurrentTimeMs();
 
-    unsigned int time_length = sizeof(current_time);
+    const unsigned int time_length = sizeof(current_time_ms);
 
     const size_t msg_len = strlen(msg) + 1;
     const size_t msg_buf_len = msg_len + time_length;
@@ -259,7 +259,7 @@ size_t teoLNullPacketCreateEcho(void *buf, size_t buf_len,
 
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
-    memcpy((char *)msg_buf + msg_len, &current_time, time_length);
+    memcpy((char *)msg_buf + msg_len, &current_time_ms, time_length);
     size_t package_len = teoLNullPacketCreate(buf, buf_len, CMD_L_ECHO,
                                               peer_name, msg_buf, msg_buf_len);
 
@@ -307,9 +307,9 @@ int64_t teoLNullProccessEchoAnswer(const char *msg) {
     const int64_t *time_pointer = (const int64_t *)(msg + time_ptr);
     int64_t time_value = *time_pointer;
 
-    int64_t trip_time = teotimeGetTimePassedMs(time_value);
+    int64_t trip_time_ms = teotimeGetTimePassedMs(time_value);
 
-    return trip_time;
+    return trip_time_ms;
 }
 
 /**
@@ -1035,14 +1035,14 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         // Send empty data packet to ensure server reacheable
         trudpChannelSendData(con->tcd, NULL, 0);
 
-        int64_t timeout_time = teotimeGetCurrentTimeMs() + connect_timeout_ms;
+        int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
         int event_loop_state = 1;
 
         while (con->status == CON_STATUS_NOT_CONNECTED &&
                event_loop_state != 0) {
             event_loop_state = teoLNullReadEventLoop(con, 100);
 
-            if (teotimeGetCurrentTimeMs() > timeout_time) {
+            if (teotimeGetTimePassedMs(connect_start_time_ms) > connect_timeout_ms) {
                 con->status = CON_STATUS_CONNECTION_ERROR;
                 teosockClose(con->fd);
                 con->fd = -1;
