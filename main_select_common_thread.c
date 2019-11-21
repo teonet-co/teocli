@@ -230,8 +230,8 @@ void *send_thread(void *con)
             tsf = now;
 
         } //else teoLNullSleep(1000);
-
     }
+    return NULL;
 }
 
 
@@ -300,7 +300,6 @@ int main(int argc, char** argv) {
         } else teoLNullSleep(1000);
         pthread_join(thread_id, NULL);
     }
-close_con:
     // Cleanup L0 Client library
     teoLNullCleanup();
     free(send_msg);
