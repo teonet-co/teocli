@@ -224,7 +224,7 @@ public:
      *
      * @return Length of send data or -1 at error
      */
-    ssize_t send(int cmd, const char *peer_name, void *data,
+    ssize_t send(int cmd, const char *peer_name, const void *data,
             size_t data_length) {
         return teoLNullSend(con, cmd, peer_name, data, data_length);
     }
@@ -241,7 +241,7 @@ public:
      *
      * @return Length of send data or -1 at error
      */
-    ssize_t sendUnreliable(int cmd, const char *peer_name, void *data,
+    ssize_t sendUnreliable(int cmd, const char *peer_name, const void *data,
             size_t data_length) {
         return teoLNullSendUnreliable(con, cmd, peer_name, data, data_length);
     }

@@ -220,7 +220,7 @@ ssize_t teoLNullPacketSend(teoLNullConnectData *con, void *pkg,
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
-                     const char *peer_name, void *data, size_t data_length) {
+                     const char *peer_name, const void *data, size_t data_length) {
     if (data == NULL) { data_length = 0; }
 
     const size_t peer_length = strlen(peer_name) + 1;
@@ -237,7 +237,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 }
 
 ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
-                               const char *peer_name, void *data,
+                               const char *peer_name, const void *data,
                                size_t data_length) {
     if (data == NULL) { data_length = 0; }
 
