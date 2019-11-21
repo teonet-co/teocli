@@ -471,7 +471,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 
             // Process ECHO command
             if(cp->cmd == CMD_L_ECHO) {
-                char *data = cp->peer_name + cp->peer_name_length;
+                // char *data = cp->peer_name + cp->peer_name_length;
 
 //                char buf[BUFFER_SIZE];
 //                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length);
@@ -655,7 +655,7 @@ static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) 
 
     trudpChannelData *tcd = NULL;
 
-    ssize_t snd;
+    // ssize_t snd;
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
     // Buffer
@@ -695,7 +695,6 @@ static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) 
 
 static teoLNullConnectData* trudpLNullConnect(void *user_data) {
 
-    int result;
     teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
     if(con == NULL) return con;
 
@@ -774,15 +773,10 @@ int main(int argc, char** argv) {
         // Create read buffer
         buffer = malloc(BUFFER_SIZE);
 
-        uint32_t tt, tt_s = 0, tt_c = 0, tt_ss = 0;
+        uint32_t tt, tt_s = 0, tt_c = 0;
         const int DELAY = 500000; // uSec
         unsigned long num = 0;
         int quit_flag = 0;
-
-        char *message;
-        size_t message_length;
-        message = "hello_c";
-        message_length = strlen(message) + 1;
 
         trudpChannelData *tcd = NULL;
 
