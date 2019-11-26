@@ -106,8 +106,7 @@ size_t teoLNullPacketCreate(void *buffer, size_t buffer_length, uint8_t command,
     size_t peer_name_length = strlen(peer) + 1;
 
     // Check buffer length
-    if (buffer_length <
-        sizeof(teoLNullCPacket) + peer_name_length + data_length) {
+    if (buffer_length < teoLNullBufferSize(peer_name_length, data_length)) {
         return 0;
     }
 
@@ -124,7 +123,7 @@ size_t teoLNullPacketCreate(void *buffer, size_t buffer_length, uint8_t command,
     pkg->header_checksum = get_byte_checksum(
         pkg, sizeof(teoLNullCPacket) - sizeof(pkg->header_checksum));
 
-    return sizeof(teoLNullCPacket) + pkg->peer_name_length + pkg->data_length;
+    return teoLNullBufferSize(pkg->peer_name_length, pkg->data_length);
 }
 
 ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
@@ -408,8 +407,8 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
     // Process read buffer
     if (kld->read_buffer_offset > sizeof(teoLNullCPacket) &&
         kld->read_buffer_offset >=
-            (size_t)(len = sizeof(teoLNullCPacket) + packet->peer_name_length +
-                           packet->data_length)) {
+            (size_t)(len = teoLNullBufferSize(packet->peer_name_length,
+                                              packet->data_length))) {
 
         if (teoLNullPacketChecksumCheck(packet) != 0) {
             // Packet has received - return packet size
@@ -455,8 +454,7 @@ static int teoLNullPacketCheck(void *data, size_t data_len) {
     if (data_len < sizeof(teoLNullCPacket)) { return 0; }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)data;
-    size_t len = sizeof(teoLNullCPacket) + packet->peer_name_length +
-                 packet->data_length;
+    size_t len = teoLNullBufferSize(packet->peer_name_length, packet->data_length);
 
     if (data_len != len) { return 0; }
 
