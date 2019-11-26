@@ -112,7 +112,8 @@ size_t teoLNullPacketCreate(void *buffer, size_t buffer_length, uint8_t command,
 
     // Check buffer length
     if (buffer_length < teoLNullBufferSize(peer_name_length, data_length)) {
-        return 0;
+        LTRACK_E("TeonetClient", "Insufficent buffer size");
+        abort();
     }
 
     teoLNullCPacket *pkg = (teoLNullCPacket *)buffer;
@@ -131,7 +132,7 @@ size_t teoLNullPacketCreate(void *buffer, size_t buffer_length, uint8_t command,
     return teoLNullBufferSize(pkg->peer_name_length, pkg->data_length);
 }
 
-ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
+static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
                      size_t length) {
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
@@ -354,9 +355,8 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
                                    size_t data_len, ssize_t received) {
     ssize_t retval = -1;
 
-    #ifdef DEBUG_MSG
-    printf("L0 Client: Got %" PRId32 " bytes of packet...\n", (int)received);
-    #endif
+    CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+            "L0 Client: Got %" PRId32 " bytes of packet...\n", (int)received);
 
     // Check end of previous buffer
     if (kld->last_packet_offset > 0) {
@@ -366,11 +366,10 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
 
         if (kld->read_buffer_offset > 0) {
 
-            #ifdef DEBUG_MSG
-            printf("L0 Client: Use %" PRId32
-                   " bytes from previously received data...\n",
-                   (int)(kld->read_buffer_ptr));
-            #endif
+            CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                    "L0 Client: Use %" PRId32
+                    " bytes from previously received data...\n",
+                    (int)(kld->read_buffer_offset));
 
             memmove(kld->read_buffer,
                     (char *)kld->read_buffer + kld->last_packet_offset,
@@ -390,11 +389,10 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
             kld->read_buffer = malloc(kld->read_buffer_size);
         }
 
-        #ifdef DEBUG_MSG
-        printf("L0 Client: Increase read buffer to new size: %" PRId32
-               " bytes ...\n",
-               (int)kld->read_buffer_size);
-        #endif
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                "L0 Client: Increase read buffer to new size: %" PRId32
+                " bytes ...\n",
+                (int)kld->read_buffer_size);
     }
 
     // Add received data to the read buffer
@@ -420,28 +418,26 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
             retval = len;
             kld->last_packet_offset += len;
 
-            #ifdef DEBUG_MSG
-            printf("L0 Server: Identify packet %" PRId32 " bytes length ...\n",
-                   (int)retval);
-            #endif
+            CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                    "L0 Server: Identify packet %" PRId32 " bytes length ...\n",
+                    (int)retval);
+
         } else { // Wrong checksum, wrong packet - drop this packet and return
                  // -2
             kld->read_buffer_offset = 0;
             kld->last_packet_offset = 0;
             retval = -2;
 
-            #ifdef DEBUG_MSG
-            printf("L0 Client: Wrong packet %" PRId32
-                   " bytes length; dropped ...\n",
-                   (int)len);
-            #endif
+            CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                    "L0 Client: Wrong packet %" PRId32
+                    " bytes length; dropped ...\n",
+                    (int)len);
         }
     } else {
-        #ifdef DEBUG_MSG
-        printf("L0 Client: Wait next part of packet, now it has %" PRId32
-               " bytes ...\n",
-               (int)kld->read_buffer_ptr);
-        #endif
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                "L0 Client: Wait next part of packet, now it has %" PRId32
+                " bytes ...\n",
+                (int)kld->read_buffer_offset);
     }
 
     return retval;
@@ -459,7 +455,8 @@ static int teoLNullPacketCheck(void *data, size_t data_len) {
     if (data_len < sizeof(teoLNullCPacket)) { return 0; }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)data;
-    size_t len = teoLNullBufferSize(packet->peer_name_length, packet->data_length);
+    size_t len =
+        teoLNullBufferSize(packet->peer_name_length, packet->data_length);
 
     if (data_len != len) { return 0; }
 
@@ -502,10 +499,10 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
 ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char *buf, ssize_t rc) {
     rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
 
-    // Send echo answer to echo command
     if (rc > 0 && con->fd) {
         teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
         if (cp->cmd == CMD_L_ECHO) {
+            // Send echo answer to echo command
             char *data = cp->peer_name + cp->peer_name_length;
             teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data,
                          cp->data_length);
@@ -857,7 +854,10 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                                       void *user_data,
                                       PROTOCOL connection_flag) {
     teoLNullConnectData *con = (teoLNullConnectData*)malloc(sizeof(teoLNullConnectData));
-    if (con == NULL) { return con; }
+    if (con == NULL) {
+        LTRACK_E("TeonetClient", "Failed to allocate teoLNullConnectData");
+        abort();
+    }
 
     con->last_packet_offset = 0;
     con->read_buffer = NULL;
@@ -883,7 +883,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         con->fd = teosockCreateTcp();
 
         if (con->fd == TEOSOCK_INVALID_SOCKET) {
-            LTRACK_E("TeonetClient","Client-socket() error");
+            LTRACK_E("TeonetClient", "Can't create socket");
             con->fd = -1;
             con->status = CON_STATUS_SOCKET_ERROR;
             send_l0_event(con, EV_L_CONNECTED, &con->status,
@@ -891,18 +891,17 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             return con;
         }
 
-        CLTRACK(
-            DEBUG, "TeonetClient",
-            "Client-socket() OK\nConnecting to the server %s at port %" PRIu16
-            " ...\n",
-            server, port);
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                "Successfully created socket, connecting to %s at port %" PRIu16
+                " ...",
+                server, port);
 
         int result =
             teosockConnectTimeout(con->fd, server, port, teocliOpt_ConnectTimeoutMs);
 
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
-            LTRACK_E("TeonetClient",
-                     "HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
+            LTRACK_E("TeonetClient", "HOST NOT FOUND --> h_errno = %" PRId32,
+                     h_errno);
             teosockClose(con->fd);
             con->fd = -1;
             con->status = CON_STATUS_HOST_ERROR;
@@ -913,9 +912,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         if (result == TEOSOCK_CONNECT_FAILED) {
             int error = errno;
-            LTRACK_E("TeonetClient",
-                     "Client-connect() error: %" PRId32 ", %s", error,
-                     strerror(error));
+            LTRACK_E("TeonetClient", "Client-connect() error: %" PRId32 ", %s",
+                     error, strerror(error));
             teosockClose(con->fd);
             con->fd = -1;
             con->status = CON_STATUS_CONNECTION_ERROR;
@@ -970,13 +968,14 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         }
 
         #if defined(_WIN32)
-        LTRACK("TeonetClient", "Creating events.");
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient", "Creating events.");
         con->handles[0] = WSACreateEvent();
         con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
 
         int event_select_result = 0;
         if (con->handles[0] != NULL && con->handles[1] != NULL) {
-            LTRACK("TeonetClient", "Binding socket to event.");
+            CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                    "Binding socket to event.");
             event_select_result =
                 WSAEventSelect(con->fd, con->handles[0], FD_READ | FD_CLOSE);
             if (event_select_result != 0) {
@@ -1000,16 +999,19 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         if (con->handles[0] == NULL || con->handles[1] == NULL ||
             event_select_result != 0) {
-            LTRACK_E("TeonetClient", "Failed to create event.");
+            LTRACK_E("TeonetClient",
+                     "Failed to create events for sending commands.");
 
             if (con->handles[0] != NULL) {
-                CLTRACK(DEBUG, "TeonetClient", "Closing write handle.");
+                CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                        "Closing write handle.");
                 WSACloseEvent(con->handles[0]);
                 con->handles[0] = NULL;
             }
 
             if (con->handles[1] != NULL) {
-                CLTRACK(DEBUG, "TeonetClient", "Closing read handle.");
+                CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                        "Closing read handle.");
                 CloseHandle(con->handles[1]);
                 con->handles[1] = NULL;
             }
@@ -1019,8 +1021,6 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
             con->pipefd[0] = -1;
             con->pipefd[1] = -1;
-            LTRACK_E("TeonetClient",
-                     "Failed to create events for sending commands.");
 
             con->status = CON_STATUS_PIPE_ERROR;
             teosockClose(con->fd);
@@ -1038,13 +1038,15 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
         while (con->status == CON_STATUS_NOT_CONNECTED) {
             if (teoLNullReadEventLoop(con, 100) != 0) {
-                CLTRACK(DEBUG, "TeonetClient", "connection eventloop stopped");
+                CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                          "connection eventloop stopped");
                 break;
             }
-
             const int64_t connection_time_ms = teotimeGetTimePassedMs(connect_start_time_ms);
             if (connection_time_ms > teocliOpt_ConnectTimeoutMs) {
-                CLTRACK(DEBUG, "TeonetClient", "UDP connection timeouted");
+
+                CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                          "UDP connection timeouted");
                 con->status = CON_STATUS_CONNECTION_ERROR;
                 teosockClose(con->fd);
                 con->fd = -1;
@@ -1055,9 +1057,10 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         }
 
         if (con->status != CON_STATUS_CONNECTED) {
-            CLTRACK(
-                DEBUG, "TeonetClient", "Connection cancelled by status %s (%d)",
-                STRING_teoLNullConnectionStatus(con->status), (int)con->status);
+            CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                      "Connection cancelled by status %s (%d)",
+                      STRING_teoLNullConnectionStatus(con->status),
+                      (int)con->status);
             teosockClose(con->fd);
             con->fd = -1;
             return con;
@@ -1319,21 +1322,22 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         void* block = trudpPacketGetData(packet);
         ssize_t ready_bytes_count = teoLNullRecvCheck(con, block, block_len);
         if (ready_bytes_count <= 0) {
-            LTRACK_I("TeonetClient", "Got pktid=%u of %d bytes", id,
-                     (uint32_t)block_len);
+            CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                    "Got block id=%u chan=%s of %u bytes", id, tcd->channel_key,
+                    (uint32_t)block_len);
             break;
         }
-        LTRACK("TeonetClient",
-               "Got pktid=%u of %u bytes, assembled L0 packet of %d bytes", id,
-               (uint32_t)block_len, (int32_t)ready_bytes_count);
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                "Got block id=%u chan=%s of %u bytes, assembled L0 packet of "
+                "%d bytes",
+                id, tcd->channel_key, (uint32_t)block_len,
+                (int32_t)ready_bytes_count);
 
         teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
-        CLTRACK(DEBUG, "TeonetClient",
-                "got %u byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: "
-                "%s, cmd: %d, data length: %u",
-                (uint32_t)block_len, tcd->channel_key,
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                "trip(mid)=[%.3f(%.3f) ms] peer=%s, cmd=%d, payload=%u",
                 (double)tcd->triptime / 1000.0,
-                (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name,
+                (double)tcd->triptimeMiddle / 1000.0, cp->peer_name,
                 (int32_t)cp->cmd, (uint32_t)cp->data_length);
 
         // Process commands
@@ -1392,12 +1396,13 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
             uint32_t id = trudpPacketGetId(packet);
             trudpPacketType type = trudpPacketGetType(packet);
             if (type == TRU_DATA) {
-                LTRACK("TeonetClient", "send %u bytes, id=%u, to %s",
-                       (uint32_t)data_length, id, tcd->channel_key);
+                CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                        "send %u bytes data id=%u, to %s",
+                        (uint32_t)data_length, id, tcd->channel_key);
 
             } else {
-                LTRACK("TeonetClient",
-                        "send %u bytes %s(%d) id=%u, to %s",
+                CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+                        "send %u bytes type=%s(%d) id=%u, to %s",
                         (uint32_t)data_length, STRING_trudpPacketType(type),
                         (int)type, id, tcd->channel_key);
             }
