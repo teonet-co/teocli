@@ -285,8 +285,9 @@ extern "C" {
  * @param peer_length
  * @param data_length
  */
-#define teoLNullBufferSize(peer_length, data_length)                           \
-    (sizeof(teoLNullCPacket) + peer_length + data_length)
+inline size_t teoLNullBufferSize(size_t peer_length, size_t data_length) {
+  return sizeof(teoLNullCPacket) + peer_length + data_length;
+}
 
 #if defined(_WIN32) && !defined(HAVE_MINGW)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
