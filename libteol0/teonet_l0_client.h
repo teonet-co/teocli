@@ -89,6 +89,9 @@ typedef enum teoLNullConnectionStatus {
 
 typedef enum PROTOCOL { TRUDP = 0, TCP = 1 } PROTOCOL;
 
+// forward declaration, complete type in libteol0/teonet_l0_client_crypt.h
+typedef struct teoLNullEncryptionContext teoLNullEncryptionContext;
+
 /**
  * L0 client connect data
  */
@@ -112,6 +115,8 @@ typedef struct teoLNullConnectData {
     trudpChannelData *tcd; ///< TRUDP channel data
 
     int pipefd[2]; ///< Pipe to use it in thread safe write function
+
+    teoLNullEncryptionContext *client_crypt;
 
 #if defined(_WIN32)
     HANDLE handles[2];
@@ -327,16 +332,18 @@ TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con,
 TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 // Low level functions
-TEOCLI_API size_t teoLNullPacketCreateLogin(void *buffer, size_t buffer_length,
+TEOCLI_API size_t teoLNullPacketCreateLogin(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
                                             const char *host_name);
-TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len,
+TEOCLI_API size_t teoLNullPacketCreateEcho(teoLNullEncryptionContext *ctx, void *msg_buf, size_t buf_len,
                                            const char *peer_name,
                                            const char *msg);
-TEOCLI_API size_t teoLNullPacketCreate(void *buffer, size_t buffer_length,
+TEOCLI_API size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
                                        uint8_t command, const char *peer,
                                        const void *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
                                       size_t data_length);
+
+uint8_t *teoLNullPacketGetPayload(teoLNullCPacket *packet);
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
