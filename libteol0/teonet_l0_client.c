@@ -19,6 +19,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,6 +50,10 @@
 
 #define SEND_MESSAGE_AFTER 1000000
 #define DELAY 500000 // uSec
+
+// Global teocli options
+extern bool teocliOpt_DBG_packetFlow;
+extern int64_t teocliOpt_ConnectTimeoutMs;
 
 // Internal functions
 static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void *data,
@@ -854,9 +859,6 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
     teoLNullConnectData *con = (teoLNullConnectData*)malloc(sizeof(teoLNullConnectData));
     if (con == NULL) { return con; }
 
-    // TODO: This should be passed as parameter.
-    int connect_timeout_ms = 5000;
-
     con->last_packet_offset = 0;
     con->read_buffer = NULL;
     con->read_buffer_offset = 0;
@@ -896,7 +898,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             server, port);
 
         int result =
-            teosockConnectTimeout(con->fd, server, port, connect_timeout_ms);
+            teosockConnectTimeout(con->fd, server, port, teocliOpt_ConnectTimeoutMs);
 
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
             LTRACK_E("TeonetClient",
@@ -1034,13 +1036,15 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         trudpChannelSendData(con->tcd, NULL, 0);
 
         int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
-        int event_loop_state = 1;
+        while (con->status == CON_STATUS_NOT_CONNECTED) {
+            if (teoLNullReadEventLoop(con, 100) != 0) {
+                CLTRACK(DEBUG, "TeonetClient", "connection eventloop stopped");
+                break;
+            }
 
-        while (con->status == CON_STATUS_NOT_CONNECTED &&
-               event_loop_state != 0) {
-            event_loop_state = teoLNullReadEventLoop(con, 100);
-
-            if (teotimeGetTimePassedMs(connect_start_time_ms) > connect_timeout_ms) {
+            const int64_t connection_time_ms = teotimeGetTimePassedMs(connect_start_time_ms);
+            if (connection_time_ms > teocliOpt_ConnectTimeoutMs) {
+                CLTRACK(DEBUG, "TeonetClient", "UDP connection timeouted");
                 con->status = CON_STATUS_CONNECTION_ERROR;
                 teosockClose(con->fd);
                 con->fd = -1;
@@ -1051,6 +1055,9 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         }
 
         if (con->status != CON_STATUS_CONNECTED) {
+            CLTRACK(
+                DEBUG, "TeonetClient", "Connection cancelled by status %s (%d)",
+                STRING_teoLNullConnectionStatus(con->status), (int)con->status);
             teosockClose(con->fd);
             con->fd = -1;
             return con;

@@ -26,6 +26,7 @@ lib_LTLIBRARIES = libteocli.la
 
 libteocli_la_SOURCES = \
     ../libteol0/teonet_l0_client.c \
+    ../libteol0/teonet_l0_client_options.c \
     ../libtinycrypt/tinycrypt.c \
     ../libtinycrypt/tiny-AES-c/aes.c \
     ../libtinycrypt/tiny-ECDH-c/ecdh.c
