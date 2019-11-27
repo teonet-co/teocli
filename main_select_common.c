@@ -117,7 +117,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     printf("Can't connect to server, status %s\n", STRING_teoLNullConnectionStatus(status));
                 }
             } else {
-                printf("Invalid EV_L_CONNECTED event, data=%p, data_len=%ld\n", data, data_len);
+                printf("Invalid EV_L_CONNECTED event, data=%p, data_len=%lu\n", data, data_len);
             }
         } break;
 
