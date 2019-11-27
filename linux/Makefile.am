@@ -9,7 +9,7 @@ AM_CFLAGS = \
     -fPIC \
     -I../libtrudp/src \
     -I../libtrudp/libs/teobase/include \
-    -I../libtrudp/libs/teobase/libs/teoccl/include \
+    -I../libtrudp/libs/teoccl/include \
     -pthread  \
     -Wpointer-arith
 
@@ -19,7 +19,7 @@ AM_CXXFLAGS = \
     -fPIC \
     -I../libtrudp/src \
     -I../libtrudp/libs/teobase/include \
-    -I../libtrudp/libs/teobase/libs/teoccl/include
+    -I../libtrudp/libs/teoccl/include
 
 
 lib_LTLIBRARIES = libteocli.la
@@ -53,10 +53,7 @@ noinst_PROGRAMS += teocli_s_cpp
 teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
 teocli_s_cpp_LDADD = libteocli.la
 
-LIBS = \
-    ../libtrudp/src/.libs/libtrudp.a \
-    ../libtrudp/libs/teobase/src/.libs/libteobase.a \
-    ../libtrudp/libs/teobase/libs/teoccl/src/.libs/libteoccl.a
+LIBS = ../libtrudp/src/.libs/libtrudp.a
 
 noinst_PROGRAMS += teocli_s_trudp
 teocli_s_trudp_SOURCES = ../main_select_trudp.c

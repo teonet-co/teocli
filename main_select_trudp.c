@@ -46,6 +46,7 @@
 #include "libteol0/teonet_l0_client.h"
 #include "libtrudp/src/trudp.h"
 #include "libtrudp/src/trudp_utils.h"
+#include "teobase/logging.h"
 
 #define DEBUG 0
 #define TL0CNS_VERSION "0.0.2"
@@ -443,66 +444,38 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param data_length Length of data
         // @param user_data NULL Pointer to teoLNullConnectData
         case GOT_DATA: {
-
             teoLNullConnectData *con = user_data;
-            ssize_t rc = teoLNullRecvCheck(con, data, data_length);
-            if(!(rc > 0)) {
-                debug(tru, DEBUG, "got %d byte data to buffer\n", data_length);
+            trudpPacket * packet = (trudpPacket *)data;
+
+            uint32_t id = trudpPacketGetId(packet);
+            size_t block_len = trudpPacketGetDataLength(packet);
+            void* block = trudpPacketGetData(packet);
+            ssize_t ready_count = teoLNullRecvCheck(con, block, block_len);
+            if (ready_count <= 0) {
+                LTRACK_I("TeonetClient", "Got pktid=%u of %d bytes", id, (int)block_len);
                 break;
             }
-            
-            data_length = rc;
-            data = con->read_buffer;
-            
-            teoLNullCPacket *cp = trudpPacketGetData(trudpPacketGetPacket(data));
+
+            teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
             char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,
                 "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, "
-                "peer: %s, cmd: %d, data length: %d, data: %s\n",
-                trudpPacketGetPacketLength(trudpPacketGetPacket(data)),
-                key,
+                "peer: %s, cmd: %u, data length: %u\n",
+                (int)block_len, key,
                 (double)tcd->triptime / 1000.0,
                 (double)tcd->triptimeMiddle / 1000.0,
-                trudpPacketGetId(trudpPacketGetPacket(data)),
-                cp->peer_name,
-                cp->cmd,
-                cp->data_length,
-                cp->peer_name + cp->peer_name_length);
+                id, cp->peer_name, (uint32_t)cp->cmd,
+                (uint32_t)cp->data_length);
 
             // Process ECHO command
             if(cp->cmd == CMD_L_ECHO) {
-                // char *data = cp->peer_name + cp->peer_name_length;
-
-//                char buf[BUFFER_SIZE];
-//                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_ECHO_ANSWER, cp->peer_name, data, cp->data_length);
 
                 cp->cmd = CMD_L_ECHO_ANSWER;
                 cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
-                trudpChannelSendData(tcd, cp, data_length);
+                trudpChannelSendData(tcd, cp, ready_count);
             }
             // Send other commands to L0 event loop
-            else send_l0_event(tcd, EV_L_RECEIVED, cp, sizeof(teoLNullCPacket) + 
-                    cp->data_length + cp->peer_name_length, NULL);
-
-
-//            if(!o.show_statistic && !o.show_send_queue && !o.show_snake) {
-//                if(o.debug) {
-//                    printf("#%u at %.3f, cannel %s [%.3f(%.3f) ms] ",
-//                           tcd->receiveExpectedId,
-//                           (double)trudpGetTimestamp() / 1000.0,
-//                           key,
-//                           (double)tcd->triptime / 1000.0,
-//                           (double)tcd->triptimeMiddle / 1000.0);
-//
-//                    printf("%s\n",(char*)data);
-//                }
-//            }
-//            else {
-//                // Show statistic window
-//                //showStatistic(TD(tcd));
-//            }
-//            debug(tru, DEBUG,  "\n");
-
+            else send_l0_event(tcd, EV_L_RECEIVED, cp, ready_count, NULL);
         } break;
 
         // Process received data
