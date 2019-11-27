@@ -42,7 +42,6 @@
 #include "teobase/time.h"
 
 // Uncomment next line to show debug message
-//#define CONNECT_MSG
 //#define DEBUG_MSG
 #define DEBUG 0
 // Application constants
@@ -70,26 +69,6 @@ static void send_l0_event(teoLNullConnectData *con, teoLNullEvents event,
                           void *data, size_t data_length) {
     if (con->event_cb != NULL) {
         con->event_cb(con, event, data, data_length, con->user_data);
-    }
-}
-
-/**
- * Show debug message
- *
- * @param fmt
- * @param ...
- */
-static void debug(const void *tru, int mode, const char *fmt, ...) {
-    static unsigned long idx = 0;
-    va_list ap;
-    if (DEBUG) {
-        fflush(stdout);
-        fprintf(stderr, "%lu %.3f debug: ", ++idx,
-                trudpGetTimestamp() / 1000.0);
-        va_start(ap, fmt);
-        vfprintf(stderr, fmt, ap);
-        va_end(ap);
-        fflush(stderr);
     }
 }
 
@@ -153,7 +132,6 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
-        // debug(NULL, DEBUG, "PIPE DATALEN send ... %lld\n", length);
         teoPipeSendData pipe_send_data;
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
@@ -173,14 +151,14 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
         #endif
 
         if (write_result == -1) {
-            log_error("TeonetClient",
-                      "Failed to write message to the pipe: write error.");
+            LTRACK_E("TeonetClient",
+                     "Failed to write message to the pipe: write error.");
             abort();
         }
 
         if ((size_t)write_result != sizeof(pipe_send_data)) {
-            log_error("TeonetClient", "Failed to write message to the pipe: "
-                                      "message written partially.");
+            LTRACK_E("TeonetClient", "Failed to write message to the pipe: "
+                                     "message written partially.");
             abort();
         }
 
@@ -682,7 +660,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
     // Error
     if (select_result == SELECT_RESULT_ERROR) {
-        fprintf(stderr, "select() handle error\n");
+        LTRACK_E("TeonetClient", "select() handle error");
         retval = TEOSOCK_SELECT_ERROR;
     } else if (select_result ==
                SELECT_RESULT_TIMEOUT) { // Idle or Timeout event
@@ -747,8 +725,8 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
             if (read_result != -1 && read_result != 0) {
                 if ((size_t)read_result != sizeof(pipe_send_data)) {
-                    log_error("TeonetClient", "Failed to read message from the "
-                                              "pipe: message read partially.");
+                    LTRACK_E("TeonetClient", "Failed to read message from the "
+                                             "pipe: message read partially.");
                     abort();
                 }
 
@@ -778,9 +756,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
     }
 
     if (select_result != SELECT_RESULT_ERROR && timeout_sq != UINT32_MAX) {
-        debug(NULL, DEBUG, "process send queue ... ");
+        CLTRACK(DEBUG, "TeonetClient", "process send queue ... ");
         int rv = trudpProcessSendQueue(td, 0);
-        debug(NULL, DEBUG, "    process send queue result %d\n", rv);
+        CLTRACK(DEBUG, "TeonetClient", "    process send queue result %d\n", rv);
     }
 
     return retval;
@@ -806,7 +784,8 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     if (rv == TEOSOCK_SELECT_ERROR) {
         int error = errno;
         if (error != EINTR) {
-            printf("select(fd = %" PRId32 ") handle error %" PRId32 ": %s\n",
+            LTRACK("TeonetClient",
+                   "select(fd = %" PRId32 ") handle error %" PRId32 ": %s",
                    (int)con->fd, error, strerror(error));
         }
     } else if (rv == TEOSOCK_SELECT_TIMEOUT) { // Idle or Timeout event
@@ -821,7 +800,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
                 if (rc > 0) {
                     send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
                 } else if (rc == 0) {
-                    log_info("TeonetClient",
+                    LTRACK_I("TeonetClient",
                              "send_l0_event EV_L_DISCONNECTED in "
                              "teoLNullReadEventLoop with 0 data");
 
@@ -835,7 +814,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     }
 
     if (!con->tcp_f && con->udp_reset_f) {
-        log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
+        LTRACK_I("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
                                  "teoLNullReadEventLoop with udp reset");
 
         send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
@@ -904,7 +883,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         con->fd = teosockCreateTcp();
 
         if (con->fd == TEOSOCK_INVALID_SOCKET) {
-            printf("Client-socket() error\n");
+            LTRACK_E("TeonetClient","Client-socket() error");
             con->fd = -1;
             con->status = CON_STATUS_SOCKET_ERROR;
             send_l0_event(con, EV_L_CONNECTED, &con->status,
@@ -912,20 +891,18 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             return con;
         }
 
-        #ifdef DEBUG_MSG
-        printf("Client-socket() OK\n");
-        #endif
-
-        #ifdef CONNECT_MSG
-        printf("Connecting to the server %s at port %" PRIu16 " ...\n", server,
-               port);
-        #endif
+        CLTRACK(
+            DEBUG, "TeonetClient",
+            "Client-socket() OK\nConnecting to the server %s at port %" PRIu16
+            " ...\n",
+            server, port);
 
         int result =
             teosockConnectTimeout(con->fd, server, port, connect_timeout_ms);
 
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
-            printf("HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
+            LTRACK_E("TeonetClient",
+                     "HOST NOT FOUND --> h_errno = %" PRId32 "\n", h_errno);
             teosockClose(con->fd);
             con->fd = -1;
             con->status = CON_STATUS_HOST_ERROR;
@@ -936,8 +913,9 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         if (result == TEOSOCK_CONNECT_FAILED) {
             int error = errno;
-            printf("Client-connect() error: %" PRId32 ", %s\n", error,
-                   strerror(error));
+            LTRACK_E("TeonetClient",
+                     "Client-connect() error: %" PRId32 ", %s", error,
+                     strerror(error));
             teosockClose(con->fd);
             con->fd = -1;
             con->status = CON_STATUS_CONNECTION_ERROR;
@@ -946,9 +924,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             return con;
         }
 
-        #ifdef CONNECT_MSG
-        printf("Connection established ...\n");
-        #endif
+        LTRACK_I("TeonetClient", "Connection established ...");
 
         con->status = CON_STATUS_CONNECTED;
         // Set TCP_NODELAY option
@@ -960,7 +936,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         int port_local = 0;
         con->fd = trudpUdpBindRaw(&port_local, 1);
         if (con->fd < 0) {
-            log_error("TeonetClient", "Failed to bind UDP socket.");
+            LTRACK_E("TeonetClient", "Failed to bind UDP socket.");
             con->status = CON_STATUS_SOCKET_ERROR;
             con->fd = -1;
             send_l0_event(con, EV_L_CONNECTED, &con->status,
@@ -970,7 +946,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         con->td = trudpInit(con->fd, port, trudpEventCback, con);
         con->tcd = trudpChannelNew(con->td, (char *)server, port, 0);
-        printf("TR-UDP port = %d created, fd = %d\n", port_local, con->fd);
+        LTRACK_I("TeonetClient", "TR-UDP port = %d created, fd = %d",
+                 port_local, (int)con->fd);
 
         // Pipe create
         #if defined(_WIN32)
@@ -982,8 +959,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             con->status = CON_STATUS_PIPE_ERROR;
             con->pipefd[0] = -1;
             con->pipefd[1] = -1;
-            log_error("TeonetClient",
-                      "Failed to create pipe for sending commands.");
+            LTRACK_E("TeonetClient",
+                     "Failed to create pipe for sending commands.");
 
             teosockClose(con->fd);
             con->fd = -1;
@@ -993,45 +970,46 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         }
 
         #if defined(_WIN32)
-        log_debug("TeonetClient", "Creating events.");
+        LTRACK("TeonetClient", "Creating events.");
         con->handles[0] = WSACreateEvent();
         con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
 
         int event_select_result = 0;
         if (con->handles[0] != NULL && con->handles[1] != NULL) {
-            log_debug("TeonetClient", "Binding socket to event.");
+            LTRACK("TeonetClient", "Binding socket to event.");
             event_select_result =
                 WSAEventSelect(con->fd, con->handles[0], FD_READ | FD_CLOSE);
             if (event_select_result != 0) {
                 int error_code = WSAGetLastError();
-                log_error("TeonetClient", "Failed to bind event.");
+                LTRACK_E("TeonetClient", "Failed to bind event, error code %d.",
+                         error_code);
 
                 if (error_code == WSAENETDOWN) {
-                    log_error("TeonetClient", "Error: WSAENETDOWN.");
+                    LTRACK_E("TeonetClient", "Error: WSAENETDOWN.");
                 } else if (error_code == WSAEINVAL) {
-                    log_error("TeonetClient", "Error: WSAEINVAL.");
+                    LTRACK_E("TeonetClient", "Error: WSAEINVAL.");
                 } else if (error_code == WSAEINPROGRESS) {
-                    log_error("TeonetClient", "Error: WSAEINPROGRESS.");
+                    LTRACK_E("TeonetClient", "Error: WSAEINPROGRESS.");
                 } else if (error_code == WSAENOTSOCK) {
-                    log_error("TeonetClient", "Error: WSAENOTSOCK.");
+                    LTRACK_E("TeonetClient", "Error: WSAENOTSOCK.");
                 } else {
-                    log_error("TeonetClient", "Error: unknown.");
+                    LTRACK_E("TeonetClient", "Error: unknown.");
                 }
             }
         }
 
         if (con->handles[0] == NULL || con->handles[1] == NULL ||
             event_select_result != 0) {
-            log_error("TeonetClient", "Failed to create event.");
+            LTRACK_E("TeonetClient", "Failed to create event.");
 
             if (con->handles[0] != NULL) {
-                log_debug("TeonetClient", "Closing write handle.");
+                CLTRACK(DEBUG, "TeonetClient", "Closing write handle.");
                 WSACloseEvent(con->handles[0]);
                 con->handles[0] = NULL;
             }
 
             if (con->handles[1] != NULL) {
-                log_debug("TeonetClient", "Closing read handle.");
+                CLTRACK(DEBUG, "TeonetClient", "Closing read handle.");
                 CloseHandle(con->handles[1]);
                 con->handles[1] = NULL;
             }
@@ -1041,8 +1019,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
             con->pipefd[0] = -1;
             con->pipefd[1] = -1;
-            log_error("TeonetClient",
-                      "Failed to create events for sending commands.");
+            LTRACK_E("TeonetClient",
+                     "Failed to create events for sending commands.");
 
             con->status = CON_STATUS_PIPE_ERROR;
             teosockClose(con->fd);
@@ -1177,9 +1155,8 @@ void teoLNullShutdown(teoLNullConnectData *con) {
 static void trudpEventCback(void *tcd_pointer, int event, void *data,
                             size_t data_length, void *user_data) {
     trudpChannelData *tcd = (trudpChannelData *)tcd_pointer;
-    void *tru = user_data;
-    debug(tru, DEBUG, "trudpEventCback chan %s event %s data_length %ld\n",
-          trudpChannelMakeKey(tcd), STRING_trudpEvent(event), data_length);
+    CLTRACK(DEBUG, "TeonetClient", "chan %s event %s data_length %u",
+            tcd->channel_key, STRING_trudpEvent(event), (uint32_t)data_length);
 
     switch (event) {
 
@@ -1187,8 +1164,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data NULL
     // @param user_data NULL
     case CONNECTED: {
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG, "Connect channel %s\n", key);
+        CLTRACK(DEBUG, "TeonetClient", "Connect channel %s\n", tcd->channel_key);
         if (!tcd->connected_f) {
             // tcd->connected_f = 1; // would be set in trudpGetChannelCreate
             // anyway
@@ -1207,7 +1183,6 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data Last packet received
     // @param user_data NULL
     case DISCONNECTED: {
-        char *key = trudpChannelMakeKey(tcd);
         teoLNullConnectData *con = user_data;
 
         // Disconnect notification with interval elapsed causes
@@ -1217,21 +1192,21 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         // without time in data
         if (data_length == sizeof(uint32_t) && data) {
             uint32_t last_received = *(uint32_t *)data;
-            debug(tru, DEBUG,
-                  "Disconnect channel %s, last received: %.6f sec\n", key,
-                  last_received / 1000000.0);
+            CLTRACK(DEBUG, "TeonetClient",
+                    "Disconnect channel %s, last received: %.6f sec",
+                    tcd->channel_key, last_received / 1000000.0);
 
-            log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
-                                     "trudpEventCback on DISCONNECTED");
+            LTRACK_I("TeonetClient",
+                     "send_l0_event EV_L_DISCONNECTED on DISCONNECTED");
 
             send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
             tcd->connected_f = 0;
             con->status = CON_STATUS_NOT_CONNECTED;
             trudpChannelDestroyAll(con->td);
         } else {
-            debug(tru, DEBUG,
-                  "Disconnected channel %s, data=%p, data_len=%ld\n", key, data,
-                  data_length);
+            CLTRACK(DEBUG, "TeonetClient",
+                    "Disconnected channel %s, data=%p, data_len=%u\n",
+                    tcd->channel_key, data, (uint32_t)data_length);
         }
 
         tcd->connected_f = 0;
@@ -1241,12 +1216,12 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data NULL
     // @param user_data NULL
     case GOT_RESET: {
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG, "got TRU_RESET packet from channel %s\n", key);
+        CLTRACK(DEBUG, "TeonetClient", "got TRU_RESET packet from channel %s",
+                tcd->channel_key);
         teoLNullConnectData *con = user_data;
         if (tcd->connected_f) {
-            log_info("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
-                                     "trudpEventCback on GOT_RESET");
+            LTRACK_I("TeonetClient",
+                     "send_l0_event EV_L_DISCONNECTED on GOT_RESET");
 
             send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
             con->status = CON_STATUS_NOT_CONNECTED;
@@ -1258,24 +1233,23 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data Pointer to uint32_t id or NULL (data_size == 0)
     // @param user_data NULL
     case SEND_RESET: {
-        char *key = trudpChannelMakeKey(tcd);
-
         if (!data) {
-            debug(tru, DEBUG, "Send reset: to channel %s\n", key);
+            CLTRACK(DEBUG, "TeonetClient", "Send reset: to channel %s",
+                    tcd->channel_key);
         } else {
             uint32_t id =
                 (data_length == sizeof(uint32_t)) ? *(uint32_t *)data : 0;
 
-            if (!id) {
-                debug(tru, DEBUG,
-                      "Send reset: Not expected packet with id = 0 received "
-                      "from channel %s\n",
-                      key);
+            if (id == 0) {
+                LTRACK_E("TeonetClient",
+                         "Send reset: Not expected packet with id = 0 "
+                         "received from channel %s",
+                         tcd->channel_key);
             } else {
-                debug(
-                    tru, DEBUG,
-                    "Send reset: High send packet number (%d) at channel %s\n",
-                    id, key);
+                CLTRACK(
+                    DEBUG, "TeonetClient",
+                    "Send reset: High send packet number (%u) at channel %s",
+                    id, tcd->channel_key);
             }
         }
     } break;
@@ -1284,28 +1258,26 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data NULL
     // @param user_data NULL
     case GOT_ACK_RESET: {
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG, "Got ACK to RESET packet at channel %s\n", key);
+        CLTRACK(DEBUG, "TeonetClient", "Got ACK to RESET packet at channel %s",
+                tcd->channel_key);
     } break;
 
     // GOT_ACK_PING event: got ACK to ping command
     // @param data Pointer to ping data (usually it is a string)
     // @param user_data NULL
     case GOT_ACK_PING: {
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG,
-              "got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
-              key, (char *)data, (tcd->triptime) / 1000.0,
-              (tcd->triptimeMiddle) / 1000.0);
+        CLTRACK(DEBUG, "TeonetClient",
+                "got ACK to PING packet at channel %s, %.3f(%.3f) ms",
+                tcd->channel_key, (tcd->triptime) / 1000.0,
+                (tcd->triptimeMiddle) / 1000.0);
     } break;
 
     // GOT_PING event: got PING packet, data
     // @param data Pointer to ping data (usually it is a string)
     // @param user_data NULL
     case GOT_PING: {
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG, "got PING packet at channel %s, data: %s\n", key,
-              (char *)data);
+        CLTRACK(DEBUG, "TeonetClient", "got PING packet at channel %s",
+                tcd->channel_key);
     } break;
 
     // Got ACK event
@@ -1313,7 +1285,6 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data_length Length of data
     // @param user_data NULL
     case GOT_ACK: {
-        char *key = trudpChannelMakeKey(tcd);
         teoLNullConnectData *con = user_data;
         trudpPacket * packet = (trudpPacket *)data;
         uint32_t id = trudpPacketGetId(packet);
@@ -1324,9 +1295,10 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
             send_l0_event(con, EV_L_CONNECTED, &con->status,
                           sizeof(con->status));
         }
-        debug(tru, DEBUG, "got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
-              id, key, (tcd->triptime) / 1000.0,
-              (tcd->triptimeMiddle) / 1000.0);
+        CLTRACK(DEBUG, "TeonetClient",
+                "got ACK id=%u at channel %s, %.3f(%.3f) ms", id,
+                tcd->channel_key, (tcd->triptime) / 1000.0,
+                (tcd->triptimeMiddle) / 1000.0);
     } break;
 
     // Got DATA event
@@ -1340,34 +1312,33 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         uint32_t id = trudpPacketGetId(packet);
         size_t block_len = trudpPacketGetDataLength(packet);
         void* block = trudpPacketGetData(packet);
-        ssize_t ready_count = teoLNullRecvCheck(con, block, block_len);
-        if (ready_count <= 0) {
-            LTRACK_I("TeonetClient", "Got pktid=%u of %d bytes", id, block_len);
+        ssize_t ready_bytes_count = teoLNullRecvCheck(con, block, block_len);
+        if (ready_bytes_count <= 0) {
+            LTRACK_I("TeonetClient", "Got pktid=%u of %d bytes", id,
+                     (uint32_t)block_len);
             break;
         }
-        LTRACK_I("TeonetClient",
-                 "Got pktid=%u of %d bytes, assembled L0 packet of %d bytes",
-                 id, block_len, ready_count);
+        LTRACK("TeonetClient",
+               "Got pktid=%u of %u bytes, assembled L0 packet of %d bytes", id,
+               (uint32_t)block_len, (int32_t)ready_bytes_count);
 
         teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
-        char *key = trudpChannelMakeKey(tcd);
-        debug(tru, DEBUG,
-              "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: "
-              "%s, cmd: %d, data length: %d, data: %s\n",
-              block_len, key, (double)tcd->triptime / 1000.0,
-              (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name, cp->cmd,
-              cp->data_length, cp->peer_name + cp->peer_name_length);
+        CLTRACK(DEBUG, "TeonetClient",
+                "got %u byte data at channel %s [%.3f(%.3f) ms], id=%u, peer: "
+                "%s, cmd: %d, data length: %u",
+                (uint32_t)block_len, tcd->channel_key,
+                (double)tcd->triptime / 1000.0,
+                (double)tcd->triptimeMiddle / 1000.0, id, cp->peer_name,
+                (int32_t)cp->cmd, (uint32_t)cp->data_length);
 
         // Process commands
         if (cp->cmd == CMD_L_ECHO) {
             cp->cmd = CMD_L_ECHO_ANSWER;
             cp->header_checksum = get_byte_checksum(
                 cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
-            trudpChannelSendData(tcd, cp, ready_count);
+            trudpChannelSendData(tcd, cp, ready_bytes_count);
         } else { // Send other commands to L0 event loop
-            send_l0_event(con, EV_L_RECEIVED, cp,
-                          sizeof(teoLNullCPacket) + cp->data_length +
-                              cp->peer_name_length);
+            send_l0_event(con, EV_L_RECEIVED, cp, ready_bytes_count);
         }
     } break;
 
@@ -1379,15 +1350,15 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         teoLNullConnectData *con = user_data;
 
         if (teoLNullPacketCheck(data, data_length) == 0) {
-            debug(tru, DEBUG,
-                  "got invalid non TR-UDP data packet with %d bytes of data\n",
-                  data_length);
+            CLTRACK(DEBUG, "TeonetClient",
+                    "got invalid non TR-UDP data packet with %u bytes of data",
+                    (uint32_t)data_length);
             break;
         }
 
-        debug(tru, DEBUG,
-              "got valid non TR-UDP data packet with %d bytes of data\n",
-              data_length);
+        CLTRACK(DEBUG, "TeonetClient",
+                "got valid non TR-UDP data packet with %u bytes of data",
+                (uint32_t)data_length);
         send_l0_event(con, EV_L_RECEIVED, data, data_length);
     }
 
@@ -1412,26 +1383,18 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
                        sizeof(tcd->remaddr));
 
         if (DEBUG) {
-            int port = 0;
-            char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr,
-                                         &port);
-
             trudpPacket* packet = (trudpPacket*)data;
+            uint32_t id = trudpPacketGetId(packet);
             trudpPacketType type = trudpPacketGetType(packet);
             if (type == TRU_DATA) {
-                uint32_t id = trudpPacketGetId(packet);
-                teoLNullCPacket *cp = trudpPacketGetData(packet);
-                debug(tru, DEBUG, "send %d bytes, id=%u, to %s:%d, data: %s\n",
-                      (int)data_length, id, addr, port,
-                      (cp->data_length) ? cp->peer_name + cp->peer_name_length
-                                        : "empty data");
+                LTRACK("TeonetClient", "send %u bytes, id=%u, to %s",
+                       (uint32_t)data_length, id, tcd->channel_key);
 
             } else {
-                #ifdef DEBUG_MSG
-                debug(tru, DEBUG, "send %d bytes %s(%d) id=%u, to %s:%d\n",
-                      (int)data_length, STRING_trudpPacketType(type), type, id,
-                      addr, port);
-                #endif
+                CLTRACK(DEBUG, "TeonetClient",
+                        "send %u bytes %s(%d) id=%u, to %s",
+                        (uint32_t)data_length, STRING_trudpPacketType(type),
+                        (int)type, id, tcd->channel_key);
             }
         }
     } break;
@@ -1448,6 +1411,7 @@ const char *STRING_teoLNullConnectionStatus(teoLNullConnectionStatus v) {
     case CON_STATUS_HOST_ERROR: return "CON_STATUS_HOST_ERROR";
     case CON_STATUS_CONNECTION_ERROR: return "CON_STATUS_CONNECTION_ERROR";
     case CON_STATUS_PIPE_ERROR: return "CON_STATUS_PIPE_ERROR";
+    default: break;
     }
 
     return "INVALID teoLNullConnectionStatus";
@@ -1460,6 +1424,7 @@ const char *STRING_teoLNullEvents(teoLNullEvents v) {
     case EV_L_RECEIVED: return "EV_L_RECEIVED";
     case EV_L_TICK: return "EV_L_TICK";
     case EV_L_IDLE: return "EV_L_IDLE";
+    default: break;
     }
 
     return "INVALID teoLNullEvents";
