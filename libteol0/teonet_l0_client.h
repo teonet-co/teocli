@@ -339,8 +339,24 @@ TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
-void set_nonblock(int sd);
-int set_tcp_nodelay(int sd);
+
+#if defined(TEONET_COMPILER_GCC)
+#define DEPRECATED_FUNCTION __attribute__((deprecated))
+#else
+#define DEPRECATED_FUNCTION __declspec(deprecated)
+#endif
+
+DEPRECATED_FUNCTION static inline void set_nonblock(int sd);
+// DEPRECATED
+static inline void set_nonblock(int sd) {
+    teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);
+}
+
+DEPRECATED_FUNCTION static inline int set_tcp_nodelay(int sd);
+// DEPRECATED
+static inline int set_tcp_nodelay(int sd) {
+    return teosockSetTcpNodelay(sd);
+}
 
 const char *STRING_teoLNullConnectionStatus(teoLNullConnectionStatus v);
 const char *STRING_teoLNullEvents(teoLNullEvents v);
