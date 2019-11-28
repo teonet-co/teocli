@@ -1391,7 +1391,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
                        (uint32_t)data_length, id, tcd->channel_key);
 
             } else {
-                CLTRACK(DEBUG, "TeonetClient",
+                LTRACK("TeonetClient",
                         "send %u bytes %s(%d) id=%u, to %s",
                         (uint32_t)data_length, STRING_trudpPacketType(type),
                         (int)type, id, tcd->channel_key);
@@ -1429,21 +1429,5 @@ const char *STRING_teoLNullEvents(teoLNullEvents v) {
 
     return "INVALID teoLNullEvents";
 };
-
-#if defined(TEONET_COMPILER_GCC)
-#define DEPRECATED_FUNCTION __attribute__((deprecated))
-#else
-#define DEPRECATED_FUNCTION
-#endif
-
-// DEPRECATED
-inline void set_nonblock(int sd) DEPRECATED_FUNCTION;
-inline void set_nonblock(int sd) {
-    teosockSetBlockingMode(sd, TEOSOCK_NON_BLOCKING_MODE);
-}
-
-// DEPRECATED
-int set_tcp_nodelay(int sd) DEPRECATED_FUNCTION;
-inline int set_tcp_nodelay(int sd) { return teosockSetTcpNodelay(sd); }
 
 #undef DEBUG_MSG
