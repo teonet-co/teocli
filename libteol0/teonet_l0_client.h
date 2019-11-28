@@ -334,8 +334,8 @@ TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len,
 TEOCLI_API size_t teoLNullPacketCreate(void *buffer, size_t buffer_length,
                                        uint8_t command, const char *peer,
                                        const void *data, size_t data_length);
-TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, void *pkg,
-                                      size_t pkg_length);
+TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
+                                      size_t data_length);
 
 // Teonet utils functions
 uint8_t get_byte_checksum(void *data, size_t data_length);
