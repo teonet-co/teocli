@@ -136,7 +136,7 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
         pipe_send_data.data_length = length;
-        pipe_send_data.data = malloc(length);
+        pipe_send_data.data = (char*)malloc(length);
 
         memcpy(pipe_send_data.data, data, length);
 
@@ -170,15 +170,15 @@ ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
  * Send packet to L0 server/client
  *
  * @param con Pointer to teoLNullConnectData
- * @param pkg Package to send
- * @param pkg_length Package length
+ * @param data Package to send
+ * @param data_length Package length
  *
  * @return Length of send data or -1 at error
  */
-ssize_t teoLNullPacketSend(teoLNullConnectData *con, void *pkg,
-                           size_t pkg_length) {
+ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
+                           size_t data_length) {
     if (con != NULL) {
-        return _teosockSend(con, pkg, pkg_length);
+        return _teosockSend(con, data, data_length);
     } else {
         return -1;
     }
@@ -203,7 +203,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = malloc(buf_length);
+    char *buf = (char*)malloc(buf_length);
 
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name,
                                              data, data_length);
@@ -221,7 +221,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = malloc(buf_length);
+    char *buf = (char*)malloc(buf_length);
 
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length, cmd, peer_name,
                                              data, data_length);
@@ -853,7 +853,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                                       teoLNullEventsCb event_cb,
                                       void *user_data,
                                       PROTOCOL connection_flag) {
-    teoLNullConnectData *con = malloc(sizeof(teoLNullConnectData));
+    teoLNullConnectData *con = (teoLNullConnectData*)malloc(sizeof(teoLNullConnectData));
     if (con == NULL) { return con; }
 
     // TODO: This should be passed as parameter.
@@ -1168,7 +1168,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         if (!tcd->connected_f) {
             // tcd->connected_f = 1; // would be set in trudpGetChannelCreate
             // anyway
-            teoLNullConnectData *con = user_data;
+            teoLNullConnectData *con = (teoLNullConnectData*)user_data;
             con->status = CON_STATUS_CONNECTED;
             log_info("TeonetClient",
                      "send_l0_event EV_L_CONNECTED in trudpEventCback on "
@@ -1183,7 +1183,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data Last packet received
     // @param user_data NULL
     case DISCONNECTED: {
-        teoLNullConnectData *con = user_data;
+        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
 
         // Disconnect notification with interval elapsed causes
         // all channels of the same connection to be destroyed,
@@ -1218,7 +1218,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     case GOT_RESET: {
         CLTRACK(DEBUG, "TeonetClient", "got TRU_RESET packet from channel %s",
                 tcd->channel_key);
-        teoLNullConnectData *con = user_data;
+        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
         if (tcd->connected_f) {
             LTRACK_I("TeonetClient",
                      "send_l0_event EV_L_DISCONNECTED on GOT_RESET");
@@ -1285,7 +1285,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data_length Length of data
     // @param user_data NULL
     case GOT_ACK: {
-        teoLNullConnectData *con = user_data;
+        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
         trudpPacket * packet = (trudpPacket *)data;
         uint32_t id = trudpPacketGetId(packet);
 
@@ -1306,7 +1306,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data_length Length of data
     // @param user_data NULL Pointer to teoLNullConnectData
     case GOT_DATA: {
-        teoLNullConnectData *con = user_data;
+        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
         trudpPacket * packet = (trudpPacket *)data;
 
         uint32_t id = trudpPacketGetId(packet);
@@ -1347,7 +1347,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data_length Length of data
     // @param user_data NULL Pointer to teoLNullConnectData
     case GOT_DATA_NO_TRUDP: {
-        teoLNullConnectData *con = user_data;
+        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
 
         if (teoLNullPacketCheck(data, data_length) == 0) {
             CLTRACK(DEBUG, "TeonetClient",
