@@ -33,8 +33,9 @@
 #endif
 
 #if defined(TEONET_OS_LINUX) || defined(TEONET_OS_MACOS) ||                    \
-    defined(TEONET_OS_IOS)
+    defined(TEONET_OS_IOS) || defined(TEONET_OS_ANDROID)
 #include <netdb.h>
+#include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
 #endif
