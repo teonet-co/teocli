@@ -150,15 +150,15 @@ static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
 
         memcpy(pipe_send_data.data, data, length);
 
-        // Write to pipe
-        #if defined(_WIN32)
+// Write to pipe
+#if defined(_WIN32)
         ssize_t write_result =
             _write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
         SetEvent(con->handles[1]);
-        #else
+#else
         ssize_t write_result =
             write(con->pipefd[1], &pipe_send_data, sizeof(pipe_send_data));
-        #endif
+#endif
 
         if (write_result == -1) {
             LTRACK_E("TeonetClient",
@@ -576,11 +576,11 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
 
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
-    #if defined(_WIN32)
+#if defined(_WIN32)
     char *buf = malloc(buf_len);
-    #else
+#else
     char buf[buf_len];
-    #endif
+#endif
 
     ssize_t snd = 0;
     size_t pkg_length =
@@ -590,9 +590,9 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
         snd = _teosockSend(con, buf, pkg_length);
     }
 
-    #if defined(_WIN32)
+#if defined(_WIN32)
     free(buf);
-    #endif
+#endif
 
     return snd;
 }
@@ -650,13 +650,13 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
     teosockSelectResult retval;
 
-    #if !defined(_WIN32)
+#if !defined(_WIN32)
     // Watch server_socket to see when it has input.
     fd_set rfds;
     FD_ZERO(&rfds);
     FD_SET(td->fd, &rfds);
     FD_SET(con->pipefd[0], &rfds);
-    #endif
+#endif
 
     uint64_t ts = teoGetTimestampFull();
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
@@ -687,12 +687,12 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
     } else { // There is a data in fd
-        // Process read fd
-        #if defined(_WIN32)
+// Process read fd
+#if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0) {
-        #else
+#else
         if (FD_ISSET(td->fd, &rfds)) {
-        #endif
+#endif
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
@@ -708,24 +708,24 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen,
                                                   &data_length);
             } else {
-                #if defined(_WIN32)
+#if defined(_WIN32)
                 WSANETWORKEVENTS network_events;
                 memset(&network_events, 0, sizeof(network_events));
 
                 WSAEnumNetworkEvents(con->fd, con->handles[0], &network_events);
-                #endif
+#endif
             }
         }
-        // Process Pipe (thread safe write)
-        #if defined(_WIN32)
+// Process Pipe (thread safe write)
+#if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0 + 1) {
-        #else
+#else
         if (FD_ISSET(con->pipefd[0], &rfds)) {
-        #endif
+#endif
             teoPipeSendData pipe_send_data;
             memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
-            #if defined(_WIN32)
+#if defined(_WIN32)
             struct _stat status;
             memset(&status, 0, sizeof(status));
 
@@ -736,10 +736,10 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 read_result = _read(con->pipefd[0], &pipe_send_data,
                                     sizeof(pipe_send_data));
             }
-            #else
+#else
             ssize_t read_result =
                 read(con->pipefd[0], &pipe_send_data, sizeof(pipe_send_data));
-            #endif
+#endif
 
             if (read_result != -1 && read_result != 0) {
                 if ((size_t)read_result != sizeof(pipe_send_data)) {
@@ -760,13 +760,13 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 }
                 free(pipe_send_data.data);
 
-                #if defined(_WIN32)
+#if defined(_WIN32)
                 SetEvent(con->handles[1]);
-                #endif
+#endif
             } else {
-                #if defined(_WIN32)
+#if defined(_WIN32)
                 ResetEvent(con->handles[1]);
-                #endif
+#endif
             }
         }
 
@@ -892,10 +892,10 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
     con->pipefd[1] = -1;
     con->status = CON_STATUS_NOT_CONNECTED;
 
-    #if defined(_WIN32)
+#if defined(_WIN32)
     con->handles[0] = NULL;
     con->handles[1] = NULL;
-    #endif
+#endif
 
     // Connect to TCP
     if (con->tcp_f) {
@@ -966,12 +966,12 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         LTRACK_I("TeonetClient", "TR-UDP port = %d created, fd = %d",
                  port_local, (int)con->fd);
 
-        // Pipe create
-        #if defined(_WIN32)
+// Pipe create
+#if defined(_WIN32)
         int pipe_result = _pipe(con->pipefd, 1024 * 10, _O_BINARY);
-        #else
+#else
         int pipe_result = pipe(con->pipefd);
-        #endif
+#endif
         if (pipe_result == -1) {
             con->status = CON_STATUS_PIPE_ERROR;
             con->pipefd[0] = -1;
@@ -986,7 +986,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             return con;
         }
 
-        #if defined(_WIN32)
+#if defined(_WIN32)
         CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient", "Creating events.");
         con->handles[0] = WSACreateEvent();
         con->handles[1] = CreateEventA(NULL, TRUE, FALSE, NULL);
@@ -1048,7 +1048,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                           sizeof(con->status));
             return con;
         }
-        #endif
+#endif
 
         con->status = CON_STATUS_NOT_CONNECTED;
         // Send empty data packet to ensure server reacheable
@@ -1126,22 +1126,22 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
         }
 
         if (con->pipefd[0] != -1) {
-            #if defined(_WIN32)
+#if defined(_WIN32)
             _close(con->pipefd[0]);
-            #else
+#else
             close(con->pipefd[0]);
-            #endif
+#endif
         }
 
         if (con->pipefd[1] != -1) {
-            #if defined(_WIN32)
+#if defined(_WIN32)
             _close(con->pipefd[1]);
-            #else
+#else
             close(con->pipefd[1]);
-            #endif
+#endif
         }
 
-        #if defined(_WIN32)
+#if defined(_WIN32)
         if (con->handles[0] != NULL) {
             WSACloseEvent(con->handles[0]);
             con->handles[0] = NULL;
@@ -1151,7 +1151,7 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
             CloseHandle(con->handles[1]);
             con->handles[1] = NULL;
         }
-        #endif
+#endif
 
         free(con);
     }
