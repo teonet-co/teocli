@@ -664,16 +664,17 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
 
-    int nfds = (int)td->fd > con->pipefd[0] ? (int)td->fd : (int)con->pipefd[0];
-
-    #if defined(_WIN32)
+#if defined(_WIN32)
     DWORD select_result =
         WaitForMultipleObjects(2, con->handles, FALSE, t / 1000);
-    #else
+#else
+    int nfds = td->fd > con->pipefd[0] ? td->fd : con->pipefd[0];
+
     struct timeval tv;
     usecToTv(&tv, t);
+
     int select_result = select(nfds + 1, &rfds, NULL, NULL, &tv);
-    #endif
+#endif
 
     // Error
     if (select_result == SELECT_RESULT_ERROR) {
