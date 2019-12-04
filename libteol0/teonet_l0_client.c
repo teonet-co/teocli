@@ -472,7 +472,7 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
  *
  * @return 1 if packet is valid or 0 otherwise.
  */
-static int teoLNullPacketCheck(void *data, size_t data_len) {
+static inline int teoLNullPacketCheck(uint8_t *data, size_t data_len) {
     if (data_len < sizeof(teoLNullCPacket)) { return 0; }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)data;
@@ -482,6 +482,21 @@ static int teoLNullPacketCheck(void *data, size_t data_len) {
     if (data_len != len) { return 0; }
 
     return teoLNullPacketChecksumCheck(packet);
+}
+
+/**
+ * Check and cast buffer to teoLNullCPacket.
+ *
+ * @param data Received data buffer
+ * @param data_len Received data buffer length
+ *
+ * @return casted pointer to teoLNullCPacket if buffer contains valid packet and NULL otherwise
+ */
+teoLNullCPacket *teoLNullPacketGetFromBuffer(uint8_t *data, size_t data_len) {
+    if (teoLNullPacketCheck(data, data_len)) {
+        return (teoLNullCPacket *)data;
+    }
+    return NULL;
 }
 
 /**
