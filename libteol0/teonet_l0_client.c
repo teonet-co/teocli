@@ -45,7 +45,6 @@
 #include "teobase/time.h"
 
 // Uncomment next line to show debug message
-//#define DEBUG_MSG
 #define DEBUG 0
 // Application constants
 #define BUFFER_SIZE 4096
@@ -1507,5 +1506,3 @@ const char *STRING_teoLNullEvents(teoLNullEvents v) {
 
     return "INVALID teoLNullEvents";
 };
-
-#undef DEBUG_MSG
