@@ -1,10 +1,24 @@
 #include "teonet_l0_client_options.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "teobase/logging.h"
 
 extern bool teocliOpt_DBG_packetFlow;
+
 bool teocliOpt_DBG_packetFlow = false;
+
 TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable) {
     teocliOpt_DBG_packetFlow = enable;
+}
+
+extern bool teocliOpt_DBG_selectLoop;
+
+bool teocliOpt_DBG_selectLoop = false;
+
+TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable) {
+    teocliOpt_DBG_selectLoop = enable;
 }
 
 extern int64_t teocliOpt_ConnectTimeoutMs;

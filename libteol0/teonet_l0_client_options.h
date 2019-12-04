@@ -20,16 +20,26 @@ extern "C" {
 
 /**
  * Enable extra debug logs about packet processing stages
- * 
+ *
  * @param enable - boolean, if true - enables dozens of debugging messages
-*/
+ */
 TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable);
 
 /**
+ * Enable extra debug logs in packet processing loop.
+ *
+ * @param enable - boolean, if true - enables dozens of debugging messages
+ * in select loop.
+ */
+TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable);
+
+/**
  * Set custom connection timeout,
- * 
- * @param timeoutMs should be non-negative integer, specifying desirable timeout value in milliseconds. Default connection timeout 5000ms. If @a timeoutMs is zero or less then timeout set to default 5000ms instead
-*/
+ *
+ * @param timeoutMs should be non-negative integer, specifying desirable timeout
+ * value in milliseconds. Default connection timeout 5000ms. If @a timeoutMs is
+ * zero or less then timeout set to default 5000ms instead.
+ */
 TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms);
 
 #ifdef __cplusplus
