@@ -6,7 +6,6 @@
 #include "teobase/logging.h"
 
 extern bool teocliOpt_DBG_packetFlow;
-
 bool teocliOpt_DBG_packetFlow = false;
 
 TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable) {
@@ -14,7 +13,6 @@ TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable) {
 }
 
 extern bool teocliOpt_DBG_selectLoop;
-
 bool teocliOpt_DBG_selectLoop = false;
 
 TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable) {
@@ -22,19 +20,17 @@ TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable) {
 }
 
 extern bool teocliOpt_DBG_sentPackets;
-
 bool teocliOpt_DBG_sentPackets = false;
 
 TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable) {
     teocliOpt_DBG_sentPackets = enable;
 }
 
-extern int64_t teocliOpt_ConnectTimeoutMs;
-
 enum {
     DEFAULT_CONNECT_TIMEOUTMS = 5000,
 };
 
+extern int64_t teocliOpt_ConnectTimeoutMs;
 int64_t teocliOpt_ConnectTimeoutMs = DEFAULT_CONNECT_TIMEOUTMS;
 
 TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms) {
