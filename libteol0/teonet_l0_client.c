@@ -54,6 +54,7 @@
 // Global teocli options
 extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
+extern bool teocliOpt_DBG_sentPackets;
 extern int64_t teocliOpt_ConnectTimeoutMs;
 
 // Internal functions
@@ -208,15 +209,19 @@ ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
-                     const char *peer_name, const void *data, size_t data_length) {
+                     const char *peer_name, const void *data,
+                     size_t data_length) {
+    CLTRACK(teocliOpt_DBG_sentPackets, "TeonetClient",
+            "Sending reliable data %u bytes.", (uint32_t)data_length);
+
     if (data == NULL) { data_length = 0; }
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
     char *buf = (char*)malloc(buf_length);
 
-    size_t pkg_length = teoLNullPacketCreate(con->client_crypt, buf, buf_length, cmd, peer_name,
-                                             data, data_length);
+    size_t pkg_length = teoLNullPacketCreate(con->client_crypt, buf, buf_length,
+                                             cmd, peer_name, data, data_length);
     ssize_t snd = _teosockSend(con, buf, pkg_length);
 
     free(buf);
@@ -227,14 +232,20 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
                                const char *peer_name, const void *data,
                                size_t data_length) {
+    CLTRACK(teocliOpt_DBG_sentPackets, "TeonetClient",
+            "Sending unreliable data %u bytes.", (uint32_t)data_length);
+
     if (data == NULL) { data_length = 0; }
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
     char *buf = (char*)malloc(buf_length);
 
-    // Unreliable packets couldn't be encrypted/decrypted due to it's unreliability - we can't correctly count them and seed encryption algo with identifier
-    size_t pkg_length = teoLNullPacketCreate(NULL, buf, buf_length, cmd, peer_name,
+    // Unreliable packets couldn't be encrypted/decrypted due to it's
+    // unreliability - we can't correctly count them and seed encryption algo
+    // with identifier
+    size_t pkg_length = teoLNullPacketCreate(NULL, buf, buf_length, cmd,
+                                             peer_name,
                                              data, data_length);
 
     ssize_t snd = 0;

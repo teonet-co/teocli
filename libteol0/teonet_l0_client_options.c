@@ -21,6 +21,14 @@ TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable) {
     teocliOpt_DBG_selectLoop = enable;
 }
 
+extern bool teocliOpt_DBG_sentPackets;
+
+bool teocliOpt_DBG_sentPackets = false;
+
+TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable) {
+    teocliOpt_DBG_sentPackets = enable;
+}
+
 extern int64_t teocliOpt_ConnectTimeoutMs;
 
 enum {
