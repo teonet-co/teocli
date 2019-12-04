@@ -19,8 +19,8 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,6 +54,7 @@
 
 // Global teocli options
 extern bool teocliOpt_DBG_packetFlow;
+extern bool teocliOpt_DBG_selectLoop;
 extern int64_t teocliOpt_ConnectTimeoutMs;
 
 // Internal functions
@@ -138,7 +139,7 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
 }
 
 static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
-                     size_t length) {
+                            size_t length) {
     if (con->tcp_f) {
         return teosockSend(con->fd, data, length);
     } else {
@@ -586,7 +587,6 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
     size_t pkg_length =
         teoLNullPacketCreateLogin(con->client_crypt, buf, buf_len, host_name);
     if (pkg_length > 0) {
-
         snd = _teosockSend(con, buf, pkg_length);
     }
 
@@ -621,11 +621,11 @@ uint8_t get_byte_checksum(void *data, size_t data_length) {
 
 /**
  * Get L0 packet payload pointer
- * 
+ *
  * @param packet Pointer to teoLNullCPacket
- * 
+ *
  * @return Pointer to payload bytes
-*/
+ */
 uint8_t *teoLNullPacketGetPayload(teoLNullCPacket *packet) {
     return (uint8_t *)(packet->peer_name) + packet->peer_name_length;
 }
@@ -649,6 +649,8 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
     trudpData *td = con->td;
 
     teosockSelectResult retval;
+
+    CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient", "Entered select loop.");
 
 #if !defined(_WIN32)
     // Watch server_socket to see when it has input.
@@ -678,7 +680,30 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
     // Error
     if (select_result == SELECT_RESULT_ERROR) {
-        LTRACK_E("TeonetClient", "select() handle error");
+#if defined(_WIN32)
+        LTRACK_E("TeonetClient", "WaitForMultipleObjects() returned error.");
+#else
+        int select_errno = errno;
+
+        if (select_errno == EINTR) {
+            CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                    "Exiting select loop by interrupt signal.");
+        } else {
+            const size_t buffer_size = 512;
+            char error_text_buffer[buffer_size];
+
+            int strerror_result =
+                strerror_r(select_errno, error_text_buffer, buffer_size);
+
+            if (strerror_result == 0) {
+                LTRACK_E("TeonetClient", "Select failed with error: %s (%d).",
+                         error_text_buffer, select_errno);
+            } else {
+                LTRACK_E("TeonetClient", "Select failed with unknown error (%d).",
+                         select_errno);
+            }
+        }
+#endif
         retval = TEOSOCK_SELECT_ERROR;
     } else if (select_result ==
                SELECT_RESULT_TIMEOUT) { // Idle or Timeout event
@@ -686,8 +711,11 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
         // \TODO: need information
         retval = TEOSOCK_SELECT_TIMEOUT;
+
+        CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                "Exiting select by timeout.");
     } else { // There is a data in fd
-// Process read fd
+             // Process read fd
 #if defined(_WIN32)
         if (select_result == WAIT_OBJECT_0) {
 #else
@@ -702,6 +730,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 
             // Process received packet
             if (recvlen > 0) {
+                CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                        "Received %u bytes from socket.", (uint32_t)recvlen);
+
                 size_t data_length;
                 trudpChannelData *tcd =
                     trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
@@ -709,6 +740,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                                                   &data_length);
             } else {
 #if defined(_WIN32)
+                CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                        "Resetting socket receive state.");
+
                 WSANETWORKEVENTS network_events;
                 memset(&network_events, 0, sizeof(network_events));
 
@@ -722,6 +756,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #else
         if (FD_ISSET(con->pipefd[0], &rfds)) {
 #endif
+            CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                    "Checking sent data on pipe.");
+
             teoPipeSendData pipe_send_data;
             memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
@@ -747,6 +784,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                                              "pipe: message read partially.");
                     abort();
                 }
+
+                CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                        "Received message from pipe.");
 
                 ssize_t ptr = 0;
                 size_t length = pipe_send_data.data_length;
@@ -774,9 +814,15 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
     }
 
     if (select_result != SELECT_RESULT_ERROR && timeout_sq != UINT32_MAX) {
-        CLTRACK(DEBUG, "TeonetClient", "process send queue ... ");
-        int rv = trudpProcessSendQueue(td, 0);
-        CLTRACK(DEBUG, "TeonetClient", "    process send queue result %d\n", rv);
+        CLTRACK(DEBUG || teocliOpt_DBG_selectLoop, "TeonetClient",
+                "Processing send queue.");
+        int process_queue_result = trudpProcessSendQueue(td, 0);
+        CLTRACK(DEBUG || teocliOpt_DBG_selectLoop, "TeonetClient",
+                "Send queue processing finished with result %d.",
+                process_queue_result);
+    } else {
+        CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                "Skipping processing send queue.");
     }
 
     return retval;
@@ -871,7 +917,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                                       teoLNullEventsCb event_cb,
                                       void *user_data,
                                       PROTOCOL connection_flag) {
-    teoLNullConnectData *con = (teoLNullConnectData*)malloc(sizeof(teoLNullConnectData));
+    teoLNullConnectData *con =
+        (teoLNullConnectData *)malloc(sizeof(teoLNullConnectData));
     if (con == NULL) {
         LTRACK_E("TeonetClient", "Failed to allocate teoLNullConnectData");
         abort();
