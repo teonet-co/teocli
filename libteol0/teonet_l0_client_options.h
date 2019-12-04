@@ -34,6 +34,14 @@ TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable);
 TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable);
 
 /**
+ * Enable extra debug logs in packet sending functions.
+ *
+ * @param enable - boolean, if true - enables dozens of debugging messages
+ * when sending packets.
+ */
+TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable);
+
+    /**
  * Set custom connection timeout,
  *
  * @param timeoutMs should be non-negative integer, specifying desirable timeout
