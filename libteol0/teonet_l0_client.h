@@ -20,6 +20,7 @@
 #define TL0CN_VERSION "0.0.17"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #if !defined(HAVE_MINGW) && defined(_WIN32)
 #else
@@ -329,7 +330,7 @@ TEOCLI_API ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char *buf,
                                      ssize_t rc);
 TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con,
                                        uint32_t timeout);
-TEOCLI_API int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
+TEOCLI_API bool teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 // Low level functions
 TEOCLI_API size_t teoLNullPacketCreateLogin(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,

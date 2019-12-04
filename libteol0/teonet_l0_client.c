@@ -846,8 +846,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
  *
  * @return 0 - if disconnected or 1 other way
  */
-int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
-    int rv, retval = 1;
+bool teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
+    bool can_continue = true;
+    int rv;
 
     if (con->tcp_f) {
         rv = teosockSelect(con->fd, TEOSOCK_SELECT_MODE_READ, timeout);
@@ -858,7 +859,7 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     if (rv == TEOSOCK_SELECT_ERROR) {
         int error = errno;
         if (error != EINTR) {
-            LTRACK("TeonetClient",
+            LTRACK_E("TeonetClient",
                    "select(fd = %" PRId32 ") handle error %" PRId32 ": %s",
                    (int)con->fd, error, strerror(error));
         }
@@ -880,32 +881,37 @@ int teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
 
                     send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
                     con->status = CON_STATUS_NOT_CONNECTED;
-                    retval = 0;
+                    can_continue = false;
                     break;
                 }
             }
         }
     }
 
-    if (!con->tcp_f && con->udp_reset_f) {
-        LTRACK_I("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
-                                 "teoLNullReadEventLoop with udp reset");
+    if (!con->tcp_f) {
+        if (con->udp_reset_f) {
+            LTRACK_I("TeonetClient", "send_l0_event EV_L_DISCONNECTED in "
+                                     "teoLNullReadEventLoop with udp reset");
 
-        send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
-        con->status = CON_STATUS_NOT_CONNECTED;
-        retval = 0;
-        con->udp_reset_f = 0;
+            send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+            con->status = CON_STATUS_NOT_CONNECTED;
+            can_continue = false;
+            con->udp_reset_f = 0;
 
-        // teoLNullDisconnect(con);  // This crashes app because we still need
-        // con after this function.
-        // We probably have to set con->tcd->conneced_f to false instead
-        con->tcd->connected_f = 0;
+            // teoLNullDisconnect(con);  // This crashes app because we still
+            // need con after this function. We probably have to set
+            // con->tcd->conneced_f to false instead
+            con->tcd->connected_f = 0;
+
+        } else {
+            if (con->status < 0) {
+                can_continue = false;
+            }
+        }
     }
-
-    if (!con->tcp_f && con->status < 0 && !con->udp_reset_f) { retval = 0; }
     send_l0_event(con, EV_L_TICK, NULL, 0);
 
-    return retval;
+    return can_continue;
 }
 
 /**
@@ -1113,7 +1119,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
         while (con->status == CON_STATUS_NOT_CONNECTED) {
-            if (teoLNullReadEventLoop(con, 100) != 0) {
+            bool can_continue = teoLNullReadEventLoop(con, 100);
+            if (!can_continue) {
                 CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
                           "connection eventloop stopped");
                 break;
