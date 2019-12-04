@@ -8,7 +8,11 @@ TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable) {
 }
 
 extern int64_t teocliOpt_ConnectTimeoutMs;
-static const int64_t DEFAULT_CONNECT_TIMEOUTMS = 5000;
+
+enum {
+    DEFAULT_CONNECT_TIMEOUTMS = 5000,
+};
+
 int64_t teocliOpt_ConnectTimeoutMs = DEFAULT_CONNECT_TIMEOUTMS;
 
 TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms) {
