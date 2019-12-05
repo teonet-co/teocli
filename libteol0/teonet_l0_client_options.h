@@ -41,7 +41,7 @@ TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable);
  */
 TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable);
 
-    /**
+/**
  * Set custom connection timeout,
  *
  * @param timeoutMs should be non-negative integer, specifying desirable timeout
@@ -49,6 +49,16 @@ TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable);
  * zero or less then timeout set to default 5000ms instead.
  */
 TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms);
+
+/**
+ * Set maximum messages that can be received in one select loop.
+ *
+ * @param maximum_messages should be positive integer, specifying desirable
+ * maximum amount of messages that can be received in one select loop
+ * iteration. Default value is 1. If @a maximum_messages is zero or less
+ * then timeout set to default 1 instead.
+ */
+TEOCLI_API void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages);
 
 #ifdef __cplusplus
 }

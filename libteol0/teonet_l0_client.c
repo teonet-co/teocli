@@ -55,6 +55,7 @@
 extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
 extern bool teocliOpt_DBG_sentPackets;
+extern int32_t teocliOpt_MaximumReceiveInSelect;
 extern int64_t teocliOpt_ConnectTimeoutMs;
 
 // Internal functions
@@ -746,34 +747,62 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #else
         if (FD_ISSET(td->fd, &rfds)) {
 #endif
+            int receive_counter = 0;
+            ssize_t recvlen;
+
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
-            ssize_t recvlen =
-                trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
-                                 (__SOCKADDR_ARG)&remaddr, &addr_len);
 
-            // Process received packet
-            if (recvlen > 0) {
-                CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
-                        "Received %u bytes from socket.", (uint32_t)recvlen);
+            do {
+                recvlen =
+                    trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
+                                     (__SOCKADDR_ARG)&remaddr, &addr_len);
 
-                size_t data_length;
-                trudpChannelData *tcd =
-                    trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
-                trudpChannelProcessReceivedPacket(tcd, buffer, recvlen,
-                                                  &data_length);
-            } else {
-#if defined(_WIN32)
-                CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
-                        "Resetting socket receive state.");
+                // Process received packet
+                if (recvlen > 0) {
+                    CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                            "Received %u bytes from socket.",
+                            (uint32_t)recvlen);
 
-                WSANETWORKEVENTS network_events;
-                memset(&network_events, 0, sizeof(network_events));
+                    size_t data_length;
+                    trudpChannelData *tcd =
+                        trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+                    trudpChannelProcessReceivedPacket(tcd, buffer, recvlen,
+                                                      &data_length);
+                } else {
+                    if (recvlen == -1) {
+                        int recv_errno = errno;
 
-                WSAEnumNetworkEvents(con->fd, con->handles[0], &network_events);
+// EWOULDBLOCK may be not defined or may have same value as EAGAIN.
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
+                        if (recv_errno != EAGAIN && recv_errno != EWOULDBLOCK) {
+#else
+                        if (recv_errno != EAGAIN) {
 #endif
-            }
+                            // TODO: Use thread safe error formatting function.
+                            LTRACK_E(
+                                "TeonetClient",
+                                "trudpUdpRecvfrom failed with error %" PRId32
+                                ": %s",
+                                recv_errno, strerror(recv_errno));
+                        }
+                    }
+#if defined(_WIN32)
+                    CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
+                            "Resetting socket receive state.");
+
+                    WSANETWORKEVENTS network_events;
+                    memset(&network_events, 0, sizeof(network_events));
+
+                    WSAEnumNetworkEvents(con->fd, con->handles[0],
+                                         &network_events);
+#endif
+                }
+
+                receive_counter++;
+            } while (receive_counter < teocliOpt_MaximumReceiveInSelect &&
+                     recvlen > 0);
         }
 // Process Pipe (thread safe write)
 #if defined(_WIN32)
