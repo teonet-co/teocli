@@ -14,38 +14,28 @@ AC_DEFINE_SUBST(LIBRARY_CURRENT,  3, [teocli dynamic library version])
 AC_DEFINE_SUBST(LIBRARY_REVISION, 0, [teocli dynamic library version])
 AC_DEFINE_SUBST(LIBRARY_AGE,      0, [teocli dynamic library version])
 
-# Checks for programs.
-AC_PROG_CXX
-AC_PROG_AWK
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([../libteol0/teonet_l0_client_crypt.c])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
+
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+AM_SILENT_RULES([yes])
+
+
 AC_PROG_CC
-AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
-AC_PROG_RANLIB
+AC_PROG_CXX
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 
-AM_INIT_AUTOMAKE
-AM_INIT_AUTOMAKE([subdir-objects])
-
-# Checks for libraries.
-# FIXME: Replace `main' with a function in `-lteocli':
-AC_CHECK_LIB([teocli], [main])
-
-
-# Checks for header files.
-
-# Checks for typedefs, structures, and compiler characteristics.
-
-# Checks for library functions.
-
-AC_CACHE_SAVE
-
+LT_PREREQ([2.4])
 LT_INIT
 
 AC_CONFIG_FILES([Makefile])
 
 # Call trudp ./configure script recursively.
-AC_CONFIG_SUBDIRS([../libtrudp])
+#AC_CONFIG_SUBDIRS([../libtrudp])
 
 AC_OUTPUT
