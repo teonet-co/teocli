@@ -1114,7 +1114,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 #endif
 
         con->status = CON_STATUS_NOT_CONNECTED;
-        // Send empty data packet to ensure server reacheable
+        // Send empty data packet to ensure server reachable
         trudpChannelSendData(con->tcd, NULL, 0);
 
         int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
@@ -1122,14 +1122,14 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             bool can_continue = teoLNullReadEventLoop(con, 100);
             if (!can_continue) {
                 CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                          "connection eventloop stopped");
+                          "connection event loop stopped");
                 break;
             }
             const int64_t connection_time_ms = teotimeGetTimePassedMs(connect_start_time_ms);
             if (connection_time_ms > teocliOpt_ConnectTimeoutMs) {
 
                 CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                          "UDP connection timeouted");
+                          "UDP connection timed out");
                 con->status = CON_STATUS_CONNECTION_ERROR;
                 teosockClose(con->fd);
                 con->fd = -1;
@@ -1141,7 +1141,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
         if (con->status != CON_STATUS_CONNECTED) {
             CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                      "Connection cancelled by status %s (%d)",
+                      "Connection canceled by status %s (%d)",
                       STRING_teoLNullConnectionStatus(con->status),
                       (int)con->status);
             teosockClose(con->fd);
