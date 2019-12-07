@@ -758,6 +758,11 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 recvlen =
                     trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
                                      (__SOCKADDR_ARG)&remaddr, &addr_len);
+#if defined(_WIN32)
+                int recv_errno = WSAGetLastError();
+#else
+                int recv_errno = errno;
+#endif
 
                 // Process received packet
                 if (recvlen > 0) {
@@ -772,10 +777,10 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                                                       &data_length);
                 } else {
                     if (recvlen == -1) {
-                        int recv_errno = errno;
-
+#if defined(_WIN32)
+                        if (recv_errno != WSAEWOULDBLOCK) {
 // EWOULDBLOCK may be not defined or may have same value as EAGAIN.
-#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
+#elif defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
                         if (recv_errno != EAGAIN && recv_errno != EWOULDBLOCK) {
 #else
                         if (recv_errno != EAGAIN) {
