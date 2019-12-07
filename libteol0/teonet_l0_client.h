@@ -291,7 +291,7 @@ extern "C" {
  * @param peer_length
  * @param data_length
  */
-inline size_t teoLNullBufferSize(size_t peer_length, size_t data_length) {
+static inline size_t teoLNullBufferSize(size_t peer_length, size_t data_length) {
   return sizeof(teoLNullCPacket) + peer_length + data_length;
 }
 
