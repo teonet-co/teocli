@@ -54,8 +54,8 @@ typedef struct teoLNullCPacket teoLNullCPacket;
 typedef struct KeyExchangePayload_Common {
     //! in ANY key exchange struct first byte must be zero
     uint8_t nul_byte;
-    //! encryption protocol id
-    teoLNullEncryptionProtocol protocolId : 16;
+    //! encryption protocol id, teoLNullEncryptionProtocol enum
+    uint16_t protocolId : 16;
 } KeyExchangePayload_Common;
 #pragma pack(pop)
 
