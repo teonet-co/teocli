@@ -37,7 +37,6 @@ size_t teoLNullKEXCreate(teoLNullEncryptionContext *ctx, uint8_t *buffer,
         if (payload_len != buffer_length) {
             LTRACK_E("TeonetClient", "Buffer size mismatch in KEXCreate");
             abort();
-            return 0;
         }
 
         KeyExchangePayload_ECDH_AES_128_V1 *kex =
@@ -124,7 +123,6 @@ size_t teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
             LTRACK_E("TeonetClient",
                      "Buffer size mismatch in EncryptioContextCreate");
             abort();
-            return 0;
         }
 
         teoLNullEncryptionContext *ctx = (teoLNullEncryptionContext *)buffer;
