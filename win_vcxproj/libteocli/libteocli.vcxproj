@@ -21,19 +21,68 @@
   <ItemGroup>
     <ClInclude Include="..\..\libteol0\teocli.hpp" />
     <ClInclude Include="..\..\libteol0\teonet_l0_client.h" />
-    <ClInclude Include="..\..\libteol0\teonet_platform.h" />
-    <ClInclude Include="..\..\libteol0\teonet_socket.h" />
-    <ClInclude Include="..\..\libteol0\teonet_time.h" />
+    <ClInclude Include="..\..\libteol0\teonet_l0_client_crypt.h" />
+    <ClInclude Include="..\..\libteol0\teonet_l0_client_options.h" />
+    <ClInclude Include="..\..\libtinycrypt\tiny-AES-c\aes.h" />
+    <ClInclude Include="..\..\libtinycrypt\tiny-ECDH-c\ecdh.h" />
+    <ClInclude Include="..\..\libtinycrypt\tinycrypt.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\logging.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\platform.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\socket.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\time.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\windows.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\array_list.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\hash.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\map.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\memory.h" />
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\queue.h" />
+    <ClInclude Include="..\..\libtrudp\src\packet.h" />
+    <ClInclude Include="..\..\libtrudp\src\packet_queue.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_api.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_channel.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_const.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_options.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_receive_queue.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_send_queue.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_stat.h" />
+    <ClInclude Include="..\..\libtrudp\src\trudp_utils.h" />
+    <ClInclude Include="..\..\libtrudp\src\udp.h" />
+    <ClInclude Include="..\..\libtrudp\src\utils.h" />
+    <ClInclude Include="..\..\libtrudp\src\utils_r.h" />
+    <ClInclude Include="..\..\libtrudp\src\write_queue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libteol0\teonet_l0_client.c" />
-    <ClCompile Include="..\..\libteol0\teonet_socket.c" />
-    <ClCompile Include="..\..\libteol0\teonet_time.c" />
+    <ClCompile Include="..\..\libteol0\teonet_l0_client_crypt.c" />
+    <ClCompile Include="..\..\libteol0\teonet_l0_client_options.c" />
+    <ClCompile Include="..\..\libtinycrypt\tiny-AES-c\aes.c" />
+    <ClCompile Include="..\..\libtinycrypt\tiny-ECDH-c\ecdh.c" />
+    <ClCompile Include="..\..\libtinycrypt\tinycrypt.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\logging.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\socket.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\time.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\array_list.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\hash.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\map.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\memory.c" />
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\queue.c" />
+    <ClCompile Include="..\..\libtrudp\src\packet.c" />
+    <ClCompile Include="..\..\libtrudp\src\packet_queue.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_channel.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_options.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_receive_queue.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_send_queue.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_stat.c" />
+    <ClCompile Include="..\..\libtrudp\src\trudp_utils.c" />
+    <ClCompile Include="..\..\libtrudp\src\udp.c" />
+    <ClCompile Include="..\..\libtrudp\src\write_queue.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A13FB07-1FC3-4DFF-A546-711B0780D65A}</ProjectGuid>
     <RootNamespace>libteocli</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -87,6 +136,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <UndefinePreprocessorDefinitions>TEOCLI_EXPORTS</UndefinePreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,6 +152,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <UndefinePreprocessorDefinitions>TEOCLI_EXPORTS</UndefinePreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -118,6 +169,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -135,6 +187,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

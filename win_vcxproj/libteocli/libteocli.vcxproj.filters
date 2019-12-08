@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\array_list.c">
+      <Filter>teoccl\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\hash.c">
+      <Filter>teoccl\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\map.c">
+      <Filter>teoccl\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\memory.c">
+      <Filter>teoccl\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teoccl\src\teoccl\queue.c">
+      <Filter>teoccl\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\logging.c">
+      <Filter>teobase\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\socket.c">
+      <Filter>teobase\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\libs\teobase\src\teobase\time.c">
+      <Filter>teobase\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\packet.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\packet_queue.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_channel.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_options.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_receive_queue.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_send_queue.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_stat.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\trudp_utils.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\udp.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtrudp\src\write_queue.c">
+      <Filter>trudp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libteol0\teonet_l0_client.c">
+      <Filter>teocli</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libteol0\teonet_l0_client_crypt.c">
+      <Filter>teocli</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libteol0\teonet_l0_client_options.c">
+      <Filter>teocli</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtinycrypt\tinycrypt.c">
+      <Filter>tinycrypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtinycrypt\tiny-AES-c\aes.c">
+      <Filter>tinycrypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libtinycrypt\tiny-ECDH-c\ecdh.c">
+      <Filter>tinycrypt</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\array_list.h">
+      <Filter>teoccl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\hash.h">
+      <Filter>teoccl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\map.h">
+      <Filter>teoccl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\memory.h">
+      <Filter>teoccl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teoccl\include\teoccl\queue.h">
+      <Filter>teoccl\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\logging.h">
+      <Filter>teobase\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\platform.h">
+      <Filter>teobase\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\socket.h">
+      <Filter>teobase\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\time.h">
+      <Filter>teobase\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\libs\teobase\include\teobase\windows.h">
+      <Filter>teobase\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\packet.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\packet_queue.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_api.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_channel.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_const.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_options.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_receive_queue.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_send_queue.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_stat.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\trudp_utils.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\udp.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\utils.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\utils_r.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtrudp\src\write_queue.h">
+      <Filter>trudp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libteol0\teocli.hpp">
+      <Filter>teocli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libteol0\teonet_l0_client.h">
+      <Filter>teocli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libteol0\teonet_l0_client_crypt.h">
+      <Filter>teocli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libteol0\teonet_l0_client_options.h">
+      <Filter>teocli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtinycrypt\tinycrypt.h">
+      <Filter>tinycrypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtinycrypt\tiny-AES-c\aes.h">
+      <Filter>tinycrypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libtinycrypt\tiny-ECDH-c\ecdh.h">
+      <Filter>tinycrypt</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="teobase">
+      <UniqueIdentifier>{cca7f3d6-2650-4ead-826f-9180ea3a3bdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teoccl">
+      <UniqueIdentifier>{643cab4c-bdee-4f1b-83f2-3d7d4c4a3854}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teocli">
+      <UniqueIdentifier>{5a579c73-26d2-40c4-b651-d93909d27270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="trudp">
+      <UniqueIdentifier>{21286c39-1b69-4e2a-9f82-94c67a5eb0b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teobase\include">
+      <UniqueIdentifier>{4efa3468-9c95-4719-8cbe-b62442089f24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teobase\src">
+      <UniqueIdentifier>{4527a4b4-c4d3-4240-8258-d63fa3d3e4af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teoccl\include">
+      <UniqueIdentifier>{efdbecd4-2ef4-4c84-9a3f-f34a5cf77bd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="teoccl\src">
+      <UniqueIdentifier>{36185fa2-a072-4bd7-9965-debe49f4d7cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tinycrypt">
+      <UniqueIdentifier>{632cec4a-a3bd-4c6f-ac69-d90bd331fe92}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{19BB0383-69A3-4E92-B515-2F85DCB81970}</ProjectGuid>
     <RootNamespace>teocli</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,6 +72,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,6 +85,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -98,6 +100,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -114,6 +117,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\libtrudp\libs\teobase\include;$(SolutionDir)..\libtrudp\libs\teobase\src;$(SolutionDir)..\libtrudp\libs\teoccl\include;$(SolutionDir)..\libtrudp\libs\teoccl\src;$(SolutionDir)..\libtrudp\src;$(SolutionDir)..\libteol0;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
