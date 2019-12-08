@@ -56,7 +56,7 @@ TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms);
  * @param maximum_messages should be positive integer, specifying desirable
  * maximum amount of messages that can be received in one select loop
  * iteration. Default value is 1. If @a maximum_messages is zero or less
- * then timeout set to default 1 instead.
+ * then amount set to default 1 instead.
  */
 TEOCLI_API void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages);
 

@@ -747,23 +747,17 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #else
         if (FD_ISSET(td->fd, &rfds)) {
 #endif
-            int receive_counter = 0;
-            ssize_t recvlen;
 
             char buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
 
-            do {
-                recvlen =
+            for (int receive_counter = 0;
+                 receive_counter < teocliOpt_MaximumReceiveInSelect;
+                 ++receive_counter) {
+                ssize_t recvlen =
                     trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
                                      (__SOCKADDR_ARG)&remaddr, &addr_len);
-#if defined(_WIN32)
-                int recv_errno = WSAGetLastError();
-#else
-                int recv_errno = errno;
-#endif
-
                 // Process received packet
                 if (recvlen > 0) {
                     CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
@@ -778,14 +772,19 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 } else {
                     if (recvlen == -1) {
 #if defined(_WIN32)
+                        int recv_errno = WSAGetLastError();
                         if (recv_errno != WSAEWOULDBLOCK) {
+#else
+                        int recv_errno = errno;
 // EWOULDBLOCK may be not defined or may have same value as EAGAIN.
-#elif defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
                         if (recv_errno != EAGAIN && recv_errno != EWOULDBLOCK) {
 #else
                         if (recv_errno != EAGAIN) {
 #endif
+#endif
                             // TODO: Use thread safe error formatting function.
+                            // TODO: On Windows use correct error formatting function.
                             LTRACK_E(
                                 "TeonetClient",
                                 "trudpUdpRecvfrom failed with error %" PRId32
@@ -803,11 +802,10 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                     WSAEnumNetworkEvents(con->fd, con->handles[0],
                                          &network_events);
 #endif
+                    // No more messages to receive. Leaving receive loop.
+                    break;
                 }
-
-                receive_counter++;
-            } while (receive_counter < teocliOpt_MaximumReceiveInSelect &&
-                     recvlen > 0);
+            }
         }
 // Process Pipe (thread safe write)
 #if defined(_WIN32)
