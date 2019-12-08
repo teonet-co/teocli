@@ -45,6 +45,8 @@ node_modules/
 /linux/install-sh
 /linux/config.status
 /linux/config.sub
+/linux/config.h
+/linux/stamp-h1
 /linux/aclocal.m4
 /linux/configure
 /linux/depcomp
