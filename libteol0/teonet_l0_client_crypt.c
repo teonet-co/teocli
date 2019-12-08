@@ -4,6 +4,41 @@
 
 extern int teocliOpt_DBG_packetFlow;
 
+size_t teoLNullEncryptionContextSize(teoLNullEncryptionProtocol enc_proto) {
+    switch (enc_proto) {
+    case ENC_PROTO_ECDH_AES_128_V1: {
+        return sizeof(teoLNullEncryptionContext);
+    }
+
+    default: {
+        return 0;
+    }
+    }
+}
+
+size_t teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
+                                       uint8_t *buffer, size_t buffer_length) {
+    switch (enc_proto) {
+    case ENC_PROTO_ECDH_AES_128_V1: {
+        if (buffer_length != sizeof(teoLNullEncryptionContext)) {
+            return 0;
+        }
+
+        teoLNullEncryptionContext *ctx = (teoLNullEncryptionContext *)buffer;
+        ctx->enc_proto = enc_proto;
+        ctx->receiveNonce = 1;
+        ctx->sendNonce = 1;
+        initPeerKeys(&ctx->keys);
+
+        return sizeof(teoLNullEncryptionContext);
+    }
+
+    default: {
+        return 0;
+    }
+    }
+}
+
 void teoLNullPacketEncrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *packet) {
     if (!ctx) {
         CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
@@ -49,24 +84,30 @@ void teoLNullPacketEncrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *pack
     }
 }
 
-void teoLNullPacketDecrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *packet) {
+bool teoLNullPacketIsEncrypted(teoLNullCPacket *packet) {
+    const bool encrypted = (packet->reserved_1 & 0x80) == 0x80;
+    return encrypted;
+}
+
+bool teoLNullPacketDecrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *packet) {
+    // HINT: check is_encrypted flag first
+    const bool encrypted = (packet->reserved_1 & 0x80) == 0x80;
+    if (!encrypted) {
+        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient", "Skip - NOT_ENCRYPTED\n");
+        // unencrypted packets always return success
+        return true;
+    }
+
     if (!ctx) {
-        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient", "Skip - NO CTX");
-        return;
+        CLTRACK_E(teocliOpt_DBG_packetFlow, "TeonetClient", "Skip - NO CTX");
+        return false;
     }
 
     if (ctx->state != SESCRYPT_ESTABLISHED) {
-        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+        CLTRACK_E(teocliOpt_DBG_packetFlow, "TeonetClient",
                 "Skip - CTX_STATE %s (%d)\n",
                 STRING_teoLNullEncryptionProtocol(ctx->state), (int)ctx->state);
-        return;
-    }
-
-    // HINT: check is_encrypted flag
-    if ((packet->reserved_1 & 0x80) == 0x80) {
-        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
-                "Skip - NOT_ENCRYPTED\n");
-        return;
+        return false;
     }
 
     // encrypted packet
@@ -91,16 +132,21 @@ void teoLNullPacketDecrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *pack
 
     case ENC_PROTO_DISABLED: {
         // encryption disabled
-        LTRACK("TeonetClient", "Skip - ENC_PROTO_DISABLED");
+        CLTRACK_E(teocliOpt_DBG_packetFlow, "TeonetClient",
+                  "Skip - ENC_PROTO_DISABLED");
+        return false;
     } break;
 
     default: {
         // Invalid/unknown encryption
-        LTRACK("TeonetClient", "Unexpected teoLNullEncryptionProtocol = (%d)\n",
-               ctx->enc_proto);
+        CLTRACK_E(teocliOpt_DBG_packetFlow, "TeonetClient",
+                  "Unexpected teoLNullEncryptionProtocol = (%d)\n",
+                  ctx->enc_proto);
         abort();
     } break;
     }
+
+    return true;
 }
 
 const char *STRING_teoLNullEncryptionProtocol(teoLNullEncryptionProtocol v) {
