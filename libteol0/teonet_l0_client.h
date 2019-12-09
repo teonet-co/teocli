@@ -39,6 +39,7 @@ extern int usleep(__useconds_t __useconds);
  */
 enum CMD_L {
 
+    CMD_L_INIT = 0,               ///< #0 Special command, key exchange or login
     CMD_L_ECHO = 65,              ///< #65 Echo command
     CMD_L_ECHO_ANSWER,            ///< #66 Answer to echo command
     CMD_L_PEERS = 72,             ///< #72 Get peers command
@@ -84,7 +85,8 @@ typedef enum teoLNullConnectionStatus {
     CON_STATUS_SOCKET_ERROR = -1,
     CON_STATUS_HOST_ERROR = -2,
     CON_STATUS_CONNECTION_ERROR = -3,
-    CON_STATUS_PIPE_ERROR = -4
+    CON_STATUS_PIPE_ERROR = -4,
+    CON_STATUS_ENCRYPTION_ERROR = -5,
 
 } teoLNullConnectionStatus;
 

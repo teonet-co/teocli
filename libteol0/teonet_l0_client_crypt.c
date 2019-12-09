@@ -129,6 +129,7 @@ size_t teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
         ctx->enc_proto = enc_proto;
         ctx->receiveNonce = 1;
         ctx->sendNonce = 1;
+        ctx->state = SESCRYPT_PENDING;
         initPeerKeys(&ctx->keys);
 
         return sizeof(teoLNullEncryptionContext);

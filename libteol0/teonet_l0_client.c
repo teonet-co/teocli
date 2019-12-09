@@ -57,12 +57,16 @@ extern bool teocliOpt_DBG_selectLoop;
 extern bool teocliOpt_DBG_sentPackets;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
 extern int64_t teocliOpt_ConnectTimeoutMs;
+extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
 
 // Internal functions
 static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void *data,
                                    size_t data_len, ssize_t received);
 static void trudpEventCback(void *tcd_pointer, int event, void *data,
                             size_t data_length, void *user_data);
+static teoLNullConnectData *
+_teoLNullConnectionInitiate(teoLNullConnectData *con,
+                            teoLNullEncryptionProtocol enc_proto);
 
 #if defined(HAVE_MINGW) || defined(_WIN32)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds) { Sleep(dwMilliseconds); }
@@ -358,6 +362,69 @@ static int teoLNullPacketChecksumCheck(teoLNullCPacket *packet) {
     return 1;
 }
 
+static inline bool _applyKEXAnswer(teoLNullConnectData *con,
+                                   KeyExchangePayload_Common *kex,
+                                   size_t kex_length) {
+    const bool was_connected = (con->status == CON_STATUS_CONNECTED);
+    if (!con->client_crypt &&
+        con->client_crypt->enc_proto == ENC_PROTO_DISABLED) {
+        LTRACK_E("TeonetClient", "Unexpected KEX answer");
+        return false;
+    }
+
+    // check if can be applied
+    if (!teoLNullKEXValidate(con->client_crypt, kex, kex_length)) {
+        LTRACK_E("TeonetClient",
+                 "Invalid KEX, failed validation; disconnecting");
+        return false;
+    }
+
+    // check if applied successfully
+    if (!teoLNullEncryptionContextApplyKEX(con->client_crypt, kex,
+                                           kex_length)) {
+        LTRACK_E("TeonetClient", "Invalid KEX, can't apply; disconnecting");
+        return false;
+    }
+
+    if (was_connected) {
+        LTRACK("TeonetClient", "Re-confirmed KEX answer");
+    } else {
+        LTRACK_I("TeonetClient", "Applied KEX answer");
+    }
+    return true;
+}
+
+/**
+ * Checks and applies key exchange packet from server
+ * Disconnects in case of errors
+ *
+ * @return on success returns true, otherwise disconnects and returns false
+ */
+static inline bool _teoLNullProccessKEXAnswer(teoLNullConnectData *con,
+                                              KeyExchangePayload_Common *kex, size_t kex_length) {
+    // const bool was_established = con->client_crypt->state ==
+    // SESCRYPT_ESTABLISHED;
+    const bool was_connected = (con->status == CON_STATUS_CONNECTED);
+    if (_applyKEXAnswer(con, kex, kex_length)) {
+        if (!was_connected) {
+            con->status = CON_STATUS_CONNECTED;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+        }
+        return true;
+    }
+
+    con->status = CON_STATUS_ENCRYPTION_ERROR;
+
+    if (was_connected) {
+        send_l0_event(con, EV_L_DISCONNECTED, NULL, 0);
+    } else {
+        send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
+    }
+
+    return false;
+}
+
 /**
  * Split or Combine input buffer
  *
@@ -535,18 +602,30 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
  */
 ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char *buf, ssize_t rc) {
     rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
-
-    if (rc > 0 && con->fd) {
-        teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
-        if (cp->cmd == CMD_L_ECHO) {
-            // Send echo answer to echo command
-            char *data = cp->peer_name + cp->peer_name_length;
-            teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data,
-                         cp->data_length);
-        }
+    if (rc <= 0) {
+        return rc;  // No packet to check
     }
 
-    return rc;
+    teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
+    if (cp->cmd == CMD_L_INIT) {
+        KeyExchangePayload_Common *kex =
+            (KeyExchangePayload_Common *)teoLNullPacketGetPayload(cp);
+        size_t kex_length = cp->data_length;
+        if (_teoLNullProccessKEXAnswer(con, kex, kex_length)) {
+            return -2; // Skip current packet
+        }
+        return -2; // Skip current packet
+        // return 0; // Disconnect
+    }
+
+    if (cp->cmd == CMD_L_ECHO && con->fd) {
+        // Send echo answer to echo command
+        char *data = cp->peer_name + cp->peer_name_length;
+        teoLNullSend(con, CMD_L_ECHO_ANSWER, cp->peer_name, data,
+                        cp->data_length);
+        return -1; // break current iteration
+    }
+    return rc;  // Pass as-is
 }
 
 /**
@@ -961,6 +1040,174 @@ bool teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
     return can_continue;
 }
 
+static inline bool
+_setupEncryptionContext(teoLNullConnectData *con,
+                        teoLNullEncryptionProtocol enc_proto) {
+    if (enc_proto == ENC_PROTO_DISABLED) {
+        // TODO: Check if allowed
+        return true;
+    }
+
+    size_t crypt_size = teoLNullEncryptionContextSize(enc_proto);
+    if (crypt_size == 0) { return false; }
+
+    con->client_crypt = (teoLNullEncryptionContext *)malloc(crypt_size);
+    size_t result = teoLNullEncryptionContextCreate(
+        enc_proto, (uint8_t *)con->client_crypt, crypt_size);
+    if (result == 0) { return false; }
+
+    return true;
+}
+
+static inline uint8_t *_createKEXPayload(teoLNullConnectData *con,
+                                         teoLNullEncryptionProtocol enc_proto,
+                                         size_t *payload_len) {
+    size_t kex_len = teoLNullKEXBufferSize(enc_proto);
+    if (kex_len == 0) {
+        //
+        return NULL;
+    }
+
+    uint8_t *kex_buf = (uint8_t *)malloc(kex_len);
+    size_t result = teoLNullKEXCreate(con->client_crypt, kex_buf, kex_len);
+    if (result == 0) {
+        free(kex_buf);
+        return NULL;
+    }
+
+    (*payload_len) = result;
+    return kex_buf;
+}
+
+/**
+ * Performs connection handshake if required
+ * TCP connection without encryption considered established instantly
+ * For TRUDP connection without encryption - sends dummy empty packet and awaits
+ * for ACK or DATA in response.
+ * If connecion uses encryption - sends key exchange packet to server and awaits
+ * for remote keys in answer, both - for TCP and UDP
+ *
+ * @return resulting connection
+ */
+static inline teoLNullConnectData *
+_teoLNullConnectionInitiate(teoLNullConnectData *con,
+                            teoLNullEncryptionProtocol enc_proto) {
+    if (enc_proto == ENC_PROTO_DISABLED) {
+        if (con->tcp_f) {
+            // Plain old TCP connection ready to use
+            LTRACK_I("TeonetClient", "Connection established ...");
+            con->status = CON_STATUS_CONNECTED;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+            return con;
+
+        } else {
+            CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                      "Sent dummy initial TRUDP packet ...");
+            // Send empty data packet to ensure server reachable
+            trudpChannelSendData(con->tcd, NULL, 0);
+        }
+
+    } else {
+        // Create compatible with enc_proto encryption context
+        if (!_setupEncryptionContext(con, enc_proto)) {
+            const char *proto_name =
+                STRING_teoLNullEncryptionProtocol(enc_proto);
+            LTRACK_E("TeonetClient",
+                     "Can't create encryption context for %s (%d)", proto_name,
+                     (int)enc_proto);
+
+            con->status = CON_STATUS_ENCRYPTION_ERROR;
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+            return con;
+        }
+
+        // Prepare and send key exchange packet to establish encryption
+
+        // Create key exchange payload
+        size_t kex_len = 0;
+        uint8_t *kex_buf = _createKEXPayload(con, enc_proto, &kex_len);
+        if (kex_buf == NULL) {
+            const char *proto_name =
+                STRING_teoLNullEncryptionProtocol(enc_proto);
+            LTRACK_E("TeonetClient", "Cant create KEX payload for %s (%d)",
+                     proto_name, (int)enc_proto);
+
+            con->status = CON_STATUS_ENCRYPTION_ERROR;
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+            return con;
+        }
+
+        // Wrap it via teoLNullCPacket
+        const size_t packet_buf_len = teoLNullBufferSize(1, kex_len);
+        char *packet = malloc(packet_buf_len);
+
+        const size_t packet_len =
+            teoLNullPacketCreate(con->client_crypt, packet, packet_buf_len,
+                                 CMD_L_INIT, "", kex_buf, kex_len);
+
+        // Send packet
+        ssize_t send_result = _teosockSend(con, packet, packet_len);
+
+        free(packet);
+        free(kex_buf);
+
+        if (send_result <= 0) {
+            LTRACK_E("TeonetClient", "Failed to send KEX, with result %d",
+                     (int)send_result);
+
+            con->status = CON_STATUS_ENCRYPTION_ERROR;
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+            return con;
+        }
+    }
+
+    int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
+    while (con->status == CON_STATUS_NOT_CONNECTED) {
+        bool can_continue = teoLNullReadEventLoop(con, 100);
+        if (!can_continue) {
+            CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                      "connection event loop stopped");
+            break;
+        }
+        const int64_t connection_time_ms =
+            teotimeGetTimePassedMs(connect_start_time_ms);
+        if (connection_time_ms > teocliOpt_ConnectTimeoutMs) {
+
+            CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                      "connection timed out");
+            con->status = CON_STATUS_CONNECTION_ERROR;
+            teosockClose(con->fd);
+            con->fd = -1;
+            send_l0_event(con, EV_L_CONNECTED, &con->status,
+                          sizeof(con->status));
+            return con;
+        }
+    }
+
+    if (con->status != CON_STATUS_CONNECTED) {
+        CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
+                  "Connection canceled by status %s (%d)",
+                  STRING_teoLNullConnectionStatus(con->status),
+                  (int)con->status);
+        teosockClose(con->fd);
+        con->fd = -1;
+        return con;
+    }
+
+    // Success !!!
+    return con;
+}
+
 /**
  * Create TCP client and connect to server with event callback
  *
@@ -1051,15 +1298,11 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
             return con;
         }
 
-        LTRACK_I("TeonetClient", "Connection established ...");
-
-        con->status = CON_STATUS_CONNECTED;
         // Set TCP_NODELAY option
         teosockSetTcpNodelay(con->fd);
-        send_l0_event(con, EV_L_CONNECTED, &con->status, sizeof(con->status));
-        return con;
 
-    } else { // Connect to UDP
+    } else {
+        // Connect to UDP
         int port_local = 0;
         con->fd = trudpUdpBindRaw(&port_local, 1);
         if (con->fd < 0) {
@@ -1161,43 +1404,9 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 #endif
 
         con->status = CON_STATUS_NOT_CONNECTED;
-        // Send empty data packet to ensure server reachable
-        trudpChannelSendData(con->tcd, NULL, 0);
-
-        int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
-        while (con->status == CON_STATUS_NOT_CONNECTED) {
-            bool can_continue = teoLNullReadEventLoop(con, 100);
-            if (!can_continue) {
-                CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                          "connection event loop stopped");
-                break;
-            }
-            const int64_t connection_time_ms = teotimeGetTimePassedMs(connect_start_time_ms);
-            if (connection_time_ms > teocliOpt_ConnectTimeoutMs) {
-
-                CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                          "UDP connection timed out");
-                con->status = CON_STATUS_CONNECTION_ERROR;
-                teosockClose(con->fd);
-                con->fd = -1;
-                send_l0_event(con, EV_L_CONNECTED, &con->status,
-                              sizeof(con->status));
-                return con;
-            }
-        }
-
-        if (con->status != CON_STATUS_CONNECTED) {
-            CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
-                      "Connection canceled by status %s (%d)",
-                      STRING_teoLNullConnectionStatus(con->status),
-                      (int)con->status);
-            teosockClose(con->fd);
-            con->fd = -1;
-            return con;
-        }
     }
 
-    return con;
+    return _teoLNullConnectionInitiate(con, teocliOpt_EncryptionProtocol);
 }
 
 /**
@@ -1305,10 +1514,14 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param user_data NULL
     case CONNECTED: {
         CLTRACK(DEBUG, "TeonetClient", "Connect channel %s\n", tcd->channel_key);
-        if (!tcd->connected_f) {
-            // tcd->connected_f = 1; // would be set in trudpGetChannelCreate
-            // anyway
-            teoLNullConnectData *con = (teoLNullConnectData*)user_data;
+        // tcd->connected_f = 1; would be set in trudpGetChannelCreate anyway
+        teoLNullConnectData *con = (teoLNullConnectData *)user_data;
+        if (con->client_crypt &&
+            con->client_crypt->enc_proto != ENC_PROTO_DISABLED) {
+            // Must wait for KEX answer
+            // event would be sent in KEX handler
+
+        } else if (!tcd->connected_f) {
             con->status = CON_STATUS_CONNECTED;
             log_info("TeonetClient",
                      "send_l0_event EV_L_CONNECTED in trudpEventCback on "
@@ -1425,11 +1638,16 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param data_length Length of data
     // @param user_data NULL
     case GOT_ACK: {
-        teoLNullConnectData *con = (teoLNullConnectData*)user_data;
+        teoLNullConnectData *con = (teoLNullConnectData *)user_data;
         trudpPacket * packet = (trudpPacket *)data;
         uint32_t id = trudpPacketGetId(packet);
 
-        if (id == 0 && !tcd->connected_f) {
+        if (con->client_crypt &&
+            con->client_crypt->enc_proto != ENC_PROTO_DISABLED) {
+            // Must wait for KEX answer
+            // event would be sent in KEX handler
+
+        } else if (id == 0 && !tcd->connected_f) {
             trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
             con->status = CON_STATUS_CONNECTED;
             send_l0_event(con, EV_L_CONNECTED, &con->status,
@@ -1553,6 +1771,7 @@ const char *STRING_teoLNullConnectionStatus(teoLNullConnectionStatus v) {
     case CON_STATUS_HOST_ERROR: return "CON_STATUS_HOST_ERROR";
     case CON_STATUS_CONNECTION_ERROR: return "CON_STATUS_CONNECTION_ERROR";
     case CON_STATUS_PIPE_ERROR: return "CON_STATUS_PIPE_ERROR";
+    case CON_STATUS_ENCRYPTION_ERROR: return "CON_STATUS_ENCRYPTION_ERROR";
     default: break;
     }
 

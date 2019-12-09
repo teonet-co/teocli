@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "teobase/logging.h"
+#include "teonet_l0_client_crypt.h"
 
 extern bool teocliOpt_DBG_packetFlow;
 bool teocliOpt_DBG_packetFlow = false;
@@ -38,6 +39,22 @@ void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages) {
 
     LTRACK("TeonetClient", "Set MaximumReceiveInSelect=%d ms",
            teocliOpt_MaximumReceiveInSelect);
+}
+
+extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
+teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol = ENC_PROTO_ECDH_AES_128_V1;
+
+TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol) {
+    switch (protocol) {
+    case ENC_PROTO_DISABLED: // fallthrough
+    case ENC_PROTO_ECDH_AES_128_V1:
+        teocliOpt_EncryptionProtocol = (teoLNullEncryptionProtocol)protocol;
+        break;
+
+    default:
+        teocliOpt_EncryptionProtocol = (teoLNullEncryptionProtocol)protocol;
+        break;
+    }
 }
 
 enum {
