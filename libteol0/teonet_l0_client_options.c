@@ -44,7 +44,7 @@ void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages) {
 extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
 teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol = ENC_PROTO_ECDH_AES_128_V1;
 
-TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol) {
+void teoLNUllSetOption_EncryptionProtocol(int protocol) {
     switch (protocol) {
     case ENC_PROTO_DISABLED: // fallthrough
     case ENC_PROTO_ECDH_AES_128_V1:
@@ -52,7 +52,8 @@ TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol) {
         break;
 
     default:
-        teocliOpt_EncryptionProtocol = (teoLNullEncryptionProtocol)protocol;
+        teocliOpt_EncryptionProtocol =
+            (teoLNullEncryptionProtocol)ENC_PROTO_ECDH_AES_128_V1;
         break;
     }
 }
