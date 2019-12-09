@@ -60,6 +60,15 @@ TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms);
  */
 TEOCLI_API void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages);
 
+/**
+ * Set encryption protocol used by connections
+ * by default used ENC_PROTO_ECDH_AES_128_V1
+ * to disable application should explicitly set it to ENC_PROTO_DISABLED
+ * 
+ * @param protocol one of teoLNullEncryptionProtocol values
+*/
+TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol);
+
 #ifdef __cplusplus
 }
 #endif
