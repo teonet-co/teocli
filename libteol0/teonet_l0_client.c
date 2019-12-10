@@ -44,6 +44,8 @@
 #include "teobase/socket.h"
 #include "teobase/time.h"
 
+#include "teoccl/memory.h"
+
 // Uncomment next line to show debug message
 #define DEBUG 0
 // Application constants
@@ -136,7 +138,7 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
     teoLNullPacketEncrypt(ctx, pkg);
 
     pkg->checksum = get_byte_checksum(pkg->peer_name,
-                                      pkg->peer_name_length + pkg->data_length);
+                                      (size_t)pkg->peer_name_length + pkg->data_length);
     pkg->header_checksum = get_byte_checksum(
         pkg, sizeof(teoLNullCPacket) - sizeof(pkg->header_checksum));
 
@@ -152,7 +154,7 @@ static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
         pipe_send_data.data_length = length;
-        pipe_send_data.data = (char*)malloc(length);
+        pipe_send_data.data = (char*)ccl_malloc(length);
 
         memcpy(pipe_send_data.data, data, length);
 
@@ -223,7 +225,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = (char*)malloc(buf_length);
+    char *buf = (char*)ccl_malloc(buf_length);
 
     size_t pkg_length = teoLNullPacketCreate(con->client_crypt, buf, buf_length,
                                              cmd, peer_name, data, data_length);
@@ -244,7 +246,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = (char*)malloc(buf_length);
+    char *buf = (char*)ccl_malloc(buf_length);
 
     // Unreliable packets couldn't be encrypted/decrypted due to it's
     // unreliability - we can't correctly count them and seed encryption algo
@@ -282,7 +284,7 @@ size_t teoLNullPacketCreateEcho(teoLNullEncryptionContext* ctx, void *buf, size_
 
     const size_t msg_len = strlen(msg) + 1;
     const size_t msg_buf_len = msg_len + time_length;
-    void *msg_buf = malloc(msg_buf_len);
+    void *msg_buf = ccl_malloc(msg_buf_len);
 
     // Fill message buffer
     memcpy(msg_buf, msg, msg_len);
@@ -354,7 +356,7 @@ static int teoLNullPacketChecksumCheck(teoLNullCPacket *packet) {
     }
 
     uint8_t checksum = get_byte_checksum(
-        packet->peer_name, packet->peer_name_length + packet->data_length);
+        packet->peer_name, (size_t)packet->peer_name_length + packet->data_length);
     if (packet->checksum != checksum) {
         return 0;
     }
@@ -366,7 +368,7 @@ static inline bool _applyKEXAnswer(teoLNullConnectData *con,
                                    KeyExchangePayload_Common *kex,
                                    size_t kex_length) {
     const bool was_connected = (con->status == CON_STATUS_CONNECTED);
-    if (!con->client_crypt &&
+    if (con->client_crypt == NULL ||
         con->client_crypt->enc_proto == ENC_PROTO_DISABLED) {
         LTRACK_E("TeonetClient", "Unexpected KEX answer");
         return false;
@@ -471,9 +473,9 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
 
         kld->read_buffer_size += data_len;
         if (kld->read_buffer != NULL) {
-            kld->read_buffer = realloc(kld->read_buffer, kld->read_buffer_size);
+            kld->read_buffer = ccl_realloc(kld->read_buffer, kld->read_buffer_size);
         } else {
-            kld->read_buffer = malloc(kld->read_buffer_size);
+            kld->read_buffer = ccl_malloc(kld->read_buffer_size);
         }
 
         CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
@@ -683,7 +685,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
 
 #if defined(_WIN32)
-    char *buf = malloc(buf_len);
+    char *buf = ccl_malloc(buf_len);
 #else
     char buf[buf_len];
 #endif
@@ -1051,7 +1053,7 @@ _setupEncryptionContext(teoLNullConnectData *con,
     size_t crypt_size = teoLNullEncryptionContextSize(enc_proto);
     if (crypt_size == 0) { return false; }
 
-    con->client_crypt = (teoLNullEncryptionContext *)malloc(crypt_size);
+    con->client_crypt = (teoLNullEncryptionContext *)ccl_malloc(crypt_size);
     size_t result = teoLNullEncryptionContextCreate(
         enc_proto, (uint8_t *)con->client_crypt, crypt_size);
     if (result == 0) { return false; }
@@ -1068,7 +1070,7 @@ static inline uint8_t *_createKEXPayload(teoLNullConnectData *con,
         return NULL;
     }
 
-    uint8_t *kex_buf = (uint8_t *)malloc(kex_len);
+    uint8_t *kex_buf = (uint8_t *)ccl_malloc(kex_len);
     size_t result = teoLNullKEXCreate(con->client_crypt, kex_buf, kex_len);
     if (result == 0) {
         free(kex_buf);
@@ -1146,7 +1148,7 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
 
         // Wrap it via teoLNullCPacket
         const size_t packet_buf_len = teoLNullBufferSize(1, kex_len);
-        char *packet = malloc(packet_buf_len);
+        char *packet = ccl_malloc(packet_buf_len);
 
         const size_t packet_len =
             teoLNullPacketCreate(con->client_crypt, packet, packet_buf_len,
@@ -1228,7 +1230,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                                       void *user_data,
                                       PROTOCOL connection_flag) {
     teoLNullConnectData *con =
-        (teoLNullConnectData *)malloc(sizeof(teoLNullConnectData));
+        (teoLNullConnectData *)ccl_malloc(sizeof(teoLNullConnectData));
     if (con == NULL) {
         LTRACK_E("TeonetClient", "Failed to allocate teoLNullConnectData");
         abort();
