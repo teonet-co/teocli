@@ -37,7 +37,7 @@ void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages) {
         teocliOpt_MaximumReceiveInSelect = maximum_messages;
     }
 
-    LTRACK("TeonetClient", "Set MaximumReceiveInSelect=%d ms",
+    LTRACK("TeonetClient", "Set MaximumReceiveInSelect = %d ms",
            teocliOpt_MaximumReceiveInSelect);
 }
 
@@ -59,16 +59,16 @@ void teoLNUllSetOption_EncryptionProtocol(int protocol) {
 }
 
 enum {
-    DEFAULT_CONNECT_TIMEOUTMS = 5000,
+    DEFAULT_CONNECT_TIMEOUT_MS = 5000,
 };
 
-extern int64_t teocliOpt_ConnectTimeoutMs;
-int64_t teocliOpt_ConnectTimeoutMs = DEFAULT_CONNECT_TIMEOUTMS;
+extern int32_t teocliOpt_ConnectTimeoutMs;
+int32_t teocliOpt_ConnectTimeoutMs = DEFAULT_CONNECT_TIMEOUT_MS;
 
-void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms) {
+void teoLNUllSetOption_ConnectTimeoutMs(int32_t timeout_ms) {
     teocliOpt_ConnectTimeoutMs =
-        (timeout_ms > 0) ? timeout_ms : DEFAULT_CONNECT_TIMEOUTMS;
+        (timeout_ms > 0) ? timeout_ms : DEFAULT_CONNECT_TIMEOUT_MS;
 
-    LTRACK("TeonetClient", "Set ConnectTimeoutMs=%ld ms",
+    LTRACK("TeonetClient", "Set ConnectTimeoutMs = %ld ms",
            teocliOpt_ConnectTimeoutMs);
 }
