@@ -200,7 +200,7 @@ void teoLNullPacketEncrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *pack
     if (ctx->state != SESCRYPT_ESTABLISHED) {
         CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
                 "Skip - CTX_STATE %s (%d)\n",
-                STRING_teoLNullEncryptionProtocol(ctx->state), (int)ctx->state);
+                STRING_teoLNullEncryptedSessionState(ctx->state), (int)ctx->state);
         return;
     }
 
@@ -254,7 +254,7 @@ bool teoLNullPacketDecrypt(teoLNullEncryptionContext *ctx, teoLNullCPacket *pack
         // TODO : separate log control
         CLTRACK_E(teocliOpt_DBG_packetFlow, "TeonetClient",
                 "Skip - CTX_STATE %s (%d)\n",
-                STRING_teoLNullEncryptionProtocol(ctx->state), (int)ctx->state);
+                STRING_teoLNullEncryptedSessionState(ctx->state), (int)ctx->state);
         return false;
     }
 
