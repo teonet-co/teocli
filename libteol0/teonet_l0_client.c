@@ -56,7 +56,7 @@ extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
 extern bool teocliOpt_DBG_sentPackets;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
-extern int64_t teocliOpt_ConnectTimeoutMs;
+extern int32_t teocliOpt_ConnectTimeoutMs;
 extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
 
 // Internal functions

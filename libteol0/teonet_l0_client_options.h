@@ -48,7 +48,7 @@ TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable);
  * value in milliseconds. Default connection timeout 5000ms. If @a timeoutMs is
  * zero or less then timeout set to default 5000ms instead.
  */
-TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int64_t timeout_ms);
+TEOCLI_API void teoLNUllSetOption_ConnectTimeoutMs(int32_t timeout_ms);
 
 /**
  * Set maximum messages that can be received in one select loop.
