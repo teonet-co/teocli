@@ -1128,6 +1128,10 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
         }
 
         // Prepare and send key exchange packet to establish encryption
+        if (con->tcp_f) {
+            // in encrypted mode we don't need to react to z-packets
+            con->tcd->zero_tolerance_f = true;
+        }
 
         // Create key exchange payload
         size_t kex_len = 0;
