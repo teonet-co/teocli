@@ -69,6 +69,6 @@ void teoLNUllSetOption_ConnectTimeoutMs(int32_t timeout_ms) {
     teocliOpt_ConnectTimeoutMs =
         (timeout_ms > 0) ? timeout_ms : DEFAULT_CONNECT_TIMEOUT_MS;
 
-    LTRACK("TeonetClient", "Set ConnectTimeoutMs = %ld ms",
+    LTRACK("TeonetClient", "Set ConnectTimeoutMs = %d ms",
            teocliOpt_ConnectTimeoutMs);
 }
