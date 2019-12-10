@@ -138,7 +138,7 @@ teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
  *
  * @return true on success
  */
-TEOCLI_API TEOCLI_API bool
+TEOCLI_API bool
 teoLNullEncryptionContextApplyKEX(teoLNullEncryptionContext *ctx,
                                   KeyExchangePayload_Common *buffer,
                                   size_t buffer_length);
