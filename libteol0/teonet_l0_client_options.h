@@ -38,6 +38,14 @@ TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable);
 TEOCLI_API void teoLNUllSetOption_DBG_sentPackets(bool enable);
 
 /**
+ * Enable additional packet data checksum in teocli packets.
+ *
+ * @param enable - boolean, if true - additional data checksum is written
+ * to reserved_2 field of teoLNullCPacket. Disabled by default.
+ */
+TEOCLI_API void teoLNUllSetOption_PacketDataChecksumInR2(bool enable);
+
+/**
  * Set custom connection timeout,
  *
  * @param timeoutMs should be non-negative integer, specifying desirable timeout

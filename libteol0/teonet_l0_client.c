@@ -57,6 +57,7 @@
 extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
 extern bool teocliOpt_DBG_sentPackets;
+extern bool teocliOpt_PacketDataChecksumInR2;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
 extern int32_t teocliOpt_ConnectTimeoutMs;
 extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
@@ -134,6 +135,38 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
     pkg->peer_name_length = (uint8_t)peer_name_length;
     memcpy(pkg->peer_name, peer, pkg->peer_name_length);
     memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
+
+    if (teocliOpt_PacketDataChecksumInR2) {
+        uint8_t extra_checksum = get_byte_checksum(data, data_length);
+
+        // Additional check is not performed when checksum field value is zero.
+        // Value 1 is used for both 0 and 1 checksum to avoid skipping check
+        // on packets with data checksum equal to zero.
+        if (extra_checksum == 0) {
+            ++extra_checksum;
+        }
+
+        // The problem is only reproduced with command 150.
+        if (command == 150) {
+            char packet_id[5];
+
+            // Get string identifier of the command data
+            // (this is specific for command 150).
+            if (data_length > 12) {
+                memcpy(packet_id, (uint8_t *)data + 8, 4);
+                packet_id[4] = 0;
+            } else {
+                packet_id[0] = 0;
+            }
+
+            LTRACK_I("TeonetClient",
+                     "Scheduling to send META packet %u bytes with checksum %#04x and "
+                     "packet id %s.",
+                     (uint32_t)data_length, extra_checksum, packet_id);
+        }
+
+        pkg->reserved_2 = extra_checksum;
+    }
 
     teoLNullPacketEncrypt(ctx, pkg);
 
