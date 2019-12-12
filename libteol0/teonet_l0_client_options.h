@@ -6,11 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef _WINDLL
-#define TEOCLI_API __declspec(dllexport)
-#else
-#define TEOCLI_API
-#endif
+#include "teocli_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,7 +60,7 @@ TEOCLI_API void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_message
  * Set encryption protocol used by connections
  * by default used ENC_PROTO_ECDH_AES_128_V1
  * to disable application should explicitly set it to ENC_PROTO_DISABLED
- * 
+ *
  * @param protocol one of teoLNullEncryptionProtocol values
 */
 TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol);

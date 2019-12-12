@@ -7,11 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef _WINDLL
-#define TEOCLI_API __declspec(dllexport)
-#else
-#define TEOCLI_API
-#endif
+#include "teocli_api.h"
 
 #ifdef __cplusplus
 extern "C" {

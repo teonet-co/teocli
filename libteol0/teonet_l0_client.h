@@ -34,6 +34,8 @@ extern int usleep(__useconds_t __useconds);
 #include "trudp.h"
 #include "trudp_utils.h"
 
+#include "teocli_api.h"
+
 /**
  * L0 System commands
  */
@@ -277,12 +279,6 @@ typedef struct l0_info_data {
 #endif
 
 #pragma pack(pop)
-
-#ifdef _WINDLL
-#define TEOCLI_API __declspec(dllexport)
-#else
-#define TEOCLI_API
-#endif
 
 #ifdef __cplusplus
 extern "C" {
