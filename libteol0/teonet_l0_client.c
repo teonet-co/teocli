@@ -122,7 +122,7 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
 
     // Check buffer length
     if (buffer_length < teoLNullBufferSize(peer_name_length, data_length)) {
-        LTRACK_E("TeonetClient", "Insufficent buffer size");
+        LTRACK_E("TeonetClient", "Insufficient buffer size");
         abort();
     }
 
