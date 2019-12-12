@@ -27,6 +27,13 @@ void teoLNUllSetOption_DBG_sentPackets(bool enable) {
     teocliOpt_DBG_sentPackets = enable;
 }
 
+extern bool teocliOpt_PacketDataChecksumInR2;
+bool teocliOpt_PacketDataChecksumInR2 = false;
+
+void teoLNUllSetOption_PacketDataChecksumInR2(bool enable) {
+    teocliOpt_PacketDataChecksumInR2 = enable;
+}
+
 extern int32_t teocliOpt_MaximumReceiveInSelect;
 int32_t teocliOpt_MaximumReceiveInSelect = 1;
 
@@ -42,7 +49,8 @@ void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_messages) {
 }
 
 extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
-teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol = ENC_PROTO_ECDH_AES_128_V1;
+teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol =
+    ENC_PROTO_ECDH_AES_128_V1;
 
 void teoLNUllSetOption_EncryptionProtocol(int protocol) {
     switch (protocol) {
