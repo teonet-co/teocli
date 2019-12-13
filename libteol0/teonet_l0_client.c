@@ -70,6 +70,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
 static teoLNullConnectData *
 _teoLNullConnectionInitiate(teoLNullConnectData *con,
                             teoLNullEncryptionProtocol enc_proto);
+static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket *packet);
+static void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet);
 
 #if defined(HAVE_MINGW) || defined(_WIN32)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds) { Sleep(dwMilliseconds); }
@@ -85,6 +87,22 @@ static void send_l0_event(teoLNullConnectData *con, teoLNullEvents event,
     if (con->event_cb != NULL) {
         con->event_cb(con, event, data, data_length, con->user_data);
     }
+}
+
+static inline char *teoLNullPacketGetPeerName(teoLNullCPacket *packet) {
+    return (char *)packet->peer_name;
+}
+
+static inline uint8_t *teoLNullPacketGetData(teoLNullCPacket *packet) {
+    return (uint8_t *)(packet->peer_name + packet->peer_name_length);
+}
+
+static inline uint8_t *teoLNullPacketGetFullPayload(teoLNullCPacket *packet) {
+    return (uint8_t *)(packet->peer_name);
+}
+
+static inline size_t teoLNullPacketGetFullPayloadSize(teoLNullCPacket *packet) {
+    return (size_t)packet->peer_name_length + packet->data_length;
 }
 
 /**
@@ -117,7 +135,7 @@ void teoLNullCleanup() { teosockCleanup(); }
  */
 size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
                             size_t buffer_length, uint8_t command,
-                            const char *peer, const void *data,
+                            const char *peer, const uint8_t *data,
                             size_t data_length) {
     size_t peer_name_length = strlen(peer) + 1;
 
@@ -133,8 +151,12 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
     pkg->cmd = command;
     pkg->data_length = (uint16_t)data_length;
     pkg->peer_name_length = (uint8_t)peer_name_length;
-    memcpy(pkg->peer_name, peer, pkg->peer_name_length);
-    memcpy(pkg->peer_name + pkg->peer_name_length, data, pkg->data_length);
+
+    char *packet_peer_name = teoLNullPacketGetPeerName(pkg);
+    uint8_t *packet_data = teoLNullPacketGetData(pkg);
+
+    memcpy(packet_peer_name, peer, pkg->peer_name_length);
+    memcpy(packet_data, data, pkg->data_length);
 
     if (teocliOpt_PacketDataChecksumInR2) {
         uint8_t extra_checksum = get_byte_checksum(data, data_length);
@@ -153,14 +175,15 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
             // Get string identifier of the command data
             // (this is specific for command 150).
             if (data_length > 12) {
-                memcpy(packet_id, (uint8_t *)data + 8, 4);
+                memcpy(packet_id, data + 8, 4);
                 packet_id[4] = 0;
             } else {
                 packet_id[0] = 0;
             }
 
             LTRACK_I("TeonetClient",
-                     "Scheduling to send META packet %u bytes with checksum %#04x and "
+                     "Scheduling to send META packet %u bytes with checksum "
+                     "%#04x and "
                      "packet id %s.",
                      (uint32_t)data_length, extra_checksum, packet_id);
         }
@@ -170,10 +193,7 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
 
     teoLNullPacketEncrypt(ctx, pkg);
 
-    pkg->checksum = get_byte_checksum(pkg->peer_name,
-                                      (size_t)pkg->peer_name_length + pkg->data_length);
-    pkg->header_checksum = get_byte_checksum(
-        pkg, sizeof(teoLNullCPacket) - sizeof(pkg->header_checksum));
+    teoLNullPacketUpdateChecksums(pkg);
 
     return teoLNullBufferSize(pkg->peer_name_length, pkg->data_length);
 }
@@ -347,8 +367,8 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
     // back by server)
 
     char buf[L0_BUFFER_SIZE];
-    size_t pkg_length =
-        teoLNullPacketCreateEcho(con->client_crypt, buf, L0_BUFFER_SIZE, peer_name, msg);
+    size_t pkg_length = teoLNullPacketCreateEcho(
+        con->client_crypt, buf, L0_BUFFER_SIZE, peer_name, msg);
 
     // Send message with time
     ssize_t snd = _teosockSend(con, buf, pkg_length);
@@ -375,26 +395,60 @@ int64_t teoLNullProccessEchoAnswer(const char *msg) {
 }
 
 /**
+ * Calculate and set teoLNullCPacket header checksum.
+ *
+ * @param packet Pointer to packet
+ */
+static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket* packet) {
+    uint8_t* packet_buffer = (uint8_t*)packet;
+    size_t header_size_without_checksum =
+        sizeof(teoLNullCPacket) - sizeof(packet->header_checksum);
+
+    packet->header_checksum =
+        get_byte_checksum(packet_buffer, header_size_without_checksum);
+}
+
+/**
+ * Calculate and set teoLNullCPacket checksums.
+ *
+ * @param packet Pointer to packet
+ */
+static void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet) {
+    uint8_t *packet_full_pauload = teoLNullPacketGetFullPayload(packet);
+    size_t packet_payload_size = teoLNullPacketGetFullPayloadSize(packet);
+
+    packet->checksum =
+        get_byte_checksum(packet_full_pauload, packet_payload_size);
+
+    teoLNullPacketUpdateHeaderChecksum(packet);
+}
+
+/**
  * Check teoLNullCPacket checksums.
  *
  * @param packet Pointer to packet
  *
- * @return 1 if packet checksums are valid or 0 otherwise.
+ * @return true if packet checksums are valid or false otherwise.
  */
-static int teoLNullPacketChecksumCheck(teoLNullCPacket *packet) {
-    uint8_t header_checksum = get_byte_checksum(
-        packet, sizeof(teoLNullCPacket) - sizeof(packet->header_checksum));
-    if (packet->header_checksum != header_checksum) {
-        return 0;
-    }
+static bool teoLNullPacketChecksumCheck(teoLNullCPacket *packet) {
+    uint8_t *packet_buffer = (uint8_t *)packet;
+    size_t header_size_without_checksum =
+        sizeof(teoLNullCPacket) - sizeof(packet->header_checksum);
 
-    uint8_t checksum = get_byte_checksum(
-        packet->peer_name, (size_t)packet->peer_name_length + packet->data_length);
-    if (packet->checksum != checksum) {
-        return 0;
-    }
+    uint8_t header_checksum =
+        get_byte_checksum(packet_buffer, header_size_without_checksum);
 
-    return 1;
+    if (packet->header_checksum != header_checksum) { return false; }
+
+    uint8_t *packet_full_pauload = teoLNullPacketGetFullPayload(packet);
+    size_t packet_payload_size = teoLNullPacketGetFullPayloadSize(packet);
+
+    uint8_t checksum =
+        get_byte_checksum(packet_full_pauload, packet_payload_size);
+
+    if (packet->checksum != checksum) { return false; }
+
+    return true;
 }
 
 static inline bool _applyKEXAnswer(teoLNullConnectData *con,
@@ -535,7 +589,7 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
             (size_t)(len = teoLNullBufferSize(packet->peer_name_length,
                                               packet->data_length))) {
 
-        if (teoLNullPacketChecksumCheck(packet) != 0) {
+        if (teoLNullPacketChecksumCheck(packet)) {
             // Packet has received - return packet size
             retval = len;
             kld->last_packet_offset += len;
@@ -573,16 +627,16 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
  * @param data Received data buffer
  * @param data_len Received data buffer length
  *
- * @return 1 if packet is valid or 0 otherwise.
+ * @return true if packet is valid or false otherwise.
  */
-static inline int teoLNullPacketCheck(uint8_t *data, size_t data_len) {
-    if (data_len < sizeof(teoLNullCPacket)) { return 0; }
+static inline bool teoLNullPacketCheck(uint8_t *data, size_t data_len) {
+    if (data_len < sizeof(teoLNullCPacket)) { return false; }
 
     teoLNullCPacket *packet = (teoLNullCPacket *)data;
     size_t len =
         teoLNullBufferSize(packet->peer_name_length, packet->data_length);
 
-    if (data_len != len) { return 0; }
+    if (data_len != len) { return false; }
 
     return teoLNullPacketChecksumCheck(packet);
 }
@@ -593,7 +647,8 @@ static inline int teoLNullPacketCheck(uint8_t *data, size_t data_len) {
  * @param data Received data buffer
  * @param data_len Received data buffer length
  *
- * @return casted pointer to teoLNullCPacket if buffer contains valid packet and NULL otherwise
+ * @return casted pointer to teoLNullCPacket if buffer contains valid packet and
+ * NULL otherwise
  */
 teoLNullCPacket *teoLNullPacketGetFromBuffer(uint8_t *data, size_t data_len) {
     if (teoLNullPacketCheck(data, data_len)) {
@@ -638,7 +693,7 @@ ssize_t teoLNullRecv(teoLNullConnectData *con) {
 ssize_t teoLNullRecvCheck(teoLNullConnectData *con, char *buf, ssize_t rc) {
     rc = teoLNullPacketSplit(con, buf, L0_BUFFER_SIZE, rc != -1 ? rc : 0);
     if (rc <= 0) {
-        return rc;  // No packet to check
+        return rc; // No packet to check
     }
 
     teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
@@ -697,8 +752,8 @@ ssize_t teoLNullRecvTimeout(teoLNullConnectData *con, uint32_t timeout) {
  */
 size_t teoLNullPacketCreateLogin(teoLNullEncryptionContext *ctx, void *buffer,
                                  size_t buffer_length, const char *host_name) {
-    return teoLNullPacketCreate(ctx, buffer, buffer_length, 0, "", host_name,
-                                strlen(host_name) + 1);
+    return teoLNullPacketCreate(ctx, buffer, buffer_length, 0, "",
+                                (const uint8_t*)host_name, strlen(host_name) + 1);
 }
 
 /**
@@ -747,13 +802,13 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
  *
  * @return Byte checksum of the input buffer
  */
-uint8_t get_byte_checksum(void *data, size_t data_length) {
-    int i;
-    uint8_t *ch, checksum = 0;
-    for (i = 0; i < (int)data_length; i++) {
+uint8_t get_byte_checksum(const uint8_t *data, size_t data_length) {
+    const uint8_t *position;
+    uint8_t checksum = 0;
 
-        ch = (uint8_t *)((char *)data + i);
-        checksum += *ch;
+    for (size_t i = 0; i < data_length; ++i) {
+        position = data + i;
+        checksum += *position;
     }
 
     return checksum;
@@ -1728,8 +1783,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         // Process commands
         if (cp->cmd == CMD_L_ECHO) {
             cp->cmd = CMD_L_ECHO_ANSWER;
-            cp->header_checksum = get_byte_checksum(
-                cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
+            teoLNullPacketUpdateHeaderChecksum(cp);
             trudpChannelSendData(tcd, cp, ready_bytes_count);
         } else { // Send other commands to L0 event loop
             send_l0_event(con, EV_L_RECEIVED, cp, ready_bytes_count);
@@ -1743,7 +1797,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     case GOT_DATA_NO_TRUDP: {
         teoLNullConnectData *con = (teoLNullConnectData*)user_data;
 
-        if (teoLNullPacketCheck(data, data_length) == 0) {
+        if (!teoLNullPacketCheck(data, data_length)) {
             CLTRACK(DEBUG, "TeonetClient",
                     "got invalid non TR-UDP data packet with %u bytes of data",
                     (uint32_t)data_length);
