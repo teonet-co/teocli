@@ -338,7 +338,7 @@ TEOCLI_API size_t teoLNullPacketCreateEcho(teoLNullEncryptionContext *ctx, void 
                                            const char *msg);
 TEOCLI_API size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
                                        uint8_t command, const char *peer,
-                                       const void *data, size_t data_length);
+                                       const uint8_t *data, size_t data_length);
 TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
                                       size_t data_length);
 
@@ -346,7 +346,7 @@ TEOCLI_API uint8_t *teoLNullPacketGetPayload(teoLNullCPacket *packet);
 TEOCLI_API teoLNullCPacket *teoLNullPacketGetFromBuffer(uint8_t *data, size_t data_len);
 
 // Teonet utils functions
-TEOCLI_API uint8_t get_byte_checksum(void *data, size_t data_length);
+TEOCLI_API uint8_t get_byte_checksum(const uint8_t* data, size_t data_length);
 
 #if defined(TEONET_COMPILER_GCC)
 #define DEPRECATED_FUNCTION __attribute__((deprecated))
