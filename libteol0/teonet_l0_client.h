@@ -339,8 +339,9 @@ TEOCLI_API size_t teoLNullPacketCreateEcho(teoLNullEncryptionContext *ctx, void 
 TEOCLI_API size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
                                        uint8_t command, const char *peer,
                                        const uint8_t *data, size_t data_length);
-TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
+TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, teoLNullCPacket *data,
                                       size_t data_length);
+TEOCLI_API void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet);
 
 TEOCLI_API uint8_t *teoLNullPacketGetPayload(teoLNullCPacket *packet);
 TEOCLI_API teoLNullCPacket *teoLNullPacketGetFromBuffer(uint8_t *data, size_t data_len);

@@ -71,15 +71,14 @@ static teoLNullConnectData *
 _teoLNullConnectionInitiate(teoLNullConnectData *con,
                             teoLNullEncryptionProtocol enc_proto);
 static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket *packet);
-static void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet);
 
 #if defined(HAVE_MINGW) || defined(_WIN32)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds) { Sleep(dwMilliseconds); }
 #endif
 
 typedef struct teoPipeSendData {
-    size_t data_length;
-    char *data;
+    size_t packet_length;
+    teoLNullCPacket *packet;
 } teoPipeSendData;
 
 static void send_l0_event(teoLNullConnectData *con, teoLNullEvents event,
@@ -198,18 +197,18 @@ size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer,
     return teoLNullBufferSize(pkg->peer_name_length, pkg->data_length);
 }
 
-static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
+static ssize_t _teosockSend(teoLNullConnectData *con, teoLNullCPacket *packet,
                             size_t length) {
     if (con->tcp_f) {
-        return teosockSend(con->fd, data, length);
+        return teosockSend(con->fd, (const char *)packet, length);
     } else {
         teoPipeSendData pipe_send_data;
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
 
-        pipe_send_data.data_length = length;
-        pipe_send_data.data = (char*)ccl_malloc(length);
+        pipe_send_data.packet_length = length;
+        pipe_send_data.packet = (teoLNullCPacket *)ccl_malloc(length);
 
-        memcpy(pipe_send_data.data, data, length);
+        memcpy(pipe_send_data.packet, packet, length);
 
 // Write to pipe
 #if defined(_WIN32)
@@ -246,10 +245,10 @@ static ssize_t _teosockSend(teoLNullConnectData *con, const char *data,
  *
  * @return Length of send data or -1 at error
  */
-ssize_t teoLNullPacketSend(teoLNullConnectData *con, const char *data,
-                           size_t data_length) {
+ssize_t teoLNullPacketSend(teoLNullConnectData *con, teoLNullCPacket *packet,
+                           size_t packet_length) {
     if (con != NULL) {
-        return _teosockSend(con, data, data_length);
+        return _teosockSend(con, packet, packet_length);
     } else {
         return -1;
     }
@@ -278,7 +277,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = (char*)ccl_malloc(buf_length);
+    teoLNullCPacket *buf = (teoLNullCPacket *)ccl_malloc(buf_length);
 
     size_t pkg_length = teoLNullPacketCreate(con->client_crypt, buf, buf_length,
                                              cmd, peer_name, data, data_length);
@@ -299,7 +298,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
 
     const size_t peer_length = strlen(peer_name) + 1;
     const size_t buf_length = teoLNullBufferSize(peer_length, data_length);
-    char *buf = (char*)ccl_malloc(buf_length);
+    teoLNullCPacket *buf = (teoLNullCPacket *)ccl_malloc(buf_length);
 
     // Unreliable packets couldn't be encrypted/decrypted due to it's
     // unreliability - we can't correctly count them and seed encryption algo
@@ -371,7 +370,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         con->client_crypt, buf, L0_BUFFER_SIZE, peer_name, msg);
 
     // Send message with time
-    ssize_t snd = _teosockSend(con, buf, pkg_length);
+    ssize_t snd = _teosockSend(con, (teoLNullCPacket *)buf, pkg_length);
 
     return snd;
 }
@@ -413,7 +412,7 @@ static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket* packet) {
  *
  * @param packet Pointer to packet
  */
-static void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet) {
+void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet) {
     uint8_t *packet_full_pauload = teoLNullPacketGetFullPayload(packet);
     size_t packet_payload_size = teoLNullPacketGetFullPayloadSize(packet);
 
@@ -767,28 +766,14 @@ size_t teoLNullPacketCreateLogin(teoLNullEncryptionContext *ctx, void *buffer,
  * @return Length of send data or -1 at error
  */
 ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
-
-    // \TODO: create crypto key here
-
     const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
+    teoLNullCPacket *buf = (teoLNullCPacket *)ccl_malloc(buf_len);
 
-#if defined(_WIN32)
-    char *buf = ccl_malloc(buf_len);
-#else
-    char buf[buf_len];
-#endif
-
-    ssize_t snd = 0;
     size_t pkg_length =
         teoLNullPacketCreateLogin(con->client_crypt, buf, buf_len, host_name);
-    if (pkg_length > 0) {
-        snd = _teosockSend(con, buf, pkg_length);
-    }
+    ssize_t snd = _teosockSend(con, buf, pkg_length);
 
-#if defined(_WIN32)
     free(buf);
-#endif
-
     return snd;
 }
 
@@ -1015,16 +1000,16 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                         "Received message from pipe.");
 
                 ssize_t ptr = 0;
-                size_t length = pipe_send_data.data_length;
+                size_t length = pipe_send_data.packet_length;
                 for (;;) {
                     size_t len = length > 512 ? 512 : length;
-                    trudpChannelSendData(con->tcd, pipe_send_data.data + ptr,
+                    trudpChannelSendData(con->tcd, pipe_send_data.packet + ptr,
                                          len);
                     length -= len;
                     if (!length) break;
                     ptr += len;
                 }
-                free(pipe_send_data.data);
+                free(pipe_send_data.packet);
 
 #if defined(_WIN32)
                 SetEvent(con->handles[1]);
@@ -1236,7 +1221,7 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
 
         // Wrap it via teoLNullCPacket
         const size_t packet_buf_len = teoLNullBufferSize(1, kex_len);
-        char *packet = ccl_malloc(packet_buf_len);
+        teoLNullCPacket *packet = (teoLNullCPacket *)ccl_malloc(packet_buf_len);
 
         const size_t packet_len =
             teoLNullPacketCreate(con->client_crypt, packet, packet_buf_len,

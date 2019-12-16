@@ -469,9 +469,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 
             // Process ECHO command
             if(cp->cmd == CMD_L_ECHO) {
-
                 cp->cmd = CMD_L_ECHO_ANSWER;
-                cp->header_checksum = get_byte_checksum(cp, sizeof(teoLNullCPacket) - sizeof(cp->header_checksum));
+                teoLNullPacketUpdateChecksums(cp);
                 trudpChannelSendData(tcd, cp, ready_count);
             }
             // Send other commands to L0 event loop
