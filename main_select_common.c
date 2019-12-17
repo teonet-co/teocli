@@ -44,6 +44,8 @@
 #include <signal.h>
 
 #include "libteol0/teonet_l0_client.h"
+#include "libteol0/teonet_l0_client_options.h"
+#include "libteol0/teonet_l0_client_crypt.h"
 
 #define TL0CNS_VERSION "0.0.1"
 
@@ -51,13 +53,11 @@
  * Application parameters structure
  */
 struct app_parameters {
-
     const char *host_name;
     const char *tcp_server;
     int tcp_port;
     const char *peer_name;
     const char *msg;
-    int tcp_f;
 };
 
 // global app flags
@@ -257,7 +257,19 @@ int main(int argc, char** argv) {
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
-    param.tcp_f = getenv("FORCE_TCP") ? 1 : 0;
+
+    PROTOCOL transport_proto = getenv("FORCE_TCP") ? TCP : TRUDP;
+
+    const char* cypher = getenv("TEO_CYPHER");
+    if (cypher != NULL && cypher[0] != 0) {
+        teoLNullEncryptionProtocol cypher_code = ENC_PROTO_DISABLED;
+
+        if (strcmp("ECDH_AES_128_V1", cypher) == 0) {
+            cypher_code = ENC_PROTO_ECDH_AES_128_V1;
+        }
+
+        teoLNUllSetOption_EncryptionProtocol(cypher_code);
+    }
 
     // Initialize L0 Client library
     teoLNullInit();
@@ -267,7 +279,7 @@ int main(int argc, char** argv) {
 
         // Connect to L0 server
         teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
-            event_cb, &param, param.tcp_f ? TCP : TRUDP);
+            event_cb, &param, transport_proto);
 
         reconnect_flag = 0;
         if(con->status >= 0) {
