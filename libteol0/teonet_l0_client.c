@@ -111,7 +111,13 @@ static inline size_t teoLNullPacketGetFullPayloadSize(teoLNullCPacket *packet) {
  * Startup windows socket library.
  * Calls once per application to initialize this client library.
  */
-void teoLNullInit() { teosockInit(); }
+void teoLNullInit() {
+    teosockInit();
+
+    // seed random generator
+    int64_t now = teotimeGetCurrentTimeMs();
+    srand((unsigned int)now);
+}
 
 /**
  * Cleanup L0 client library.
