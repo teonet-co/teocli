@@ -331,16 +331,19 @@ TEOCLI_API ssize_t teoLNullRecvTimeout(teoLNullConnectData *con,
 TEOCLI_API bool teoLNullReadEventLoop(teoLNullConnectData *con, int timeout);
 
 // Low level functions
-TEOCLI_API size_t teoLNullPacketCreateLogin(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
+TEOCLI_API size_t teoLNullPacketCreateLogin(void *buffer, size_t buffer_length,
                                             const char *host_name);
-TEOCLI_API size_t teoLNullPacketCreateEcho(teoLNullEncryptionContext *ctx, void *msg_buf, size_t buf_len,
+TEOCLI_API size_t teoLNullPacketCreateEcho(void *msg_buf, size_t buf_len,
                                            const char *peer_name,
                                            const char *msg);
-TEOCLI_API size_t teoLNullPacketCreate(teoLNullEncryptionContext *ctx, void *buffer, size_t buffer_length,
+TEOCLI_API size_t teoLNullPacketCreate(void *buffer, size_t buffer_length,
                                        uint8_t command, const char *peer,
                                        const uint8_t *data, size_t data_length);
-TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, teoLNullCPacket *data,
-                                      size_t data_length);
+TEOCLI_API void teoLNullPacketSeal(teoLNullEncryptionContext *ctx,
+                                   bool with_encryption,
+                                   teoLNullCPacket *packet);
+TEOCLI_API ssize_t teoLNullPacketSend(teoLNullConnectData *con, bool with_encryption,
+                                      teoLNullCPacket *data, size_t data_length);
 TEOCLI_API void teoLNullPacketUpdateChecksums(teoLNullCPacket *packet);
 
 TEOCLI_API uint8_t *teoLNullPacketGetPayload(teoLNullCPacket *packet);

@@ -151,7 +151,8 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                 char buf[BUFFER_SIZE];
                 
                 // Send peers request
-                size_t pkg_length = teoLNullPacketCreate(NULL, buf, BUFFER_SIZE, /*79*/  CMD_L_PEERS, param->peer_name, NULL, 0);
+                size_t pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, /*79*/  CMD_L_PEERS, param->peer_name, NULL, 0);
+
                 ssize_t snd = trudpChannelSendData(tcd, buf, pkg_length);
                 //
                 printf("Send %d bytes packet to L0 server to peer %s, "
@@ -159,7 +160,7 @@ void event_cb(void *tcd, teoLNullEvents event, void *data,
                        (int)snd, param->peer_name, CMD_L_PEERS);
 
                 // Send lients request
-                pkg_length = teoLNullPacketCreate(NULL, buf, BUFFER_SIZE, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
+                pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, CMD_L_L0_CLIENTS, param->peer_name, NULL, 0);
                 snd = trudpChannelSendData(tcd, buf, pkg_length);
                 //
                 printf("Send %d bytes packet to L0 server to peer %s, "
@@ -637,7 +638,7 @@ static trudpChannelData *trudpLNullLogin(trudpData *td, const char * host_name) 
     char buf[buf_len];
     #endif
 
-    size_t pkg_length = teoLNullPacketCreateLogin(NULL, buf, buf_len, host_name);
+    size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
     if(!pkg_length) return NULL;
 
     tcd = trudpChannelNew(td, remote_address, remote_port_i, 0);
@@ -776,12 +777,12 @@ int main(int argc, char** argv) {
 
                     char buf[BUFFER_SIZE];
                     // Send ping
-                    size_t pkg_length = teoLNullPacketCreateEcho(NULL, buf, BUFFER_SIZE, param.peer_name, param.msg);
+                    size_t pkg_length = teoLNullPacketCreateEcho(buf, BUFFER_SIZE, param.peer_name, param.msg);
                     trudpChannelSendData(tcd, buf, pkg_length);
                     
 //                    // Send cmd 129
-//                    pkg_length = teoLNullPacketCreate(NULL, buf, BUFFER_SIZE, 129, "teo-wg-users"/*param.peer_name*/, NULL, 0);
-//                    trudpChannelSendData(tcd, buf, pkg_length);
+//                    pkg_length = teoLNullPacketCreate(buf, BUFFER_SIZE, 129, "teo-wg-users"/*param.peer_name*/, NULL, 0);
+//                   trudpChannelSendData(tcd, buf, pkg_length);
 
                     tt_s = tt;
                 }
