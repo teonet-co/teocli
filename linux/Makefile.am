@@ -63,6 +63,7 @@ libteocli_la_SOURCES = \
     ../libtrudp/src/trudp_ev.c \
     \
     ../libtrudp/libs/teobase/src/teobase/logging.c \
+    ../libtrudp/libs/teobase/src/teobase/mutex.c \
     ../libtrudp/libs/teobase/src/teobase/socket.c \
     ../libtrudp/libs/teobase/src/teobase/time.c \
     \
@@ -82,7 +83,8 @@ libteocli_la_SOURCES = \
 #include_HEADERS = \
 #    ../libteol0/teonet_l0_client.h
 
-libteocli_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE) 
+libteocli_la_LDFLAGS = $(AM_LDFLAGS) -lpthread -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE)
+
 
 noinst_PROGRAMS =
 
