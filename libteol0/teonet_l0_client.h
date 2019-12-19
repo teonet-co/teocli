@@ -121,6 +121,8 @@ typedef struct teoLNullConnectData {
 
     int pipefd[2]; ///< Pipe to use it in thread safe write function
 
+    //! encryption context, in multithreaded environment must be used in between
+    //! pair of calls teoLNullAcquireCrypto/teoLNullUnlockCrypto
     teoLNullEncryptionContext *client_crypt;
 
 #if defined(_WIN32)
@@ -303,6 +305,10 @@ void TEOCLI_API WinSleep(uint32_t dwMilliseconds);
 // Hight level functions
 TEOCLI_API void teoLNullInit();
 TEOCLI_API void teoLNullCleanup();
+
+TEOCLI_API teoLNullEncryptionContext *
+teoLNullAcquireCrypto(teoLNullConnectData *con);
+TEOCLI_API void teoLNullUnlockCrypto(teoLNullEncryptionContext *ctx);
 
 TEOCLI_API teoLNullConnectData *
 teoLNullConnect(const char *server, int16_t port, PROTOCOL connection_flag);

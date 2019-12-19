@@ -128,6 +128,30 @@ void teoLNullInit() {
 void teoLNullCleanup() { teosockCleanup(); }
 
 /**
+ * Lock and return encryption context, or NULL if haven't one
+ */
+teoLNullEncryptionContext *teoLNullAcquireCrypto(teoLNullConnectData *con) {
+    if (con->client_crypt == NULL) return NULL;
+
+    teomutexLock(&con->client_crypt->encryptionGuard);
+    if (con->client_crypt->enc_proto == ENC_PROTO_DISABLED) {
+        teomutexUnlock(&con->client_crypt->encryptionGuard);
+        return NULL;
+    }
+
+    return con->client_crypt;
+}
+
+/**
+ * Unlock encryption context obtained by teoLNullAcquireCrypto
+ */
+void teoLNullUnlockCrypto(teoLNullEncryptionContext *ctx) {
+    if (ctx != NULL) {
+        teomutexUnlock(&ctx->encryptionGuard);
+    }
+}
+
+/**
  * Ensures @a packet checksums, encrypts packet inplace (if applicable)
  * If ctx is NULL or ctx->state != SESCRYPT_ESTABLISHED then encryption isn't
  * performed, but checksums calculated anyway
@@ -224,8 +248,11 @@ static ssize_t _teosockSend(teoLNullConnectData *con, bool with_encryption,
                             teoLNullCPacket *packet, size_t length) {
     if (con->tcp_f) {
         // for TCP connection packet sent immediately, so we should seal it right now
-        teoLNullPacketSeal(con->client_crypt, with_encryption, packet);
-        return teosockSend(con->fd, (const char *)packet, length);
+        teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+        teoLNullPacketSeal(locked_crypt, with_encryption, packet);
+        ssize_t res = teosockSend(con->fd, (const char *)packet, length);
+        teoLNullUnlockCrypto(locked_crypt);
+        return res;
     } else {
         teoPipeSendData pipe_send_data;
         memset(&pipe_send_data, 0, sizeof(pipe_send_data));
@@ -481,26 +508,28 @@ static inline bool _applyKEXAnswer(teoLNullConnectData *con,
                                    KeyExchangePayload_Common *kex,
                                    size_t kex_length) {
     const bool was_connected = (con->status == CON_STATUS_CONNECTED);
-    if (con->client_crypt == NULL ||
-        con->client_crypt->enc_proto == ENC_PROTO_DISABLED) {
+    teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+    if (locked_crypt == NULL) {
         LTRACK_E("TeonetClient", "Unexpected KEX answer");
         return false;
     }
 
     // check if can be applied
-    if (!teoLNullKEXValidate(con->client_crypt, kex, kex_length)) {
+    if (!teoLNullKEXValidate(locked_crypt, kex, kex_length)) {
+        teoLNullUnlockCrypto(locked_crypt);
         LTRACK_E("TeonetClient",
                  "Invalid KEX, failed validation; disconnecting");
         return false;
     }
 
     // check if applied successfully
-    if (!teoLNullEncryptionContextApplyKEX(con->client_crypt, kex,
-                                           kex_length)) {
+    if (!teoLNullEncryptionContextApplyKEX(locked_crypt, kex, kex_length)) {
+        teoLNullUnlockCrypto(locked_crypt);
         LTRACK_E("TeonetClient", "Invalid KEX, can't apply; disconnecting");
         return false;
     }
 
+    teoLNullUnlockCrypto(locked_crypt);
     if (was_connected) {
         LTRACK("TeonetClient", "Re-confirmed KEX answer");
     } else {
@@ -517,8 +546,6 @@ static inline bool _applyKEXAnswer(teoLNullConnectData *con,
  */
 static inline bool _teoLNullProccessKEXAnswer(teoLNullConnectData *con,
                                               KeyExchangePayload_Common *kex, size_t kex_length) {
-    // const bool was_established = con->client_crypt->state ==
-    // SESCRYPT_ESTABLISHED;
     const bool was_connected = (con->status == CON_STATUS_CONNECTED);
     if (_applyKEXAnswer(con, kex, kex_length)) {
         if (!was_connected) {
@@ -620,7 +647,9 @@ static ssize_t teoLNullPacketSplit(teoLNullConnectData *kld, void *data,
             retval = len;
             kld->last_packet_offset += len;
 
-            teoLNullPacketDecrypt(kld->client_crypt, packet);
+            teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(kld);
+            teoLNullPacketDecrypt(locked_crypt, packet);
+            teoLNullUnlockCrypto(locked_crypt);
 
             CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
                     "L0 Server: Identify packet %" PRId32 " bytes length ...\n",
@@ -1025,9 +1054,11 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
                         "Received message from pipe.");
 
-                teoLNullPacketSeal(con->client_crypt,
+                teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+                teoLNullPacketSeal(locked_crypt,
                                    pipe_send_data.with_encryption,
                                    pipe_send_data.packet);
+                teoLNullUnlockCrypto(locked_crypt);
 
                 uint8_t *ptr = (uint8_t *)pipe_send_data.packet;
                 size_t length = pipe_send_data.packet_length;
@@ -1173,7 +1204,9 @@ static inline uint8_t *_createKEXPayload(teoLNullConnectData *con,
     }
 
     uint8_t *kex_buf = (uint8_t *)ccl_malloc(kex_len);
-    size_t result = teoLNullKEXCreate(con->client_crypt, kex_buf, kex_len);
+    teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+    size_t result = teoLNullKEXCreate(locked_crypt, kex_buf, kex_len);
+    teoLNullUnlockCrypto(locked_crypt);
     if (result == 0) {
         free(kex_buf);
         return NULL;
@@ -1541,10 +1574,12 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
 
         if (con->read_buffer != NULL) { free(con->read_buffer); }
 
-        if (con->client_crypt != NULL) { free(con->client_crypt); }
+        if (con->client_crypt != NULL) {
+            teoLNullEncryptionContextDestroy(con->client_crypt);
+            free(con->client_crypt);
+        }
 
         if (!con->tcp_f) {
-
             trudpChannelDestroyAll(con->td);
             trudpDestroy(con->td);
         }
@@ -1620,8 +1655,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         CLTRACK(DEBUG, "TeonetClient", "Connect channel %s\n", tcd->channel_key);
         // tcd->connected_f = 1; would be set in trudpGetChannelCreate anyway
         teoLNullConnectData *con = (teoLNullConnectData *)user_data;
-        if (con->client_crypt &&
-            con->client_crypt->enc_proto != ENC_PROTO_DISABLED) {
+        teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+        if (locked_crypt != NULL) {
+            teoLNullUnlockCrypto(locked_crypt);
             // Must wait for KEX answer
             // event would be sent in KEX handler
 
@@ -1746,8 +1782,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         trudpPacket * packet = (trudpPacket *)data;
         uint32_t id = trudpPacketGetId(packet);
 
-        if (con->client_crypt &&
-            con->client_crypt->enc_proto != ENC_PROTO_DISABLED) {
+        teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
+        if (locked_crypt != NULL) {
+            teoLNullUnlockCrypto(locked_crypt);
             // Must wait for KEX answer
             // event would be sent in KEX handler
 

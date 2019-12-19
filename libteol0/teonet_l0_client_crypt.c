@@ -131,6 +131,7 @@ size_t teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
         ctx->sendNonce = 1;
         ctx->state = SESCRYPT_PENDING;
         initPeerKeys(&ctx->keys);
+        teomutexInitialize(&ctx->encryptionGuard);
 
         return sizeof(teoLNullEncryptionContext);
     }
@@ -139,6 +140,16 @@ size_t teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
         return 0;
     }
     }
+}
+
+TEOCLI_API void
+teoLNullEncryptionContextDestroy(teoLNullEncryptionContext *ctx) {
+    ctx->enc_proto = ENC_PROTO_DISABLED;
+    ctx->receiveNonce = -1;
+    ctx->sendNonce = -1;
+    ctx->state = SESCRYPT_PENDING;
+    initPeerKeys(&ctx->keys);
+    teomutexDestroy(&ctx->encryptionGuard);
 }
 
 bool teoLNullEncryptionContextApplyKEX(teoLNullEncryptionContext *ctx,
