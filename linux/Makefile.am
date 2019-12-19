@@ -85,6 +85,50 @@ libteocli_la_SOURCES = \
 
 libteocli_la_LDFLAGS = $(AM_LDFLAGS) -lpthread -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE)
 
+teobasedir = $(includedir)/teobase
+teobase_HEADERS = \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/api.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/logging.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/mutex.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/platform.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/socket.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/time.h \
+	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/windows.h \
+	# end of teobase_HEADERS
+
+teoccldir = $(includedir)/teoccl
+teoccl_HEADERS = \
+	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/array_list.h \
+	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/hash.h \
+	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/map.h \
+	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/memory.h \
+	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/queue.h \
+	# end of teoccl_HEADERS
+
+tinyaesdir = $(includedir)/libtinycrypt/tiny-AES-c/
+tinyaes_HEADERS = \
+	$(top_srcdir)/../libtinycrypt/tiny-AES-c/aes.hpp \
+	$(top_srcdir)/../libtinycrypt/tiny-AES-c/aes.h \
+	# end of tinyaes_HEADERS
+
+tinyecdhdir = $(includedir)/libtinycrypt/tiny-ECDH-c/
+tinyecdh_HEADERS = \
+	$(top_srcdir)/../libtinycrypt/tiny-ECDH-c/ecdh.h \
+	# end of tinyecdh_HEADERS
+
+tinycryptdir = $(includedir)/libtinycrypt
+tinycrypt_HEADERS = \
+	$(top_srcdir)/../libtinycrypt/tinycrypt.h \
+	# end of tinycrypt_HEADERS
+
+libteol0dir = $(includedir)/libteol0
+libteol0_HEADERS = \
+	$(top_srcdir)/../libteol0/teocli_api.h \
+	$(top_srcdir)/../libteol0/teocli.hpp \
+	$(top_srcdir)/../libteol0/teonet_l0_client_crypt.h \
+	$(top_srcdir)/../libteol0/teonet_l0_client_options.h \
+	$(top_srcdir)/../libteol0/teonet_l0_client.h \
+	# end of libteol0_HEADERS
 
 noinst_PROGRAMS =
 
@@ -115,3 +159,12 @@ teocli_s_common_LDADD = libteocli.la -lev
 noinst_PROGRAMS += teocli_s_common_thread
 teocli_s_common_thread_SOURCES = ../main_select_common_thread.c
 teocli_s_common_thread_LDADD = libteocli.la -lpthread -lev
+
+uninstall-hook:
+	-rmdir \
+    $(includedir)/teobase \
+    $(includedir)/teoccl \
+    $(includedir)/libtinycrypt/tiny-AES-c/ \
+    $(includedir)/libtinycrypt/tiny-ECDH-c/ \
+    $(includedir)/libtinycrypt \
+    $(includedir)/libteol0
