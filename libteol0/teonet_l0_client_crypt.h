@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "teocli_api.h"
+#include "teobase/mutex.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,8 @@ typedef struct teoLNullEncryptionContext {
     uint32_t receiveNonce, sendNonce;
     //! Encryption keys holder
     PeerKeyset keys;
+    //! ensure concurrent access
+    teonetMutex encryptionGuard;
 } teoLNullEncryptionContext;
 
 // forward declaration, complete type in libteol0/teonet_l0_client.h
@@ -124,6 +127,12 @@ teoLNullEncryptionContextSize(teoLNullEncryptionProtocol enc_proto);
 TEOCLI_API size_t
 teoLNullEncryptionContextCreate(teoLNullEncryptionProtocol enc_proto,
                                 uint8_t *buffer, size_t buffer_length);
+
+/**
+ * Destroy context internals
+ */
+TEOCLI_API void
+teoLNullEncryptionContextDestroy(teoLNullEncryptionContext *ctx);
 
 /**
  * Apply valid KEX payload to given context
