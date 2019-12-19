@@ -121,6 +121,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
             printf("Disconnected ...\n");
             break;
 
+        case EV_L_RECEIVED_UNRELIABLE: // fallthrough
         case EV_L_RECEIVED:
         {
             // Receive answer from server

@@ -135,6 +135,7 @@ static void event_cb(teo::Teocli &cli, teo::Events event, void *data,
 
         } break;
 
+        case EV_L_RECEIVED_UNRELIABLE: // fallthrough
         case EV_L_RECEIVED: {
 
             // Receive answer from server
