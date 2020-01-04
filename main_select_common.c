@@ -126,6 +126,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
             reconnect_flag = 1;
             break;
 
+        case EV_L_RECEIVED_UNRELIABLE: // fallthrough
         case EV_L_RECEIVED:
         {
             // Receive answer from server

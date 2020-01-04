@@ -1858,7 +1858,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         CLTRACK(DEBUG, "TeonetClient",
                 "got valid non TR-UDP data packet with %u bytes of data",
                 (uint32_t)data_length);
-        send_l0_event(con, EV_L_RECEIVED, data, data_length);
+        send_l0_event(con, EV_L_RECEIVED_UNRELIABLE, data, data_length);
     }
 
     // Process received data
@@ -1923,6 +1923,7 @@ const char *STRING_teoLNullEvents(teoLNullEvents v) {
     case EV_L_CONNECTED: return "EV_L_CONNECTED";
     case EV_L_DISCONNECTED: return "EV_L_DISCONNECTED";
     case EV_L_RECEIVED: return "EV_L_RECEIVED";
+    case EV_L_RECEIVED_UNRELIABLE: return "EV_L_RECEIVED_UNRELIABLE";
     case EV_L_TICK: return "EV_L_TICK";
     case EV_L_IDLE: return "EV_L_IDLE";
     default: break;

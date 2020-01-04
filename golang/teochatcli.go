@@ -70,7 +70,7 @@ func AGoEventCb(con *C.teoLNullConnectData, event C.teoLNullEvents,
 		fmt.Println("Disconnected ...")
 
 	// Receive answer from server
-	case C.EV_L_RECEIVED:
+	case C.EV_L_RECEIVED, C.EV_L_RECEIVED_UNRELIABLE:
 		rc := dataLen
 		cp := (*C.teoLNullCPacket)(data)
 

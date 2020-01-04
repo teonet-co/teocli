@@ -65,10 +65,11 @@ enum CMD_L {
  */
 typedef enum teoLNullEvents {
 
-    EV_L_CONNECTED,    ///< After connected to L0 server
-    EV_L_DISCONNECTED, ///< After disconnected from L0 server
-    EV_L_RECEIVED,     ///< Data received
-    EV_L_TICK,         ///< Send after every teoLNullReadEventLoop calls
+    EV_L_CONNECTED,            ///< After connected to L0 server
+    EV_L_DISCONNECTED,         ///< After disconnected from L0 server
+    EV_L_RECEIVED,             ///< Data received
+    EV_L_RECEIVED_UNRELIABLE,  ///< Data received through unreliable channel
+    EV_L_TICK,                 ///< Send after every teoLNullReadEventLoop calls
     EV_L_IDLE ///< Send after teoLNullReadEventLoop calls if data was not
               ///< received during timeout
 
