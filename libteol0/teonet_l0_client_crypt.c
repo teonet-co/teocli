@@ -193,7 +193,7 @@ bool teoLNullPacketIsEncrypted(teoLNullCPacket *packet) {
            (packet->reserved_1 & PACKET_ENCRYPTED_FLAG);
 }
 
-inline void _packetSetIsEncrypted(teoLNullCPacket *packet, bool is_encrypted) {
+inline static void _packetSetIsEncrypted(teoLNullCPacket *packet, bool is_encrypted) {
     if (is_encrypted) {
         packet->reserved_1 |= PACKET_ENCRYPTED_FLAG;
     } else {
