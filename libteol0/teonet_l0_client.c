@@ -1859,7 +1859,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
                 "got valid non TR-UDP data packet with %u bytes of data",
                 (uint32_t)data_length);
         send_l0_event(con, EV_L_RECEIVED_UNRELIABLE, data, data_length);
-    }
+    } break;
 
     // Process received data
     // @param tcd Pointer to trudpData
