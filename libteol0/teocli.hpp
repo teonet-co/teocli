@@ -45,7 +45,7 @@ private:
     void *userData = NULL;
     EventsCb eventCallBack = NULL;
     teoLNullConnectData *con = NULL;
-    std::string clientName = "teocli++-default";
+    std::string clientName;
 
     /**
      * Initialize L0 client library.
@@ -93,13 +93,16 @@ public:
     /**
      * Teonet client simple constructor
      */
-    Teocli(const char *client = "teocli++") : clientName(client) { init(); }
-    Teocli(const char *server, int port, PROTOCOL proto) : Teocli() {
-      connect(server, port, NULL, NULL, proto);
+    explicit Teocli(const std::string &client = "teocli++") : clientName(client) {
+        init();
     }
-    Teocli(const char *client, const char *server, int port, EventsCb event_cb,
-      void *user_data, PROTOCOL proto) : Teocli(client) {
-      connect(server, port, user_data, event_cb, proto);
+    explicit Teocli(const char *server, int port, PROTOCOL proto) : Teocli() {
+        connect(server, port, NULL, NULL, proto);
+    }
+    explicit Teocli(const char *client, const char *server, int port,
+                    EventsCb event_cb, void *user_data, PROTOCOL proto)
+        : Teocli(client) {
+        connect(server, port, user_data, event_cb, proto);
     }
 
     /**
