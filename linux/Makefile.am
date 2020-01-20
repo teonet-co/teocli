@@ -85,7 +85,7 @@ libteocli_la_SOURCES = \
 
 libteocli_la_LDFLAGS = $(AM_LDFLAGS) -lpthread -version-info $(LIBRARY_CURRENT):$(LIBRARY_REVISION):$(LIBRARY_AGE)
 
-teobasedir = $(includedir)/teobase
+teobasedir = $(pkgincludedir)/teobase
 teobase_HEADERS = \
 	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/api.h \
 	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/logging.h \
@@ -96,7 +96,7 @@ teobase_HEADERS = \
 	$(top_srcdir)/../libtrudp/libs/teobase/include/teobase/windows.h \
 	# end of teobase_HEADERS
 
-teoccldir = $(includedir)/teoccl
+teoccldir = $(pkgincludedir)/teoccl
 teoccl_HEADERS = \
 	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/array_list.h \
 	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/hash.h \
@@ -105,24 +105,24 @@ teoccl_HEADERS = \
 	$(top_srcdir)/../libtrudp/libs/teoccl/include/teoccl/queue.h \
 	# end of teoccl_HEADERS
 
-tinyaesdir = $(includedir)/libtinycrypt/tiny-AES-c/
+tinyaesdir = $(pkgincludedir)/libtinycrypt/tiny-AES-c/
 tinyaes_HEADERS = \
 	$(top_srcdir)/../libtinycrypt/tiny-AES-c/aes.hpp \
 	$(top_srcdir)/../libtinycrypt/tiny-AES-c/aes.h \
 	# end of tinyaes_HEADERS
 
-tinyecdhdir = $(includedir)/libtinycrypt/tiny-ECDH-c/
+tinyecdhdir = $(pkgincludedir)/libtinycrypt/tiny-ECDH-c/
 tinyecdh_HEADERS = \
 	$(top_srcdir)/../libtinycrypt/tiny-ECDH-c/ecdh.h \
 	# end of tinyecdh_HEADERS
 
-tinycryptdir = $(includedir)/libtinycrypt
+tinycryptdir = $(pkgincludedir)/libtinycrypt
 tinycrypt_HEADERS = \
 	$(top_srcdir)/../libtinycrypt/tinycrypt.h \
 	# end of tinycrypt_HEADERS
 
-libteol0dir = $(includedir)/libteol0
-libteol0_HEADERS = \
+libteoclidir = $(includedir)/teocli
+libteocli_HEADERS = \
 	$(top_srcdir)/../libteol0/teocli_api.h \
 	$(top_srcdir)/../libteol0/teocli.hpp \
 	$(top_srcdir)/../libteol0/teonet_l0_client_crypt.h \
@@ -162,9 +162,10 @@ teocli_s_common_thread_LDADD = libteocli.la -lpthread -lev
 
 uninstall-hook:
 	-rmdir \
-    $(includedir)/teobase \
-    $(includedir)/teoccl \
-    $(includedir)/libtinycrypt/tiny-AES-c/ \
-    $(includedir)/libtinycrypt/tiny-ECDH-c/ \
-    $(includedir)/libtinycrypt \
-    $(includedir)/libteol0
+	$(includedir)/teocli/libtinycrypt/tiny-AES-c \
+	$(includedir)/teocli/libtinycrypt/tiny-ECDH-c \
+	$(includedir)/teocli/libtinycrypt \
+	$(includedir)/teocli/teobase \
+	$(includedir)/teocli/teoccl \
+    	$(includedir)/teocli 
+
