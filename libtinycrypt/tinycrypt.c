@@ -66,12 +66,10 @@ const char* initApplyRemoteKey(PeerKeyset* keys, const ECDHPubkey* remote,
   AES128_1_KEY clamped_key;
   zero_bytes(clamped_key.data, sizeof(clamped_key.data));
 
-  if (sizeof(clamped_key.data) < sizeof(keys->sharedkey.data)) {
-    memcpy(clamped_key.data, keys->sharedkey.data, sizeof(clamped_key.data));
-  } else {
-    memcpy(clamped_key.data, keys->sharedkey.data,
-           sizeof(keys->sharedkey.data));
-  }
+  size_t copy_size = (sizeof(clamped_key.data) < sizeof(keys->sharedkey.data))
+                         ? sizeof(clamped_key.data)
+                         : sizeof(keys->sharedkey.data);
+  memcpy(clamped_key.data, keys->sharedkey.data, copy_size);
 
   PBKDF2_AES128_1(&clamped_key, &keys->sessionsalt, 30, keys->sessionkey.data,
                   sizeof(keys->sessionkey.data));
