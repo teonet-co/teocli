@@ -969,36 +969,10 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                                      (__SOCKADDR_ARG)&remaddr, &addr_len);
                 // Process received packet
                 if (recvlen > 0) {
-                    CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
-                            "Received %u bytes from socket.",
-                            (uint32_t)recvlen);
-
                     trudpChannelData *tcd =
                         trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
                     trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
                 } else {
-                    if (recvlen == -1) {
-#if defined(_WIN32)
-                        int recv_errno = WSAGetLastError();
-                        if (recv_errno != WSAEWOULDBLOCK) {
-#else
-                        int recv_errno = errno;
-// EWOULDBLOCK may be not defined or may have same value as EAGAIN.
-#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
-                        if (recv_errno != EAGAIN && recv_errno != EWOULDBLOCK) {
-#else
-                        if (recv_errno != EAGAIN) {
-#endif
-#endif
-                            // TODO: Use thread safe error formatting function.
-                            // TODO: On Windows use correct error formatting function.
-                            LTRACK_E(
-                                "TeonetClient",
-                                "trudpUdpRecvfrom failed with error %" PRId32
-                                ": %s",
-                                recv_errno, strerror(recv_errno));
-                        }
-                    }
 #if defined(_WIN32)
                     CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
                             "Resetting socket receive state.");
@@ -1050,7 +1024,8 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 }
 
                 CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
-                        "Received message from pipe.");
+                        "Received message %u bytes from pipe.",
+                        (uint32_t)pipe_send_data.packet_length);
 
                 teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
                 teoLNullPacketSeal(locked_crypt,
