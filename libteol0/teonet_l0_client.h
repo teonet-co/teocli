@@ -226,6 +226,7 @@ typedef struct teoLNullCPacket {
 typedef struct ksnLNullSStat {
 
     uint16_t visits;
+    uint16_t clients;
 
 } ksnLNullSStat;
 
