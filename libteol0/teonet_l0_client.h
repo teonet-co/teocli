@@ -225,8 +225,12 @@ typedef struct teoLNullCPacket {
  */
 typedef struct ksnLNullSStat {
 
-    uint16_t visits;
-    uint16_t clients;
+    uint16_t visits;                ///< total clients connected counter
+    uint16_t clients;               ///< clients connected now counter
+    uint64_t packets_from_client;   ///< packets from client to peer counter
+    uint64_t packets_to_peer;       ///< packets from l0 to peer counter
+    uint64_t packets_from_peer;     ///< packets from peer to l0 counter
+    uint64_t packets_to_client;     ///< packets from l0 to client counter
 
 } ksnLNullSStat;
 
