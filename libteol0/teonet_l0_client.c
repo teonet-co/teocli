@@ -424,7 +424,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
 
     // Send message with time
-    ssize_t snd = _teosockSend(con, false, (teoLNullCPacket *)buf, pkg_length);
+    ssize_t snd = _teosockSend(con, true, (teoLNullCPacket *)buf, pkg_length);
 
     return snd;
 }
