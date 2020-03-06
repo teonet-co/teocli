@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
 
         reconnect_flag = 0;
         if(con->status >= 0) {
-            const int timeout = 1000;
+            const int timeout = 50; //1000;
             uint64_t nextPing = teoGetTimestampFull();
             // Event loop
             while(teoLNullReadEventLoop(con, timeout)) {
@@ -303,8 +303,8 @@ int main(int argc, char** argv) {
                         if (now > nextPing) {
                            teoLNullSendEcho(con, param.peer_name, param.msg);
                            // teoLNullSendUnreliable(con, CMD_L_PEERS, param.peer_name, NULL, 0);
-                            nextPing = now + 1000000;
-                        }
+                            nextPing = now + 2500; // 1000000;
+                        } 
                     } continue;
                     default:{
                         // Some error condition, go to reconnect
