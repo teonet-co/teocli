@@ -302,7 +302,7 @@ static char *remote_address;
 static int remote_port_i;
 
 // Read buffer
-static char *buffer;
+static uint8_t *buffer;
 
 /**
  * TR-UDP event callback
