@@ -250,7 +250,7 @@ static ssize_t _teosockSend(teoLNullConnectData *con, bool with_encryption,
         // for TCP connection packet sent immediately, so we should seal it right now
         teoLNullEncryptionContext *locked_crypt = teoLNullAcquireCrypto(con);
         teoLNullPacketSeal(locked_crypt, with_encryption, packet);
-        ssize_t res = teosockSend(con->fd, (const char *)packet, length);
+        ssize_t res = teosockSend(con->fd, (const uint8_t *)packet, length);
         teoLNullUnlockCrypto(locked_crypt);
         return res;
     } else {
@@ -365,7 +365,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
     if (con->tcp_f) {
         snd = _teosockSend(con, false, buf, pkg_length);
     } else {
-        snd = trudpUdpSendto(con->td->fd, buf, pkg_length,
+        snd = trudpUdpSendto(con->td->fd, (const uint8_t *)buf, pkg_length,
                              (__CONST_SOCKADDR_ARG)&con->tcd->remaddr,
                              sizeof(con->tcd->remaddr));
     }
@@ -724,10 +724,10 @@ teoLNullCPacket *teoLNullPacketGetFromBuffer(uint8_t *data, size_t data_len) {
  * @retval -2 Wrong packet received (dropped)
  */
 ssize_t teoLNullRecv(teoLNullConnectData *con) {
-    char buf[L0_BUFFER_SIZE];
+    uint8_t buf[L0_BUFFER_SIZE];
 
     ssize_t rc = teosockRecv(con->fd, buf, L0_BUFFER_SIZE);
-    if (rc != 0) { rc = teoLNullRecvCheck(con, buf, rc); }
+    if (rc != 0) { rc = teoLNullRecvCheck(con, (char*)buf, rc); }
 
     return rc;
 }
@@ -957,7 +957,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
         if (FD_ISSET(td->fd, &rfds)) {
 #endif
 
-            char buffer[BUFFER_SIZE];
+            uint8_t buffer[BUFFER_SIZE];
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
 
