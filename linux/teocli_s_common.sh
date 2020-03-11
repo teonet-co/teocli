@@ -1,12 +1,12 @@
 #!/bin/bash
 # for i in {1..37} 
-for i in {1..90} 
+for i in {1..10} 
 do
     echo "Welcome $i times"
-    ./teocli_s_common tcli_$i 127.0.0.1 9010 teo-vpn-1 &
+    ./teocli_s_common tcli_$i 127.0.0.1 7500 ps-server &
     # ./teocli_s_common tcli_$i 10.135.132.126 9010 teo-mm &
     usleep 150000
-done
+done 
 
 # Default 
 #
