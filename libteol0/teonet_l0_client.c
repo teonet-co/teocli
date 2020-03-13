@@ -973,11 +973,9 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                             "Received %u bytes from socket.",
                             (uint32_t)recvlen);
 
-                    size_t data_length;
                     trudpChannelData *tcd =
                         trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
-                    trudpChannelProcessReceivedPacket(tcd, buffer, recvlen,
-                                                      &data_length);
+                    trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
                 } else {
                     if (recvlen == -1) {
 #if defined(_WIN32)
@@ -1789,7 +1787,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
             // event would be sent in KEX handler
 
         } else if (id == 0 && !tcd->connected_f) {
-            trudpSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
+            trudpChannelSendEvent(con->tcd, CONNECTED, NULL, 0, NULL);
             con->status = CON_STATUS_CONNECTED;
             send_l0_event(con, EV_L_CONNECTED, &con->status,
                           sizeof(con->status));
@@ -1877,7 +1875,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
     // @param user_data NULL
     case PROCESS_SEND: {
         // Send to UDP
-        trudpUdpSendto(TD(tcd)->fd, data, data_length,
+        trudpUdpSendto(tcd->td->fd, data, data_length,
                        (__CONST_SOCKADDR_ARG)&tcd->remaddr,
                        sizeof(tcd->remaddr));
 
