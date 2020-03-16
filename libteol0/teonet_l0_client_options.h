@@ -73,6 +73,35 @@ TEOCLI_API void teoLNUllSetOption_MaximumReceiveInSelect(int32_t maximum_message
 */
 TEOCLI_API void teoLNUllSetOption_EncryptionProtocol(int protocol);
 
+/**
+ * Callback function type for @a teocliSetOption_STAT_bytesSentCallback.
+ */
+typedef void (*teocliDataSentCallback_t)(int bytes);
+
+/**
+ * Set callback function that get called when data sent to transport
+ * layer (tcp or Trudp). Default value is NULL.
+ *
+ * @param callback callback function.
+ */
+TEOCLI_API void teocliSetOption_STAT_bytesSentCallback(
+    teocliDataSentCallback_t callback);
+
+/**
+ * Callback function type for @a teocliSetOption_STAT_bytesReceivedCallback.
+ */
+typedef void (*teocliDataReceivedCallback_t)(int bytes);
+
+/**
+ * Set callback function that get called when data received from transport
+ * layer (tcp or Trudp). Default value is NULL.
+ *
+ * @param callback callback function.
+ */
+TEOCLI_API void teocliSetOption_STAT_bytesReceivedCallback(
+    teocliDataReceivedCallback_t callback);
+
+
 #ifdef __cplusplus
 }
 #endif
