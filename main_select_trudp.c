@@ -497,9 +497,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case PROCESS_SEND: {
 
-            //if(isWritable(TD(tcd)->fd, timeout) > 0) {
+            //if(isWritable(tcd->td->fd, timeout) > 0) {
             // Send to UDP
-            trudpUdpSendto(TD(tcd)->fd, data, data_length,
+            trudpUdpSendto(tcd->td->fd, data, data_length,
                     (__CONST_SOCKADDR_ARG) &tcd->remaddr, sizeof(tcd->remaddr));
             //}
 
@@ -508,7 +508,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 
                 int port,type;
                 uint32_t id = trudpPacketGetId(data);
-                char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
+                const char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
                 if(!(type = trudpPacketGetType(data))) {
                     teoLNullCPacket *cp = trudpPacketGetData(data);
                     debug(tru, DEBUG,  "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
