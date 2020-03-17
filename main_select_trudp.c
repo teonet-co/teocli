@@ -603,9 +603,8 @@ static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
 
             // Process received packet
             if(recvlen > 0) {
-                size_t data_length;
                 trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
-                trudpChannelProcessReceivedPacket(tcd, buffer, recvlen, &data_length);
+                trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
             }
         }
 
