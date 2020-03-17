@@ -80,3 +80,20 @@ void teoLNUllSetOption_ConnectTimeoutMs(int32_t timeout_ms) {
     LTRACK("TeonetClient", "Set ConnectTimeoutMs = %d ms",
            teocliOpt_ConnectTimeoutMs);
 }
+
+extern teocliDataSentCallback_t teocliOpt_STAT_dataSentCallback;
+teocliDataSentCallback_t teocliOpt_STAT_dataSentCallback = NULL;
+
+// Set callback function that get called when data sent to udp socket.
+void teocliSetOption_STAT_bytesSentCallback(teocliDataSentCallback_t callback) {
+    teocliOpt_STAT_dataSentCallback = callback;
+}
+
+extern teocliDataReceivedCallback_t teocliOpt_STAT_dataReceivedCallback;
+teocliDataReceivedCallback_t teocliOpt_STAT_dataReceivedCallback = NULL;
+
+// Set callback function that get called when data received from udp socket.
+void teocliSetOption_STAT_bytesReceivedCallback(
+    teocliDataReceivedCallback_t callback) {
+    teocliOpt_STAT_dataReceivedCallback = callback;
+}

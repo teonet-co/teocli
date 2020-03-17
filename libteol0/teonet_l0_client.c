@@ -15,6 +15,7 @@
 
 #include "teonet_l0_client.h"
 #include "teonet_l0_client_crypt.h"
+#include "teonet_l0_client_options.h"
 
 #include <errno.h>
 #include <inttypes.h>
@@ -61,6 +62,8 @@ extern bool teocliOpt_PacketDataChecksumInR2;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
 extern int32_t teocliOpt_ConnectTimeoutMs;
 extern teoLNullEncryptionProtocol teocliOpt_EncryptionProtocol;
+extern teocliDataSentCallback_t teocliOpt_STAT_dataSentCallback;
+extern teocliDataReceivedCallback_t teocliOpt_STAT_dataReceivedCallback;
 
 // Internal functions
 static ssize_t teoLNullPacketSplit(teoLNullConnectData *con, void *data,
@@ -71,6 +74,9 @@ static teoLNullConnectData *
 _teoLNullConnectionInitiate(teoLNullConnectData *con,
                             teoLNullEncryptionProtocol enc_proto);
 static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket *packet);
+
+static void _teocliCallDataSentCallback(int bytes_sent);
+static void _teocliCallDataReceivedCallback(int bytes_received);
 
 #if defined(HAVE_MINGW) || defined(_WIN32)
 void TEOCLI_API WinSleep(uint32_t dwMilliseconds) { Sleep(dwMilliseconds); }
@@ -252,6 +258,9 @@ static ssize_t _teosockSend(teoLNullConnectData *con, bool with_encryption,
         teoLNullPacketSeal(locked_crypt, with_encryption, packet);
         ssize_t res = teosockSend(con->fd, (const uint8_t *)packet, length);
         teoLNullUnlockCrypto(locked_crypt);
+
+        _teocliCallDataSentCallback(length);
+
         return res;
     } else {
         teoPipeSendData pipe_send_data;
@@ -285,6 +294,8 @@ static ssize_t _teosockSend(teoLNullConnectData *con, bool with_encryption,
                                      "message written partially.");
             abort();
         }
+
+        _teocliCallDataSentCallback(length);
 
         return length;
     }
@@ -368,6 +379,8 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
         snd = trudpUdpSendto(con->td->fd, (const uint8_t *)buf, pkg_length,
                              (__CONST_SOCKADDR_ARG)&con->tcd->remaddr,
                              sizeof(con->tcd->remaddr));
+
+        _teocliCallDataSentCallback(pkg_length);
     }
     free(buf);
 
@@ -459,6 +472,34 @@ static void teoLNullPacketUpdateHeaderChecksum(teoLNullCPacket* packet) {
 
     packet->header_checksum =
         get_byte_checksum(packet_buffer, header_size_without_checksum);
+}
+
+/**
+ * Internal function to call teocliOpt_STAT_dataSentCallback callback.
+ *
+ * @param bytes_sent amount of bytes sent.
+ */
+static void _teocliCallDataSentCallback(int bytes_sent) {
+    teocliDataSentCallback_t callback_copy =
+        teocliOpt_STAT_dataSentCallback;
+
+    if (callback_copy != NULL) {
+        callback_copy(bytes_sent);
+    }
+}
+
+/**
+ * Internal function to call teocliOpt_STAT_dataReceivedCallback callback.
+ *
+ * @param bytes_received amount of bytes received.
+ */
+static void _teocliCallDataReceivedCallback(int bytes_received) {
+    teocliDataReceivedCallback_t callback_copy =
+        teocliOpt_STAT_dataReceivedCallback;
+
+    if (callback_copy != NULL) {
+        callback_copy(bytes_received);
+    }
 }
 
 /**
@@ -1108,6 +1149,8 @@ bool teoLNullReadEventLoop(teoLNullConnectData *con, int timeout) {
             while ((rc = teoLNullRecv(con)) != -1) {
                 if (rc > 0) {
                     send_l0_event(con, EV_L_RECEIVED, con->read_buffer, rc);
+
+                    _teocliCallDataReceivedCallback(rc);
                 } else if (rc == 0) {
                     LTRACK_I("TeonetClient",
                              "send_l0_event EV_L_DISCONNECTED in "
@@ -1811,6 +1854,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
             trudpChannelSendData(tcd, cp, ready_bytes_count);
         } else { // Send other commands to L0 event loop
             send_l0_event(con, EV_L_RECEIVED, cp, ready_bytes_count);
+
+            _teocliCallDataReceivedCallback(ready_bytes_count);
         }
     } break;
 
@@ -1832,6 +1877,8 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
                 "got valid non TR-UDP data packet with %u bytes of data",
                 (uint32_t)data_length);
         send_l0_event(con, EV_L_RECEIVED_UNRELIABLE, data, data_length);
+
+        _teocliCallDataReceivedCallback(data_length);
     } break;
 
     // Process received data
