@@ -326,8 +326,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case CONNECTED: {
 
-            char *key = trudpChannelMakeKey(tcd);
-            debug(tru, DEBUG,  "Connect channel %s\n", key);
+            debug(tru, DEBUG,  "Connect channel %s\n", tcd->channel_key);
 
         } break;
 
@@ -337,15 +336,14 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case DISCONNECTED: {
 
-            char *key = trudpChannelMakeKey(tcd);
             if(data_length == sizeof(uint32_t)) {
                 uint32_t last_received = *(uint32_t*)data;
                 debug(tru, DEBUG,
                       "Disconnect channel %s, last received: %.6f sec\n",
-                      key, last_received / 1000000.0);
+                      tcd->channel_key, last_received / 1000000.0);
                 trudpChannelDestroy(tcd);
             }
-            else debug(tru, DEBUG,  "Disconnected channel %s\n", key);
+            else debug(tru, DEBUG,  "Disconnected channel %s\n", tcd->channel_key);
 
             connected_flag = 0;
 
@@ -356,8 +354,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_RESET: {
 
-            char *key = trudpChannelMakeKey(tcd);
-            debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", key);
+            debug(tru, DEBUG,  "got TRU_RESET packet from channel %s\n", tcd->channel_key);
             
             connected_flag = 0;
 
@@ -368,9 +365,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case SEND_RESET: {
 
-            char *key = trudpChannelMakeKey(tcd);
-
-            if(!data) debug(tru, DEBUG,  "Send reset: to channel %s\n", key);
+            if(!data) debug(tru, DEBUG,  "Send reset: to channel %s\n", tcd->channel_key);
             else {
 
                 uint32_t id = (data_length == sizeof(uint32_t)) ? *(uint32_t*)data:0;
@@ -379,12 +374,12 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
                   debug(tru, DEBUG,
                     "Send reset: "
                     "Not expected packet with id = 0 received from channel %s\n",
-                    key);
+                    tcd->channel_key);
                 else
                   debug(tru, DEBUG,
                     "Send reset: "
                     "High send packet number (%d) at channel %s\n",
-                    id, key);
+                    id, tcd->channel_key);
                 }
 
         } break;
@@ -394,8 +389,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_ACK_RESET: {
 
-            char *key = trudpChannelMakeKey(tcd);
-            debug(tru, DEBUG,  "Got ACK to RESET packet at channel %s\n", key);
+            debug(tru, DEBUG,  "Got ACK to RESET packet at channel %s\n", tcd->channel_key);
 
         } break;
 
@@ -404,10 +398,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_ACK_PING: {
 
-            char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,
               "got ACK to PING packet at channel %s, data: %s, %.3f(%.3f) ms\n",
-              key, (char*)data,
+              tcd->channel_key, (char*)data,
               (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
 
         } break;
@@ -417,10 +410,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_PING: {
 
-            char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,
               "got PING packet at channel %s, data: %s\n",
-              key, (char*)data);
+              tcd->channel_key, (char*)data);
 
         } break;
 
@@ -430,10 +422,9 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
         // @param user_data NULL
         case GOT_ACK: {
 
-            char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,  "got ACK id=%u at channel %s, %.3f(%.3f) ms\n",
                   trudpPacketGetId(data/*trudpPacketGetPacket(data)*/),
-                  key, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
+                  tcd->channel_key, (tcd->triptime)/1000.0, (tcd->triptimeMiddle)/1000.0);
 
             #if USE_LIBEV
             // trudp_start_send_queue_cb(&psd, 0);
@@ -459,11 +450,10 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             }
 
             teoLNullCPacket *cp = (teoLNullCPacket *)con->read_buffer;
-            char *key = trudpChannelMakeKey(tcd);
             debug(tru, DEBUG,
                 "got %d byte data at channel %s [%.3f(%.3f) ms], id=%u, "
                 "peer: %s, cmd: %u, data length: %u\n",
-                (int)block_len, key,
+                (int)block_len, tcd->channel_key,
                 (double)tcd->triptime / 1000.0,
                 (double)tcd->triptimeMiddle / 1000.0,
                 id, cp->peer_name, (uint32_t)cp->cmd,
