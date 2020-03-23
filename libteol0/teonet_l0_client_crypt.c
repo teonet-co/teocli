@@ -3,7 +3,7 @@
 #include "teobase/logging.h"
 #include <assert.h>
 
-extern int teocliOpt_DBG_packetFlow;
+extern bool teocliOpt_DBG_packetFlow;
 
 typedef struct KeyExchangePayload_ECDH_AES_128_V1 {
     //! common.protocolId, must be ENC_PROTO_ECDH_AES_128_V1
