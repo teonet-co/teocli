@@ -1337,7 +1337,7 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
 
     int64_t connect_start_time_ms = teotimeGetCurrentTimeMs();
     while (con->status == CON_STATUS_NOT_CONNECTED) {
-        bool can_continue = teoLNullReadEventLoop(con, 100);
+        bool can_continue = teoLNullReadEventLoop(con, 50);
         if (!can_continue) {
             CLTRACK_I(teocliOpt_DBG_packetFlow, "TeonetClient",
                       "connection event loop stopped");
@@ -1356,6 +1356,10 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
                           sizeof(con->status));
             return con;
         }
+        // In case of network some error teoLNullReadEventLoop returns immediately
+        // and here we sleep for short time to avoid CPU burnout
+        // It's not such critical during connect
+        teoLNullSleep(50);
     }
 
     if (con->status != CON_STATUS_CONNECTED) {
