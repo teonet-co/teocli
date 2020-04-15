@@ -313,6 +313,7 @@ static ssize_t _teosockSend(teoLNullConnectData *con, bool with_encryption,
 ssize_t teoLNullPacketSend(teoLNullConnectData *con, bool with_encryption,
                            teoLNullCPacket *packet, size_t packet_length) {
     if (con != NULL) {
+        // LTRACK_I("         >", "teoLNullPacketSend");
         return _teosockSend(con, with_encryption, packet, packet_length);
     } else {
         return -1;
@@ -346,6 +347,7 @@ ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
 
     size_t pkg_length = teoLNullPacketCreate(buf, buf_length,
                                              cmd, peer_name, data, data_length);
+    // LTRACK_I("         >", "teoLNullSend");
     ssize_t snd = _teosockSend(con, true, buf, pkg_length);
 
     free(buf);
@@ -374,6 +376,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
     // with identifier
     ssize_t snd = 0;
     if (con->tcp_f) {
+        // LTRACK_I("         >", "teoLNullSendUnreliable");
         snd = _teosockSend(con, false, buf, pkg_length);
     } else {
         snd = trudpUdpSendto(con->td->fd, (const uint8_t *)buf, pkg_length,
@@ -437,6 +440,7 @@ ssize_t teoLNullSendEcho(teoLNullConnectData *con, const char *peer_name,
         teoLNullPacketCreateEcho(buf, L0_BUFFER_SIZE, peer_name, msg);
 
     // Send message with time
+    // LTRACK_I("         >", "teoLNullSendEcho");
     ssize_t snd = _teosockSend(con, true, (teoLNullCPacket *)buf, pkg_length);
 
     return snd;
@@ -867,6 +871,7 @@ ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
     teoLNullCPacket *buf = (teoLNullCPacket *)ccl_malloc(buf_len);
 
     size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
+    // LTRACK_I("         >", "teoLNullLogin");
     ssize_t snd = _teosockSend(con, true, buf, pkg_length);
 
     free(buf);
@@ -936,8 +941,12 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
     FD_SET(con->pipefd[0], &rfds);
 #endif
 
+    // timeout = 500000;
     uint64_t ts = teoGetTimestampFull();
     uint32_t timeout_sq = trudpGetSendQueueTimeout(td, ts);
+    // LTRACK_I("TeonetClient",
+    //          "\tnow=%lu    td.exp=%lu    timeout_sq=%u    timeout=%d", ts,
+    //          td->expected_max_time, timeout_sq, timeout);
 
     // Wait up to ~50 ms. */
     uint32_t t = timeout_sq < timeout ? timeout_sq : timeout;
@@ -1078,6 +1087,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 size_t length = pipe_send_data.packet_length;
                 for (;;) {
                     size_t len = length > 512 ? 512 : length;
+                    // LTRACK_I("        >", "From pipe");
                     trudpChannelSendData(con->tcd, ptr, len);
                     length -= len;
                     if (!length) break;
@@ -1306,6 +1316,7 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
                                  CMD_L_INIT, "", kex_buf, kex_len);
 
         // Send packet, unencrypted
+        // LTRACK_I("         >", "send kex");
         ssize_t send_result = _teosockSend(con, false, packet, packet_len);
 
         free(packet);
@@ -1851,6 +1862,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         if (cp->cmd == CMD_L_ECHO) {
             cp->cmd = CMD_L_ECHO_ANSWER;
             teoLNullPacketUpdateHeaderChecksum(cp);
+            // LTRACK_I("        >", "From CMD_L_ECHO_ANSWER");
             trudpChannelSendData(tcd, cp, ready_bytes_count);
         } else { // Send other commands to L0 event loop
             send_l0_event(con, EV_L_RECEIVED, cp, ready_bytes_count);
