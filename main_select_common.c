@@ -54,8 +54,8 @@
  */
 struct app_parameters {
     const char *host_name;
-    const char *tcp_server;
-    int tcp_port;
+    const char *addr;
+    int port;
     const char *peer_name;
     const char *msg;
 };
@@ -253,8 +253,8 @@ int main(int argc, char** argv) {
     // Teonet L0 server parameters
     struct app_parameters param;
     param.host_name = argv[1]; //"C3";
-    param.tcp_server = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
-    param.tcp_port = atoi(argv[3]); //9000;
+    param.addr = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
+    param.port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
     if(argc > 5) param.msg = argv[5];
     else param.msg = send_msg;
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
     while(!quit_flag) {
 
         // Connect to L0 server
-        teoLNullConnectData *con = teoLNullConnectE(param.tcp_server, param.tcp_port,
+        teoLNullConnectData *con = teoLNullConnectE(param.addr, param.port,
             event_cb, &param, transport_proto);
 
         reconnect_flag = 0;
