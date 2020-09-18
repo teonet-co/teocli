@@ -999,7 +999,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #endif
 
             uint8_t buffer[BUFFER_SIZE];
-            struct sockaddr_in remaddr; // remote address
+            struct sockaddr_storage remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
 
             for (int receive_counter = 0;
@@ -1461,7 +1461,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
     } else {
         // Connect to UDP
         int port_local = 0;
-        con->fd = trudpUdpBindRaw(&port_local, 1);
+        con->fd = trudpUdpBindRaw(server, &port_local, 1);
         if (con->fd < 0) {
             LTRACK_E("TeonetClient", "Failed to bind UDP socket.");
             con->status = CON_STATUS_SOCKET_ERROR;
