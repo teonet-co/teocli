@@ -1600,7 +1600,7 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
             free(con->client_crypt);
         }
 
-        if (!con->tcp_f) {
+        if (!con->tcp_f && con->td) {
             trudpChannelDestroyAll(con->td);
             trudpDestroy(con->td);
         }
