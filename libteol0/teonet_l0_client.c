@@ -1462,7 +1462,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
         // Connect to UDP
         int port_local = 0;
         con->fd = trudpUdpBindRaw(server, &port_local, 1);
-        trudpUdpSetNonblock(con->fd);
+        teosockSetBlockingMode(con->fd, TEOSOCK_NON_BLOCKING_MODE);
         if (con->fd < 0) {
             LTRACK_E("TeonetClient", "Failed to bind UDP socket.");
             con->status = CON_STATUS_SOCKET_ERROR;
