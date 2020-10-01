@@ -719,7 +719,7 @@ int main(int argc, char** argv) {
     // Bind UDP port and get FD (start listening at port)
     _param = &param;
     int port = 9090; //atoi(o_local_port); // Local port
-    int fd = trudpUdpBindRaw(param.tcp_server, &port, 1);
+    int fd = trudpUdpBindRaw(&port, 1);
     if(fd <= 0) die("Can't bind UDP port ...\n");
     else fprintf(stderr, "Start listening at UDP port %d\n", port);
 
