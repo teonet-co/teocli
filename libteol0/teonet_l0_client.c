@@ -378,7 +378,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
     } else {
         snd = trudpUdpSendto(con->td->fd, (const uint8_t *)buf, pkg_length,
                              (__CONST_SOCKADDR_ARG)&con->tcd->remaddr,
-                             sizeof(con->tcd->remaddr));
+                             con->tcd->addrlen);
 
         _teocliCallDataSentCallback(pkg_length);
     }
@@ -1904,7 +1904,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         // Send to UDP
         trudpUdpSendto(tcd->td->fd, data, data_length,
                        (__CONST_SOCKADDR_ARG)&tcd->remaddr,
-                       sizeof(tcd->remaddr));
+                       tcd->addrlen);
 
         if (DEBUG) {
             trudpPacket* packet = (trudpPacket*)data;
