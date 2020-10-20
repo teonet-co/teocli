@@ -1011,7 +1011,7 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
                 // Process received packet
                 if (recvlen > 0) {
                     trudpChannelData *tcd =
-                        trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+                        trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, addr_len, 0);
                     trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
                 } else {
 #if defined(_WIN32)
@@ -1461,7 +1461,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
     } else {
         // Connect to UDP
         int port_local = 0;
-        con->fd = trudpUdpBindRaw(&port_local, 1);
+        con->fd = trudpUdpBindRaw_cli(server, &port_local, 1);
         teosockSetBlockingMode(con->fd, TEOSOCK_NON_BLOCKING_MODE);
         if (con->fd < 0) {
             LTRACK_E("TeonetClient", "Failed to bind UDP socket.");
