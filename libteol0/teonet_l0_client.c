@@ -57,6 +57,7 @@
 // Global teocli options
 extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
+extern bool teocliOpt_DBG_logUnknownErrors;
 extern bool teocliOpt_DBG_sentPackets;
 extern bool teocliOpt_PacketDataChecksumInR2;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
@@ -1005,15 +1006,22 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
             for (int receive_counter = 0;
                  receive_counter < teocliOpt_MaximumReceiveInSelect;
                  ++receive_counter) {
-                ssize_t recvlen =
+
+                size_t recvlen = 0;
+                int error_code = 0;
+
+                teosockRecvfromResult recvfrom_result =
                     trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
-                                     (__SOCKADDR_ARG)&remaddr, &addr_len);
+                                     (__SOCKADDR_ARG)&remaddr, &addr_len, &recvlen, &error_code);
                 // Process received packet
-                if (recvlen > 0) {
+                if (recvfrom_result == TEOSOCK_RECVFROM_DATA_RECEIVED) {
                     trudpChannelData *tcd =
                         trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, addr_len, 0);
                     trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
-                } else {
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_ORDERLY_CLOSED) {
+                    // TODO: In UDP it's possible to receive 0 bytes message.
+                    LTRACK_E("TeonetClient", "Receiving data using recvfrom() returned 0 (connection closed).");
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_TRY_AGAIN) {
 #if defined(_WIN32)
                     CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
                             "Resetting socket receive state.");
@@ -1026,6 +1034,16 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #endif
                     // No more messages to receive. Leaving receive loop.
                     break;
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_FATAL_ERROR) {
+                    // TODO: Use thread safe error formatting function.
+                    // TODO: On Windows use correct error formatting function.
+                    LTRACK_E("TeonetClient", "Closing connection. Unrecoverable error while receiving data using recvfrom(). Error %"PRId32": %s", error_code, strerror(error_code));
+
+                    con->udp_reset_f = 1;
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_UNKNOWN_ERROR) {
+                    // TODO: Use thread safe error formatting function.
+                    // TODO: On Windows use correct error formatting function.
+                    CLTRACK_E(teocliOpt_DBG_logUnknownErrors, "TeonetClient", "Unknown error while receiving data using recvfrom(). Error %"PRId32": %s", error_code, strerror(error_code));
                 }
             }
         }
