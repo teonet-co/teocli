@@ -588,8 +588,13 @@ static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
 
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
-            ssize_t recvlen = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
-                    (__SOCKADDR_ARG)&remaddr, &addr_len);
+
+            int error_code = 0;
+            size_t recvlen = 0;
+            // TODO: Handle errors in recvfrom.
+            // TODO: All of this is big mistake! Fix it!
+            teosockRecvfromResult recvfrom_result = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
+                    (__SOCKADDR_ARG)&remaddr, &addr_len, &recvlen, &error_code);
 
             // Process received packet
             if(recvlen > 0) {
