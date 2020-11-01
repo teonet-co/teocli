@@ -1431,25 +1431,24 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
     // Connect to TCP
     if (con->tcp_f) {
-        con->fd = teosockCreateTcp();
+        //con->fd = teosockCreateTcp();
 
-        if (con->fd == TEOSOCK_INVALID_SOCKET) {
-            LTRACK_E("TeonetClient", "Can't create socket");
-            con->fd = -1;
-            con->status = CON_STATUS_SOCKET_ERROR;
-            send_l0_event(con, EV_L_CONNECTED, &con->status,
-                          sizeof(con->status));
-            return con;
-        }
+        // if (con->fd == TEOSOCK_INVALID_SOCKET) {
+        //     LTRACK_E("TeonetClient", "Can't create socket");
+        //     con->fd = -1;
+        //     con->status = CON_STATUS_SOCKET_ERROR;
+        //     send_l0_event(con, EV_L_CONNECTED, &con->status,
+        //                   sizeof(con->status));
+        //     return con;
+        // }
 
-        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
-                "Successfully created socket, connecting to %s at port %" PRIu16
-                " ...",
-                server, port);
-
+        // CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
+        //         "Successfully created socket, connecting to %s at port %" PRIu16
+        //         " ...",
+        //         server, port);
         int result =
-            teosockConnectTimeout(con->fd, server, port, teocliOpt_ConnectTimeoutMs);
-
+            teosockConnectTimeout(&con->fd, server, port, teocliOpt_ConnectTimeoutMs);
+printf("FD = %d, result = %d\n", con->fd, result);
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
             LTRACK_E("TeonetClient", "HOST NOT FOUND --> h_errno = %" PRId32,
                      h_errno);
@@ -1472,7 +1471,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
                           sizeof(con->status));
             return con;
         }
-
+        teosockSetBlockingMode(con->fd, TEOSOCK_NON_BLOCKING_MODE);
         // Set TCP_NODELAY option
         teosockSetTcpNodelay(con->fd);
 
