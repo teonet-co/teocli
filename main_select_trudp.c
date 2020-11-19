@@ -490,7 +490,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
             //if(isWritable(tcd->td->fd, timeout) > 0) {
             // Send to UDP
             trudpUdpSendto(tcd->td->fd, data, data_length,
-                    (__CONST_SOCKADDR_ARG) &tcd->remaddr, sizeof(tcd->remaddr));
+                    (__CONST_SOCKADDR_ARG) &tcd->remaddr, tcd->addrlen);
             //}
 
             // Debug message
@@ -498,7 +498,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data, size_t dat
 
                 int port,type;
                 uint32_t id = trudpPacketGetId(data);
-                const char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, &port);
+                const char *addr = trudpUdpGetAddr((__CONST_SOCKADDR_ARG)&tcd->remaddr, tcd->addrlen, &port);
                 if(!(type = trudpPacketGetType(data))) {
                     teoLNullCPacket *cp = trudpPacketGetData(data);
                     debug(tru, DEBUG,  "send %d bytes, id=%u, to %s:%d, %.3f(%.3f) ms, peer: %s, cmd: %d, data: %s\n",
@@ -588,12 +588,17 @@ static void trudpNetworkSelectLoop(trudpData *td, int timeout) {
 
             struct sockaddr_in remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
-            ssize_t recvlen = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
-                    (__SOCKADDR_ARG)&remaddr, &addr_len);
+
+            int error_code = 0;
+            size_t recvlen = 0;
+            // TODO: Handle errors in recvfrom.
+            // TODO: All of this is big mistake! Fix it!
+            teosockRecvfromResult recvfrom_result = trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
+                    (__SOCKADDR_ARG)&remaddr, &addr_len, &recvlen, &error_code);
 
             // Process received packet
             if(recvlen > 0) {
-                trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+                trudpChannelData *tcd = trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, addr_len, 0);
                 trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
             }
         }

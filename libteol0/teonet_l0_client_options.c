@@ -20,6 +20,13 @@ void teoLNUllSetOption_DBG_selectLoop(bool enable) {
     teocliOpt_DBG_selectLoop = enable;
 }
 
+extern bool teocliOpt_DBG_logUnknownErrors;
+bool teocliOpt_DBG_logUnknownErrors = false;
+
+void teoLNUllSetOption_DBG_logUnknownErrors(bool enable) {
+    teocliOpt_DBG_logUnknownErrors = enable;
+}
+
 extern bool teocliOpt_DBG_sentPackets;
 bool teocliOpt_DBG_sentPackets = false;
 

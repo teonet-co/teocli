@@ -30,6 +30,14 @@ TEOCLI_API void teoLNUllSetOption_DBG_packetFlow(bool enable);
 TEOCLI_API void teoLNUllSetOption_DBG_selectLoop(bool enable);
 
 /**
+ * Enable logging of unknown errors in socket functions.
+ *
+ * @param enable - boolean, if true - enables logging of error codes and text
+ * when unknown error occurs in socket function.
+ */
+TEOCLI_API void teoLNUllSetOption_DBG_logUnknownErrors(bool enable);
+
+/**
  * Enable extra debug logs in packet sending functions.
  *
  * @param enable - boolean, if true - enables dozens of debugging messages

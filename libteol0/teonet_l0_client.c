@@ -57,6 +57,7 @@
 // Global teocli options
 extern bool teocliOpt_DBG_packetFlow;
 extern bool teocliOpt_DBG_selectLoop;
+extern bool teocliOpt_DBG_logUnknownErrors;
 extern bool teocliOpt_DBG_sentPackets;
 extern bool teocliOpt_PacketDataChecksumInR2;
 extern int32_t teocliOpt_MaximumReceiveInSelect;
@@ -378,7 +379,7 @@ ssize_t teoLNullSendUnreliable(teoLNullConnectData *con, uint8_t cmd,
     } else {
         snd = trudpUdpSendto(con->td->fd, (const uint8_t *)buf, pkg_length,
                              (__CONST_SOCKADDR_ARG)&con->tcd->remaddr,
-                             sizeof(con->tcd->remaddr));
+                             con->tcd->addrlen);
 
         _teocliCallDataSentCallback(pkg_length);
     }
@@ -999,21 +1000,28 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #endif
 
             uint8_t buffer[BUFFER_SIZE];
-            struct sockaddr_in remaddr; // remote address
+            struct sockaddr_storage remaddr; // remote address
             socklen_t addr_len = sizeof(remaddr);
 
             for (int receive_counter = 0;
                  receive_counter < teocliOpt_MaximumReceiveInSelect;
                  ++receive_counter) {
-                ssize_t recvlen =
+
+                size_t recvlen = 0;
+                int error_code = 0;
+
+                teosockRecvfromResult recvfrom_result =
                     trudpUdpRecvfrom(td->fd, buffer, BUFFER_SIZE,
-                                     (__SOCKADDR_ARG)&remaddr, &addr_len);
+                                     (__SOCKADDR_ARG)&remaddr, &addr_len, &recvlen, &error_code);
                 // Process received packet
-                if (recvlen > 0) {
+                if (recvfrom_result == TEOSOCK_RECVFROM_DATA_RECEIVED) {
                     trudpChannelData *tcd =
-                        trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, 0);
+                        trudpGetChannelCreate(td, (__SOCKADDR_ARG)&remaddr, addr_len, 0);
                     trudpChannelProcessReceivedPacket(tcd, buffer, recvlen);
-                } else {
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_ORDERLY_CLOSED) {
+                    // TODO: In UDP it's possible to receive 0 bytes message.
+                    LTRACK_E("TeonetClient", "Receiving data using recvfrom() returned 0 (connection closed).");
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_TRY_AGAIN) {
 #if defined(_WIN32)
                     CLTRACK(teocliOpt_DBG_selectLoop, "TeonetClient",
                             "Resetting socket receive state.");
@@ -1026,6 +1034,16 @@ static teosockSelectResult trudpNetworkSelectLoop(teoLNullConnectData *con,
 #endif
                     // No more messages to receive. Leaving receive loop.
                     break;
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_FATAL_ERROR) {
+                    // TODO: Use thread safe error formatting function.
+                    // TODO: On Windows use correct error formatting function.
+                    LTRACK_E("TeonetClient", "Closing connection. Unrecoverable error while receiving data using recvfrom(). Error %"PRId32": %s", error_code, strerror(error_code));
+
+                    con->udp_reset_f = 1;
+                } else if (recvfrom_result == TEOSOCK_RECVFROM_UNKNOWN_ERROR) {
+                    // TODO: Use thread safe error formatting function.
+                    // TODO: On Windows use correct error formatting function.
+                    CLTRACK_E(teocliOpt_DBG_logUnknownErrors, "TeonetClient", "Unknown error while receiving data using recvfrom(). Error %"PRId32": %s", error_code, strerror(error_code));
                 }
             }
         }
@@ -1413,24 +1431,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
 
     // Connect to TCP
     if (con->tcp_f) {
-        con->fd = teosockCreateTcp();
-
-        if (con->fd == TEOSOCK_INVALID_SOCKET) {
-            LTRACK_E("TeonetClient", "Can't create socket");
-            con->fd = -1;
-            con->status = CON_STATUS_SOCKET_ERROR;
-            send_l0_event(con, EV_L_CONNECTED, &con->status,
-                          sizeof(con->status));
-            return con;
-        }
-
-        CLTRACK(teocliOpt_DBG_packetFlow, "TeonetClient",
-                "Successfully created socket, connecting to %s at port %" PRIu16
-                " ...",
-                server, port);
-
         int result =
-            teosockConnectTimeout(con->fd, server, port, teocliOpt_ConnectTimeoutMs);
+            teosockConnectTimeout(&con->fd, server, port, teocliOpt_ConnectTimeoutMs);
 
         if (result == TEOSOCK_CONNECT_HOST_NOT_FOUND) {
             LTRACK_E("TeonetClient", "HOST NOT FOUND --> h_errno = %" PRId32,
@@ -1461,7 +1463,8 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
     } else {
         // Connect to UDP
         int port_local = 0;
-        con->fd = trudpUdpBindRaw(&port_local, 1);
+        con->fd = trudpUdpBindRaw_cli(server, &port_local, 1);
+        teosockSetBlockingMode(con->fd, TEOSOCK_NON_BLOCKING_MODE);
         if (con->fd < 0) {
             LTRACK_E("TeonetClient", "Failed to bind UDP socket.");
             con->status = CON_STATUS_SOCKET_ERROR;
@@ -1599,7 +1602,7 @@ void teoLNullDisconnect(teoLNullConnectData *con) {
             free(con->client_crypt);
         }
 
-        if (!con->tcp_f) {
+        if (!con->tcp_f && con->td) {
             trudpChannelDestroyAll(con->td);
             trudpDestroy(con->td);
         }
@@ -1903,7 +1906,7 @@ static void trudpEventCback(void *tcd_pointer, int event, void *data,
         // Send to UDP
         trudpUdpSendto(tcd->td->fd, data, data_length,
                        (__CONST_SOCKADDR_ARG)&tcd->remaddr,
-                       sizeof(tcd->remaddr));
+                       tcd->addrlen);
 
         if (DEBUG) {
             trudpPacket* packet = (trudpPacket*)data;
