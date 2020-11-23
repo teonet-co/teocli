@@ -317,9 +317,9 @@ teoLNullAcquireCrypto(teoLNullConnectData *con);
 TEOCLI_API void teoLNullUnlockCrypto(teoLNullEncryptionContext *ctx);
 
 TEOCLI_API teoLNullConnectData *
-teoLNullConnect(const char *server, int16_t port, PROTOCOL connection_flag);
+teoLNullConnect(const char *server, uint16_t port, PROTOCOL connection_flag);
 TEOCLI_API teoLNullConnectData *
-teoLNullConnectE(const char *server, int16_t port, teoLNullEventsCb event_cb,
+teoLNullConnectE(const char *server, uint16_t port, teoLNullEventsCb event_cb,
                  void *user_data, PROTOCOL connection_flag);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
