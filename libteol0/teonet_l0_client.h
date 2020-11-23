@@ -143,7 +143,7 @@ typedef struct ksnet_arp_data {
                   ///< 1 - r-host, 2 - TCP Proxy peer
     char addr[ARP_TABLE_IP_SIZE]; ///< Peer IP address
     // \todo test is it possible to change this structure for running peers
-    int16_t port; ///< Peer port
+    uint16_t port; ///< Peer port
 
     double last_activity;      ///< Last time received data from peer
     double last_triptime_send; ///< Last time when triptime request send
