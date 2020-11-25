@@ -145,21 +145,22 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     // Show peer list
                     if(cp->data_length > 1) {
 
-                        ksnet_arp_data_ar *arp_data_ar = (ksnet_arp_data_ar *)
+                        ksnet_arp_data_ext_ar *arp_data_ar = (ksnet_arp_data_ext_ar *)
                                 (cp->peer_name + cp->peer_name_length);
+
                         const char *ln =
                                 "--------------------------------------------"
                                 "---------\n";
                         printf("%sPeers (%u): \n%s", ln, arp_data_ar->length, ln);
                         int i;
                         for(i = 0; i < (int)arp_data_ar->length; i++) {
-
-                            printf("%-12s(%2d)   %-15s   %d %8.3f ms\n",
+                            printf("%-20s %-20s (%2d)   %-15s   %d %8.3f ms\n",
                                 arp_data_ar->arp_data[i].name,
-                                arp_data_ar->arp_data[i].data.mode,
-                                arp_data_ar->arp_data[i].data.addr,
-                                arp_data_ar->arp_data[i].data.port,
-                                arp_data_ar->arp_data[i].data.last_triptime);
+                                arp_data_ar->arp_data[i].data.type,
+                                arp_data_ar->arp_data[i].data.data.mode,
+                                arp_data_ar->arp_data[i].data.data.addr,
+                                arp_data_ar->arp_data[i].data.data.port,
+                                arp_data_ar->arp_data[i].data.data.last_triptime);
 
                         }
                         printf("%s", ln);

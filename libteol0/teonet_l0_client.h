@@ -164,6 +164,7 @@ typedef struct ksnet_arp_data_ext {
     uint32_t cque_id_peer_type;
 } ksnet_arp_data_ext;
 
+
 #define DIG_IN_TEO_VER 3
 
 // Suppress MSVC compiler warning 'zero-sized array in struct'.
@@ -185,6 +186,25 @@ typedef struct host_info_data {
 
 #pragma pack(push)
 #pragma pack(1)
+
+typedef struct ksnet_arp_data_ext_N {
+    ksnet_arp_data data;
+    char type[128];
+    uint32_t cque_id_peer_type;
+} ksnet_arp_data_ext_N;
+
+typedef struct ksnet_arp_data_ext_ar {
+
+    uint32_t length;
+    struct _ext_arp_data {
+
+        char name[ARP_TABLE_IP_SIZE];
+        // _N means for network flow and for "type" record. In my opinion this feature is fully bullshit
+        ksnet_arp_data_ext_N data;
+
+    } arp_data[];
+
+} ksnet_arp_data_ext_ar;
 
 /**
  * KSNet ARP table whole data array
