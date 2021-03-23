@@ -134,31 +134,31 @@ noinst_PROGRAMS =
 
 noinst_PROGRAMS += teocli
 teocli_SOURCES = ../main.c
-teocli_LDADD = libteocli.la -lev
+teocli_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_s
 teocli_s_SOURCES = ../main_select.c
-teocli_s_LDADD = libteocli.la -lev
+teocli_s_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_cpp
 teocli_cpp_SOURCES = ../main_cpp.cpp
-teocli_cpp_LDADD = libteocli.la -lev
+teocli_cpp_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_s_cpp
 teocli_s_cpp_SOURCES = ../main_select_cpp.cpp
-teocli_s_cpp_LDADD = libteocli.la -lev
+teocli_s_cpp_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_s_trudp
 teocli_s_trudp_SOURCES = ../main_select_trudp.c
-teocli_s_trudp_LDADD = libteocli.la -lev
+teocli_s_trudp_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_s_common
 teocli_s_common_SOURCES = ../main_select_common.c
-teocli_s_common_LDADD = libteocli.la -lev
+teocli_s_common_LDADD = libteocli.la -lev -lcrypto -lssl
 
 noinst_PROGRAMS += teocli_s_common_thread
 teocli_s_common_thread_SOURCES = ../main_select_common_thread.c
-teocli_s_common_thread_LDADD = libteocli.la -lpthread -lev
+teocli_s_common_thread_LDADD = libteocli.la -lpthread -lev -lcrypto -lssl
 
 uninstall-hook:
 	-rmdir \

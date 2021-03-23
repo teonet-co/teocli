@@ -56,7 +56,7 @@ struct app_parameters {
     int tcp_port;
     const char *peer_name;
     const char *msg;
-
+    const char *auth_key;
 };
 
 /**
@@ -83,7 +83,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                 printf("Successfully connect to server\n");
 
                 // Send (1) Initialization packet to L0 server
-                ssize_t snd = teoLNullLogin(con, param->host_name);
+                ssize_t snd = teoLNullLogin(con, param->host_name, param->auth_key);
                 if(snd == -1) perror(strerror(errno));
                 printf("\nSend %d bytes packet to L0 server, "
                        "Initialization packet\n",
@@ -234,6 +234,7 @@ int main(int argc, char** argv) {
     param.tcp_server = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
     param.tcp_port = atoi(argv[3]); //9000;
     param.peer_name = argv[4]; //"teostream";
+    param.auth_key = "key";
     if(argc > 5) param.msg = argv[5];
     else param.msg = "Hello";
 

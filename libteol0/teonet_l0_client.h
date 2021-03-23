@@ -345,7 +345,7 @@ TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
 
 TEOCLI_API ssize_t teoLNullLogin(teoLNullConnectData *con,
-                                 const char *host_name);
+                                 const char *host_name, const char* secret);
 TEOCLI_API ssize_t teoLNullSend(teoLNullConnectData *con, uint8_t cmd,
                                 const char *peer_name, const void *data,
                                 size_t data_length);
