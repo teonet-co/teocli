@@ -1398,7 +1398,7 @@ _teoLNullConnectionInitiate(teoLNullConnectData *con,
  * @retval teoLNullConnectData::status==-3 - Client-connect() error
  * @retval teoLNullConnectData::status==-4 - Pipe creation error
  */
-teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
+teoLNullConnectData *teoLNullConnectE(const char *server, uint16_t port,
                                       teoLNullEventsCb event_cb,
                                       void *user_data,
                                       PROTOCOL connection_flag) {
@@ -1581,7 +1581,7 @@ teoLNullConnectData *teoLNullConnectE(const char *server, int16_t port,
  * @retval teoLNullConnectData::status==-2 - HOST NOT FOUND error
  * @retval teoLNullConnectData::status==-3 - Client-connect() error
  */
-teoLNullConnectData *teoLNullConnect(const char *server, int16_t port,
+teoLNullConnectData *teoLNullConnect(const char *server, uint16_t port,
                                      PROTOCOL connection_flag) {
     return teoLNullConnectE(server, port, NULL, NULL, connection_flag);
 }

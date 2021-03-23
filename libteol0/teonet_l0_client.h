@@ -143,7 +143,7 @@ typedef struct ksnet_arp_data {
                   ///< 1 - r-host, 2 - TCP Proxy peer
     char addr[ARP_TABLE_IP_SIZE]; ///< Peer IP address
     // \todo test is it possible to change this structure for running peers
-    int16_t port; ///< Peer port
+    uint16_t port; ///< Peer port
 
     double last_activity;      ///< Last time received data from peer
     double last_triptime_send; ///< Last time when triptime request send
@@ -337,9 +337,9 @@ teoLNullAcquireCrypto(teoLNullConnectData *con);
 TEOCLI_API void teoLNullUnlockCrypto(teoLNullEncryptionContext *ctx);
 
 TEOCLI_API teoLNullConnectData *
-teoLNullConnect(const char *server, int16_t port, PROTOCOL connection_flag);
+teoLNullConnect(const char *server, uint16_t port, PROTOCOL connection_flag);
 TEOCLI_API teoLNullConnectData *
-teoLNullConnectE(const char *server, int16_t port, teoLNullEventsCb event_cb,
+teoLNullConnectE(const char *server, uint16_t port, teoLNullEventsCb event_cb,
                  void *user_data, PROTOCOL connection_flag);
 TEOCLI_API void teoLNullDisconnect(teoLNullConnectData *con);
 TEOCLI_API void teoLNullShutdown(teoLNullConnectData *con);
