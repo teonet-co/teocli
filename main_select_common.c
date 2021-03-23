@@ -89,7 +89,7 @@ void event_cb(void *con, teoLNullEvents event, void *data,
                     printf("Successfully connect to server\n");
 
                     // Send (1) Initialization packet to L0 server
-                    ssize_t snd = teoLNullLogin(con, param->host_name);
+                    ssize_t snd = teoLNullLogin(con, param->host_name, "key");
                     if (snd == -1) perror(strerror(errno));
                     printf("Send %d bytes packet to L0 server, Initialization packet\n", (int)snd);
 

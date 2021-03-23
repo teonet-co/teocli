@@ -41,6 +41,8 @@
 #include <unistd.h>
 #endif
 
+#include <openssl/md5.h>
+
 #include "teobase/logging.h"
 #include "teobase/socket.h"
 #include "teobase/time.h"
@@ -53,6 +55,9 @@
 #define BUFFER_SIZE 4096
 
 #define SEND_MESSAGE_AFTER 1000000
+
+#define SIGN_EXPIRE_SEC 100
+
 
 // Global teocli options
 extern bool teocliOpt_DBG_packetFlow;
@@ -863,16 +868,45 @@ size_t teoLNullPacketCreateLogin(void *buffer,
  *
  * @return Length of send data or -1 at error
  */
-ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name) {
-    const size_t buf_len = teoLNullBufferSize(1, strlen(host_name) + 1);
+ssize_t teoLNullLogin(teoLNullConnectData *con, const char *host_name, const char* secret) {
+
+    uint64_t cur_time = teoGetTimestampFull()/1000000 + SIGN_EXPIRE_SEC;
+    char timestampstr[128];
+    snprintf(timestampstr, sizeof(timestampstr), "%lu", cur_time);
+
+    unsigned char digarray[MD5_DIGEST_LENGTH];
+    MD5_CTX ctx;
+    MD5_Init(&ctx);
+    MD5_Update(&ctx, host_name, strlen(host_name));
+    MD5_Update(&ctx, secret, strlen(secret));
+    MD5_Update(&ctx, timestampstr, strlen(timestampstr));
+    MD5_Final(digarray, &ctx);
+
+    char md5str[MD5_DIGEST_LENGTH*2 + 1];
+    for(int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
+        sprintf(&md5str[i*2], "%02x", (unsigned int)digarray[i]);
+    }
+
+    int playload_size = snprintf(0, 0, "{\"userId\":\"%s\",\"sign\":\"%s\",\"timestamp\":\"%lu\"}",
+        host_name, md5str, cur_time);
+    char *payload = malloc(playload_size + 1);
+    snprintf(payload, playload_size + 1, "{\"userId\":\"%s\",\"sign\":\"%s\",\"timestamp\":\"%lu\"}",
+        host_name, md5str, cur_time);
+
+    const size_t buf_len = teoLNullBufferSize(1, strlen(payload) + 1);
+
+
     teoLNullCPacket *buf = (teoLNullCPacket *)ccl_malloc(buf_len);
 
-    size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, host_name);
+    size_t pkg_length = teoLNullPacketCreateLogin(buf, buf_len, payload);
     ssize_t snd = _teosockSend(con, true, buf, pkg_length);
 
+    free(payload);
     free(buf);
+
     return snd;
 }
+
 
 /**
  * Calculate checksum

@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
     const char *TCP_SERVER = argv[2]; //"127.0.0.1"; //"10.12.35.53"; //
     const int TCP_PORT = atoi(argv[3]); //9000;
     const char *peer_name = argv[4]; //"teostream";
+    const char *auth_key = "key";
     const char *msg;
     if(argc > 5) msg = argv[5];
     else msg = "Hello";
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
     if(con->status > 0) {
 
         // Send (1.1) Initialization packet to L0 server
-        ssize_t snd = teoLNullLogin(con, host_name);
+        ssize_t snd = teoLNullLogin(con, host_name, auth_key);
         if(snd == -1) perror(strerror(errno));
         printf("\nSend %d bytes packet to L0 server, Initialization packet\n",
                 (int)snd);
